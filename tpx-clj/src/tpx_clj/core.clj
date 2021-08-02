@@ -1,4 +1,6 @@
 (ns tpx-clj.core
+  (:require
+    [clojurewerkz.machine-head.client :as mh])
   (:gen-class))
 
 (defn -main
