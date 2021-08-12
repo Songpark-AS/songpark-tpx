@@ -1,7 +1,7 @@
 (ns tpx-clj.core
   (:require
-    [clojurewerkz.machine-head.client :as mh])
-  (use '[clojure.java.shell :only [sh]])
+   [clojurewerkz.machine-head.client :as mh]
+   [clojure.java.shell :as shell])
   (:gen-class))
 
 (defn -main
@@ -9,6 +9,8 @@
   [& args]
   (println "Hello, World!"))
 
-(defn talk-to-cs7 [name]
-  (let [[exit out err](sh "docker" "run" name)]
-    (println out)))
+(defn talk-to-cs7 
+  "Supposed to talk to CS7 via STDIN"
+  [name]
+  (let [data (shell/sh "docker" "run" name)]
+    (:out data)))
