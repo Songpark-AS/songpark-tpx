@@ -3,7 +3,8 @@
    [clojurewerkz.machine-head.client :as mh]
    [common.platform.connect.client :as connect.client]
    [common.platform.connect.tp :as connect.tp]
-   [common.mqtt.connection :as mqtt-connection])
+   [common.mqtt.connection :as mqtt-connection]
+   [clojure.java.shell :as shell])
   (:gen-class))
 
 
@@ -103,15 +104,15 @@
   "Initiates communications with the backend,
    telling the backend its tpID,
    then initiates communications to MQTT's pub/sub"
-  []
+  [handler-map]
   (let [tpid (retrieve-tpID)
         plat-response (connect.tp/init {:tpid tpid})
         uuid (:uuid plat-response)
         status (:status plat-response)]
     (if (and status uuid)
-      (let [conn-map (mqtt-connection/init uuid)
-            handler-map handler-map]
-        (mqtt-connection/subscribe conn-map handler-map))
+      (let [conn-map (mqtt-connection/init uuid)]
+        (mqtt-connection/subscribe conn-map handler-map)
+        (println "8a8157a4-081e-4379-8964-9f1c25f79a8e"))
       (println "Teleporter connection to platform, failed"))
     (println "This is uuid: " uuid)))
 
@@ -126,14 +127,15 @@
         status (:status plat-response)]
 
     (if (and status uuid)
-      (let [conn-map (mqtt-connection/init uuid)]
-        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-musician] ["self" 123]])
-        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-musician] ["self" 123]])
-        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-musician] ["self" (rand)]])
-        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-musician] ["self" (rand)]])
-        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-musician] ["self" (rand)]])
-        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-musician] ["self" (rand)]])
-        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-musician] ["self" 321]])
+      (let [uuid "6148aaec-a000-49c2-8f4e-0a7a5c21255c"
+            conn-map (mqtt-connection/init uuid)]
+        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [123]])
+        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [123]])
+        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
+        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
+        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
+        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
+        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [321]])
         (println "Client publishes finished"))
       (println "Client connection to platform, failed"))))
 
@@ -143,8 +145,9 @@
    ; client requests 'christians.dream', client is returned the same uuid, and client 
    ; published a number of requests on topic.
    ; (Feel free to delete/change this in any way you want)"
-  (initiate-communications)
+  (initiate-communications handler-map)
   (fake-phone-commands)
+
 )
 
 
@@ -158,3 +161,9 @@
 
          (mqtt-connection/subscribe conn-map handler-map)
          (mqtt-connection/publish conn-map [[:volume_control] [1 2 3 3 3 3]]))
+
+(defn talk-to-cs7 
+  "Supposed to talk to CS7 via STDIN"
+  [name]
+  (let [data (shell/sh "docker" "run" name)]
+    (:out data)))
