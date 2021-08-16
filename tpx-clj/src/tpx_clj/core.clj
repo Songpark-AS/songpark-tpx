@@ -111,33 +111,32 @@
         status (:status plat-response)]
     (if (and status uuid)
       (let [conn-map (mqtt-connection/init uuid)]
-        (mqtt-connection/subscribe conn-map handler-map)
-        (println "8a8157a4-081e-4379-8964-9f1c25f79a8e"))
+        (mqtt-connection/subscribe conn-map handler-map))
       (println "Teleporter connection to platform, failed"))
     (println "This is uuid: " uuid)))
 
-(defn fake-phone-commands
-  "Pretends to be a phone that hooks into the backend,
-   associates itself with a specific unit's tpID,
-   then queries TPX via MQTT to interact with CS7."
-  []
-  (let [;nickname "christians.dream"
-        plat-response (connect.client/init {:nickname "christians.dream"})
-        uuid (:uuid plat-response)
-        status (:status plat-response)]
+;; (defn fake-phone-commands
+;;   "Pretends to be a phone that hooks into the backend,
+;;    associates itself with a specific unit's tpID,
+;;    then queries TPX via MQTT to interact with CS7."
+;;   []
+;;   (let [;nickname "christians.dream"
+;;         plat-response (connect.client/init {:nickname "christians.dream"})
+;;         uuid (:uuid plat-response)
+;;         status (:status plat-response)]
 
-    (if (and status uuid)
-      (let [uuid "6148aaec-a000-49c2-8f4e-0a7a5c21255c"
-            conn-map (mqtt-connection/init uuid)]
-        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [123]])
-        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [123]])
-        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
-        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
-        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
-        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
-        (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [321]])
-        (println "Client publishes finished"))
-      (println "Client connection to platform, failed"))))
+;;     (if (and status uuid)
+;;       (let [uuid "3266f6d8-c50e-448b-a7f6-3f860cc47a1e"
+;;             conn-map (mqtt-connection/init uuid)]
+;;         (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [123]])
+;;         (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [123]])
+;;         (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
+;;         (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
+;;         (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
+;;         (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
+;;         (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [321]])
+;;         (println "Client publishes finished"))
+;;       (println "Client connection to platform, failed"))))
 
 (comment ;? Commence imitation
   "; Evaluate the forms in this comment to see proof of concept, where tp tells platform that it's on,
