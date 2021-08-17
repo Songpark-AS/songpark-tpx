@@ -27,37 +27,32 @@
 
 ;! Current tpx functionality
 
-(defn init-ipc-with-cs7
-  "Initializes Inter-Process Communication with CS7.
-   Currently not complete; the methods for IPC have not been decided yet."
-  [] ; it did not want to evaluate without this definition?
-  (println "Facilitating IPC with CS7...")
-  (println "Connection with CS7 established! (just kidding! still need to complete that thing)"))
+;? __All of the below functions__ are activated by MQTT/has some relation to MQTT,
+;? and have the purpose of relaying instructions from MQTT to CS7.
 
-(defn retrieve-tpID
-  "Contains the instructions sent to CS7 to retrieve the tpID."
-  []
-  (println "Querying CS7 for tpID.")
-  (let [tpID "0000"] ; hardcoded to "0000" - used to say World, previously...
-    (println "Response from CS7 reads: "tpID)
-    tpID))
-
+; --- Volume controls ---
 (defn adjust-volume-musician
   "Relays musician-specific volume control towards CS7.
    Takes musician's ID, and positive or negative integers.
    Assumes CS7 has some kind of logic to deal with 'invalid values'."
-  [musician adjusted-amount]
-  (println "Asking CS7 politely to adjust volume of '"musician"' by: "adjusted-amount)
-  (println "CS7 politely agreed. Volume of '"musician"' adjusted by: "adjusted-amount))
+  [musician adjusted-value]
+  ; #TODO
+  (let 
+   [stream-number (rand-int 4)
+    musician (nth ["Bomb Jovi" "Dummy Borgir" "Brus Sprengstein" "BeyonC++"] stream-number)]
+    (println "Asking CS7 politely to adjust volume of '"musician"' to:" adjusted-value ".")
+    (println "CS7 politely agreed. Volume of '"musician"' adjusted to:" adjusted-value ".")))
 
 (defn adjust-volume-unit
   "Relays volume control towards CS7.
    Takes positive or negative integers.
    Assumes CS7 has some kind of logic to deal with 'invalid values'."
-  [adjusted-amount]
-  (println "Asking CS7 politely to adjust the unit's output volume by: "adjusted-amount)
-  (println "CS7 politely agreed. Unit's volume adjusted by: "adjusted-amount))
+  [adjusted-value]
+  ; #TODO
+  (println "Asking CS7 politely to adjust the unit's output volume to:" adjusted-value ".")
+  (println "CS7 politely agreed. Unit's volume adjusted to:"            adjusted-value "."))
 
+;--- Mute controls ---
 (defn toggle-mute-musician
   "Relays to CS7 instructions to toggle mute specific musicians through 2 steps.
    The first step is possibly reduntant, 
@@ -65,12 +60,12 @@
    1. Asks CS7 if the specific musician is muted or not already.
    2. Sends instruction to CS7 to mute or unmute."
   [musician]
-  (println "Checking current mute state of" musician)
-  (let ; Contact CS7 here.
-   [muted-or-not (rand-int[2])]
-    (println "The mute state of" musician "is" muted-or-not)
-    (println "Asking CS7 politely to mute/unmute" musician)
-    (println "CS7 politely toggled muted/unmute of" musician "to" muted-or-not)))
+  (println "Checking current mute state of" musician ".")
+  (let ; Contact CS7 here. #TODO
+   [muted-or-not (nth ["inactive" "active"] (rand-int 2))]
+    (println "The mute state of" musician "is" muted-or-not ".")
+    (println "Asking CS7 politely to mute/unmute" musician ".")
+    (println "CS7 politely toggled muted/unmute of" musician "to" muted-or-not".")))
 
 (defn toggle-mute-unit
   "Relays to CS7 instructions to mute specific musicians.
@@ -79,26 +74,150 @@
    1. Asks CS7 if the unit is muted or not already.
    2. Sends instruction to CS7 to mute or unmute."
   []
-  (println "Checking current mute state of unit")
-  (let ; Contact CS7 here.
-   [muted-or-not (rand-int[2])]
-    (println "The mute state of unit is" muted-or-not)
-    (println "Asking CS7 politely to mute/unmute the unit")
-    (println "CS7 politely toggled the teleport mute/unmute to" muted-or-not)))
+  (println "Checking current mute state of unit.")
+  (let ; Contact CS7 here. #TODO
+   [muted-or-not (nth ["inactive" "active"] (rand-int 2))]
+    (println "The mute state of unit is" muted-or-not ".")
+    (println "Asking CS7 politely to mute/unmute the unit.")
+    (println "CS7 politely toggled the teleport mute/unmute to" muted-or-not ".")))
 
+; --- SFX controls ---
+(defn adjust-dsp-effects
+  "Not sure what this is yet"
+  [dsp-input]
+  (println "Hey, CS7, do the DSP! Just like" dsp-input "!")
+  (println "Damn, CS7 did do the DSP done."))
+
+(defn adjust-gain-input
+  "Relays to CS7 to adjust gain value(s).
+   Maps to inputs:
+    2 separate mic [A & B?]
+    2 separate line in w/ stereo [C & D]?"
+  [input-device new-value]
+  (let ; Pretends an input device was selected externally
+   [device-number (rand-int 4)
+    input-device (nth ["mic A" "mic B" "input C" "input D"] device-number)]
+    (println "Checking with CS7 about gain levels for input device" input-device ".")
+    (println "CS7 reports gain levels for input" input-device ":" "#TODO.")
+    (println "Quering CS7 to set gain level of input" input-device "to" new-value ".")
+    (println "Query complete, CS7 has set gain level of input" input-device "to" new-value".")))
+
+(defn adjust-gain-musician
+  "Relays to CS7 to adjust gain value(s) of specific musicians (through 'effects' of musicians?).
+   Maps to input streams from different musicians."
+  [musician-stream new-value]
+  (let ; Pretends an input stream was selected externally, and to contact CS7 #TODO
+   [stream-number (rand-int 4)
+    musician-stream (nth ["Bomb Jovi" "Dummy Borgir" "Brus Sprengstein" "BeyonC++"] stream-number)]
+    (println "Checking with CS7 about gain levels for input device" musician-stream ".")
+    (println "CS7 reports gain levels for input" musician-stream ":" "#TODO.")
+    (println "Querying CS7 to set gain level of input" musician-stream "to" new-value ".")
+    (println "CS7 has set gain level of input" musician-stream "to" new-value".")))
+
+(defn toggle-phantom-power
+  "Relays to CS7 to activate/deactivate phantom power."
+  []
+  (let ; Pretend to contact CS7 about the phantom state and switch it #TODO
+   [phantom-states (vector "inactive" "active")
+    phantom-state-binary (rand-int 2)
+    phantom-state (nth phantom-states phantom-state-binary)
+    phantom-state-inverse (nth phantom-states (* -1 (- 1 phantom-state-binary)))]
+    (prn "Checking with CS7 if Phantom Power is on or not.")
+    (prn "CS7 reports Phantom Power to be:" phantom-state)
+    (prn "Querying CS7 to toggle the currently Phantom Power to" phantom-state-inverse ".")
+    (prn "CS7 has set Phantom Power to" phantom-state-inverse ".")))
+
+; --- Netcode ---
+(defn init-ipc-with-cs7
+  "Assumes CS7 to be a separate process running in parallell with TPX.
+   Initializes Inter-Process Communication with CS7.
+   Currently not complete; the methods for IPC have not been decided yet."
+  [] 
+  ; #TODO
+  (println "Facilitating IPC with CS7...")
+  (println "Connection with CS7 established! (just kidding! still need to complete that thing)"))
+
+(defn network-configuration
+  "Probably for connecting to a friend's jam and such."
+  ; #TODO
+  [])
+
+; --- IO ---
+(defn retrieve-tpID
+  "Contains the instructions sent to CS7 to retrieve the tpID."
+  []
+  (println "Querying CS7 for tpID.")
+  (let [tpID "0000"] ; hardcoded to "0000" - used to say World, previously...
+    (println "Response from CS7 reads: " tpID)
+    tpID))
+
+(defn talk-to-cs7
+  "Supposed to talk to CS7 via STDIN"
+  [name]
+  (let [data (shell/sh "docker" "run" name)]
+    (:out data)))
+
+(defn toggle-audio-recording
+  "Relays to CS7 for a recording of the audiostream to begin or end"
+  []
+  (println "Checking with CS7: Is the unit currently recording the audiostream?")
+  (let ; Contact CS7 here #TODO
+   [recording-or-not (if (= 0 (rand-int 2)) "No" "Yes")]
+    (println "CS7 responds:" recording-or-not "!")
+    (println (if (= "No" recording-or-not) "Commencing" "Ending") "recording process.")
+    (println "Recording" (if (= "No" recording-or-not) "commenced." "ended."))))
+
+(defn audio-file-management
+  "Play/delete/upload to cloud"
+  [])
+
+
+; --- Currently unknown functionalities ---
+(defn audio-stream-control
+  "What's this about?"
+  []
+  )
+
+
+(defn toggle-mems-talkback-mic
+  "Apparently, this enables/disables What is this?"
+  [])
+
+
+
+(defn
+  ""
+  [])
+
+(defn
+  ""
+  [])
+
+(defn
+  ""
+  [])
+  
 ;! REPL execution playground
 
 ;? Imitating communication between phone and TPX unit
 
 ;; (def handler-map {:device {:volume-change #(println "Volume changed by " % " amount")}})
-(def handler-map {:tpx-unit   { :adjust-volume-musician adjust-volume-musician
-                                :adjust-volume-unit     adjust-volume-unit
-                                :toggle-mute-musician   toggle-mute-musician
-                                :toggle-mute-unit       toggle-mute-unit}
-                  :phone-app  { :adjust-volume-musician adjust-volume-musician
-                                :adjust-volume-unit     adjust-volume-unit
-                                :toggle-mute-musician   toggle-mute-musician
-                                :toggle-mute-unit       toggle-mute-unit}})
+(def handler-map {:tpx-unit   { 
+                               :adjust-dsp-effects      adjust-dsp-effects
+                               :adjust-gain-input       adjust-gain-input
+                               :adjust-gain-musician    adjust-gain-musician
+                               :adjust-volume-musician  adjust-volume-musician
+                               :adjust-volume-unit      adjust-volume-unit
+                               :toggle-audio-recording  toggle-audio-recording
+                               :toggle-mute-musician    toggle-mute-musician
+                               :toggle-mute-unit        toggle-mute-unit
+                               }
+                  :phone-app  {
+                               :adjust-volume-musician  adjust-volume-musician
+                               :adjust-volume-unit      adjust-volume-unit
+                               :toggle-mute-musician    toggle-mute-musician
+                               :toggle-mute-unit        toggle-mute-unit
+                               }})
 
 (defn initiate-communications
   "Initiates communications with the backend,
@@ -145,24 +264,17 @@
    ; published a number of requests on topic.
    ; (Feel free to delete/change this in any way you want)"
   (initiate-communications handler-map)
-  (fake-phone-commands)
-
+  ;(fake-phone-commands)
 )
 
 
-;? Basic MQTT functionality
-(comment test-area-of-mqtt-setup
-         (connect.client/init {:nickname "christians.dream"})
-         (def conn-map (mqtt-connection/init "my-topic2"))
-         (def handler-map {:volume_control #(println (apply - %&))})
-         (let [conn-map (mqtt-connection/init "my-topic")
-               handler-map {:volume_control #(println (apply - %&))}])
+;; ;? Basic MQTT functionality
+;; (comment test-area-of-mqtt-setup
+;;          (connect.client/init {:nickname "christians.dream"})
+;;          (def conn-map (mqtt-connection/init "my-topic2"))
+;;          (def handler-map {:volume_control #(println (apply - %&))})
+;;          (let [conn-map (mqtt-connection/init "my-topic")
+;;                handler-map {:volume_control #(println (apply - %&))}])
 
-         (mqtt-connection/subscribe conn-map handler-map)
-         (mqtt-connection/publish conn-map [[:volume_control] [1 2 3 3 3 3]]))
-
-(defn talk-to-cs7 
-  "Supposed to talk to CS7 via STDIN"
-  [name]
-  (let [data (shell/sh "docker" "run" name)]
-    (:out data)))
+;;          (mqtt-connection/subscribe conn-map handler-map)
+;;          (mqtt-connection/publish conn-map [[:volume_control] [1 2 3 3 3 3]]))
