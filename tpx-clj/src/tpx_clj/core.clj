@@ -55,8 +55,11 @@
   (prn "BEFOOOOOOREEEEEE")
   (prn "does this exist? " @global-conn-map)
   ;;(mqtt-connection/publish (@global-conn-map :connection) (@global-conn-map :topic) [[:phone-app :adjust-volume-unit] [adjusted-value]])
-  (mh/publish (@global-conn-map :connection) (@global-conn-map :topic) "POLOOOOOOOOOOOOOO!!!!!!!One1")
+  (try
+    (mh/publish (@global-conn-map :connection) (@global-conn-map :topic) (str "POLOOOOOOOOOOOOOO!!!!!!!One1" (rand-int 9)))
+    (catch Exception e (prn (str "Caught publish in the act:" (.getMessage e)))))
   (prn "AFTERRRRRRRRRRRR")
+  42
   )
 
 ;--- Mute controls ---
@@ -215,6 +218,34 @@
                                :toggle-mute-unit        toggle-mute-unit
                                }})
 
+(defn common_connect_init
+  "This function initiates a simple mqtt connection using machine head.
+   Expects a topic name.
+   Uses default URI: \"tcp://127.0.0.1:1883\", unless other URI is specified
+   Example uses:
+   
+   (init \"MY-TOPIC\")
+   (init \"MY-TOPIC\" \"URI\")
+
+   Returns a connection-map on format:
+   
+   {:connection CONNECTION
+    :topic TOPIC}"
+
+  ([topic uri]
+   (let [connection (mh/connect uri {
+                                     :on-connect-complete (fn [& args] (println "Connection completed." args))
+                                     :on-connection-lost (fn [& args] (println "Connection lost." args))
+                                     :on-delivery-complete (fn [& args] (println "Delivery completed." args))
+                                     :on-unhandled-message (fn [& args] (println "Unhandled message encountered." args))
+                                     :opts {:auto-reconnect true
+                                            :keep-alive-interval 60}}
+                                )]
+     {:connection connection
+      :topic topic}))
+  ([topic]
+   (common_connect_init topic "tcp://127.0.0.1:1883")))
+
 (defn initiate-communications
   "Initiates communications with the backend,
    telling the backend its tpID,
@@ -225,7 +256,7 @@
         uuid (:uuid plat-response)
         status (:status plat-response)]
     (if (and status uuid)
-      (let [conn-map (mqtt-connection/init uuid)]
+      (let [conn-map (common_connect_init uuid)]
         (prn "Here be the conn-map from init arrrr!: " conn-map)
         (reset! global-conn-map conn-map)
         (prn "Here be global conn-map: " @global-conn-map)
