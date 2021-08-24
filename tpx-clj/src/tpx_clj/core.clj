@@ -7,6 +7,7 @@
    [clojure.java.shell :as shell])
   (:gen-class))
 
+(def global-conn-map (atom {}))
 
 (defn -main
   "Prepares mqtt connection"
@@ -50,7 +51,13 @@
   [adjusted-value]
   ; #TODO
   (println "Asking CS7 politely to adjust the unit's output volume to:" adjusted-value ".")
-  (println "CS7 politely agreed. Unit's volume adjusted to:"            adjusted-value "."))
+  (println "CS7 politely agreed. Unit's volume adjusted to:"            adjusted-value ".")
+  (prn "BEFOOOOOOREEEEEE")
+  (prn "does this exist? " @global-conn-map)
+  ;;(mqtt-connection/publish (@global-conn-map :connection) (@global-conn-map :topic) [[:phone-app :adjust-volume-unit] [adjusted-value]])
+  (mh/publish (@global-conn-map :connection) (@global-conn-map :topic) "POLOOOOOOOOOOOOOO!!!!!!!One1")
+  (prn "AFTERRRRRRRRRRRR")
+  )
 
 ;--- Mute controls ---
 (defn toggle-mute-musician
@@ -185,17 +192,6 @@
 
 
 
-(defn
-  ""
-  [])
-
-(defn
-  ""
-  [])
-
-(defn
-  ""
-  [])
   
 ;! REPL execution playground
 
@@ -230,6 +226,9 @@
         status (:status plat-response)]
     (if (and status uuid)
       (let [conn-map (mqtt-connection/init uuid)]
+        (prn "Here be the conn-map from init arrrr!: " conn-map)
+        (reset! global-conn-map conn-map)
+        (prn "Here be global conn-map: " @global-conn-map)
         (mqtt-connection/subscribe conn-map handler-map))
       (println "Teleporter connection to platform, failed"))
     (println "This is uuid: " uuid)))
