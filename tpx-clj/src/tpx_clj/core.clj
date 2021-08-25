@@ -246,6 +246,33 @@
   ([topic]
    (common_connect_init topic "tcp://127.0.0.1:1883")))
 
+(defn common-subscribe
+  "Subscribes to a topic on an mqtt server, and waits for instructions.
+   Expects a mh-connection, a topic-name, and a handler-map.
+   Example use:
+   
+   (subscribe CONNECTION TOPIC HANDLER-MAP)
+   (subscribe CONNECTION-MAP HANDLER-MAP)"
+  ([connection topic handler-map]
+   (mh/subscribe connection {topic 0} (fn [^String topic _ ^bytes payload]
+                                        (try
+                                          (let [payload (String. payload "UTF-8")
+                                                _ (prn "I am payload, destroyer of MQTTs" payload)
+                                                payload-map (clojure.core/read-string payload)
+                                                _ (prn :mapkeys (keys payload-map))
+                                                {pointer :pointer
+                                                 arguments :arguments} payload-map]
+                                            (prn 
+                                             "pointerr:" pointer 
+                                             "arrrrrrg:" arguments)
+                                            (apply (get-in handler-map pointer) arguments))
+                                          (catch Exception e (prn (str "Caught error in handler mapping: " (.getMessage e))))
+                                          ))))
+  ([{connection :connection
+     topic :topic}
+    handler-map]
+   (common-subscribe connection topic handler-map)))
+
 (defn initiate-communications
   "Initiates communications with the backend,
    telling the backend its tpID,
@@ -260,7 +287,8 @@
         (prn "Here be the conn-map from init arrrr!: " conn-map)
         (reset! global-conn-map conn-map)
         (prn "Here be global conn-map: " @global-conn-map)
-        (mqtt-connection/subscribe conn-map handler-map))
+        ;; (mqtt-connection/subscribe conn-map handler-map))
+        (common-subscribe conn-map handler-map))
       (println "Teleporter connection to platform, failed"))
     (println "This is uuid: " uuid)))
 
