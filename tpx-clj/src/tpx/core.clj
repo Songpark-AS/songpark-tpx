@@ -1,20 +1,22 @@
-(ns tpx-clj.core
+(ns tpx.core
+  (:gen-class)
   (:require
+   [tpx.init :as init]
+   [taoensso.timbre :as log]
    [clojurewerkz.machine-head.client :as mh]
    [common.platform.connect.client :as connect.client]
    [common.platform.connect.tp :as connect.tp]
    [common.mqtt.connection :as mqtt-connection]
-   [clojure.java.shell :as shell])
-  (:gen-class))
+   [clojure.java.shell :as shell]))
 
 (def global-conn-map (atom {}))
 
 (defn -main
   "Prepares mqtt connection"
-  []
+  [& _args]
   ; (println "Hello, World!")
-  ; (init-ipc-with-cs7)
-  ; (retrieve-tpID))
+  (log/set-level! :info)
+  (init/init)
 )
 
 ;! Possibly useful later
@@ -201,77 +203,20 @@
 ;? Imitating communication between phone and TPX unit
 
 ;; (def handler-map {:device {:volume-change #(println "Volume changed by " % " amount")}})
-(def handler-map {:tpx-unit   { 
-                               :adjust-dsp-effects      adjust-dsp-effects
-                               :adjust-gain-input       adjust-gain-input
-                               :adjust-gain-musician    adjust-gain-musician
-                               :adjust-volume-musician  adjust-volume-musician
-                               :adjust-volume-unit      adjust-volume-unit
-                               :toggle-audio-recording  toggle-audio-recording
-                               :toggle-mute-musician    toggle-mute-musician
-                               :toggle-mute-unit        toggle-mute-unit
-                               }
-                  :phone-app  {
-                               :adjust-volume-musician  adjust-volume-musician
-                               :adjust-volume-unit      adjust-volume-unit
-                               :toggle-mute-musician    toggle-mute-musician
-                               :toggle-mute-unit        toggle-mute-unit
-                               }})
-
-(defn common_connect_init
-  "This function initiates a simple mqtt connection using machine head.
-   Expects a topic name.
-   Uses default URI: \"tcp://127.0.0.1:1883\", unless other URI is specified
-   Example uses:
-   
-   (init \"MY-TOPIC\")
-   (init \"MY-TOPIC\" \"URI\")
-
-   Returns a connection-map on format:
-   
-   {:connection CONNECTION
-    :topic TOPIC}"
-
-  ([topic uri]
-   (let [connection (mh/connect uri {
-                                     :on-connect-complete (fn [& args] (println "Connection completed." args))
-                                     :on-connection-lost (fn [& args] (println "Connection lost." args))
-                                     :on-delivery-complete (fn [& args] (println "Delivery completed." args))
-                                     :on-unhandled-message (fn [& args] (println "Unhandled message encountered." args))
-                                     :opts {:auto-reconnect true
-                                            :keep-alive-interval 60}}
-                                )]
-     {:connection connection
-      :topic topic}))
-  ([topic]
-   (common_connect_init topic "tcp://127.0.0.1:1883")))
-
-(defn common-subscribe
-  "Subscribes to a topic on an mqtt server, and waits for instructions.
-   Expects a mh-connection, a topic-name, and a handler-map.
-   Example use:
-   
-   (subscribe CONNECTION TOPIC HANDLER-MAP)
-   (subscribe CONNECTION-MAP HANDLER-MAP)"
-  ([connection topic handler-map]
-   (mh/subscribe connection {topic 0} (fn [^String topic _ ^bytes payload]
-                                        (try
-                                          (let [payload (String. payload "UTF-8")
-                                                _ (prn "I am payload, destroyer of MQTTs" payload)
-                                                payload-map (clojure.core/read-string payload)
-                                                _ (prn :mapkeys (keys payload-map))
-                                                {pointer :pointer
-                                                 arguments :arguments} payload-map]
-                                            (prn 
-                                             "pointerr:" pointer 
-                                             "arrrrrrg:" arguments)
-                                            (apply (get-in handler-map pointer) arguments))
-                                          (catch Exception e (prn (str "Caught error in handler mapping: " (.getMessage e))))
-                                          ))))
-  ([{connection :connection
-     topic :topic}
-    handler-map]
-   (common-subscribe connection topic handler-map)))
+(def handler-map 
+  { :tpx-unit {  
+                :adjust-dsp-effects      adjust-dsp-effects
+                :adjust-gain-input       adjust-gain-input
+                :adjust-gain-musician    adjust-gain-musician
+                :adjust-volume-musician  adjust-volume-musician
+                :adjust-volume-unit      adjust-volume-unit
+                :toggle-audio-recording  toggle-audio-recording
+                :toggle-mute-musician    toggle-mute-musician
+                :toggle-mute-unit        toggle-mute-unit
+              }
+    ;; :phone-app  { ; Not used in tpx, but is the equivalent method of reference for publishing
+    ;;               :dummy dumb }
+   })
 
 (defn initiate-communications
   "Initiates communications with the backend,
@@ -283,7 +228,7 @@
         uuid (:uuid plat-response)
         status (:status plat-response)]
     (if (and status uuid)
-      (let [conn-map (common_connect_init uuid)]
+      (let [conn-map (common-connect-init uuid)]
         (prn "Here be the conn-map from init arrrr!: " conn-map)
         (reset! global-conn-map conn-map)
         (prn "Here be global conn-map: " @global-conn-map)
