@@ -11,5 +11,13 @@ pom.xml.asc
 /.prepl-port
 .hgignore
 .hg/
+
+# Editor specific settings
 **/.calva
+**/.idea
 **/.vscode
+
+# Clojure LSP
+**/.lsp
+**/.clj-kondo/cache/
+**/.clj-kondo/.cache/
