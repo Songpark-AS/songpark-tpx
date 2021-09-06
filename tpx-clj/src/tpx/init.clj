@@ -2,7 +2,10 @@
   (:require ;! Fundamentals
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
+<<<<<<< HEAD
             #_[common.platform.connect.tp :as connect.tp]
+=======
+>>>>>>> cd659b4154d9e0ceec8ffd0a818f041a6e0c3f01
             ;! TPX
             [tpx.audio :as tpx.audio]
             #_[tpx.config :as tpx.config]
@@ -11,6 +14,7 @@
             [tpx.ipc :as tpx.ipc]
             [tpx.logger :as logger]
             [tpx.mqtt :as tpx.mqtt]))
+<<<<<<< HEAD
 
 ;! --- Sindre's and my stuff ---
 (def handler-map
@@ -34,6 +38,50 @@
   ;;  :phone-app  { :dummy dumb }; Not used in tpx
    })
 
+=======
+
+;! --- Sindre's and my stuff ---
+(def handler-map
+  {:tpx-unit {
+              ;! Gains
+              :adjust-gain-input       tpx.audio/adjust-gain-input
+              :adjust-gain-musician    tpx.audio/adjust-gain-musician
+              ;! Mute states
+              :toggle-mute-musician    tpx.audio/toggle-mute-musician
+              :toggle-mute-unit        tpx.audio/toggle-mute-unit
+              ;! Volumes
+              :adjust-volume-musician  tpx.audio/adjust-volume-musician
+              :adjust-volume-unit      tpx.audio/adjust-volume-unit
+              ;! Other effects
+              :adjust-dsp-effects      tpx.audio/adjust-dsp-effects
+              :toggle-phantom-power    tpx.audio/toggle-phantom-power
+              ;! Other
+              :audio-file-management   tpx.ipc/audio-file-management
+              :toggle-audio-recording  tpx.ipc/toggle-audio-recording
+              }
+  ;;  :phone-app  { :dummy dumb }; Not used in tpx
+   })
+
+(defn initiate-communications
+  "Initiates communications with the backend,
+   telling the backend its tpID,
+   then initiates communications to MQTT's pub/sub"
+  [handler-map]
+  (let [tpid (tpx.ipc/retrieve-tpID)
+        plat-response (connect.tp/init {:tpid tpid})
+        uuid (:uuid plat-response)
+        status (:status plat-response)]
+    (if (and status uuid)
+      (let [conn-map (tpx.mqtt/common-connect-init uuid)]
+        (prn "Here be the conn-map from init arrrr!: " conn-map)
+        (reset! tpx.http/global-conn-map conn-map)
+        (prn "Here be global conn-map: " @tpx.http/global-conn-map)
+        ;; (mqtt-connection/subscribe conn-map handler-map))
+        (tpx.mqtt/common-subscribe conn-map handler-map))
+      (println "Teleporter connection to platform, failed"))
+    (println "This is uuid: " uuid)))
+
+>>>>>>> cd659b4154d9e0ceec8ffd0a818f041a6e0c3f01
 (defonce system (atom nil))
 
 ;! --- Daniel's stuff
