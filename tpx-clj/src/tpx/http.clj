@@ -52,23 +52,8 @@
   ;; turn ff teleporter
   @(off "0000"))
 
-;;! --- Sindre's stuff ---
+;;! --- Sindre's and my stuff ---
 
-(defn initiate-communications
-  "Initiates communications with the backend,
-   telling the backend its tpID,
-   then initiates communications to MQTT's pub/sub"
-  [handler-map]
-  (let [tpid (retrieve-tpID)
-        plat-response (connect.tp/init {:tpid tpid})
-        uuid (:uuid plat-response)
-        status (:status plat-response)]
-    (if (and status uuid)
-      (let [conn-map (common-connect-init uuid)]
-        (prn "Here be the conn-map from init arrrr!: " conn-map)
-        (reset! global-conn-map conn-map)
-        (prn "Here be global conn-map: " @global-conn-map)
-        ;; (mqtt-connection/subscribe conn-map handler-map))
-        (common-subscribe conn-map handler-map))
-      (println "Teleporter connection to platform, failed"))
-    (println "This is uuid: " uuid)))
+;! --- Netcode ---
+(def global-conn-map (atom {}))
+

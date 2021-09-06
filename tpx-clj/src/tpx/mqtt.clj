@@ -1,6 +1,7 @@
 (ns tpx.mqtt
   (:require [clojurewerkz.machine-head.client :as mh]
-            [songpark.common.communication]))
+            [songpark.common.communication]
+            [tpx.config :as tpx.config]))
 
 ;;! --- Daniel's stuff ---
 
@@ -16,18 +17,22 @@
 (defrecord Client
            IMqttClient
   (connect [this uri]
-    (mh/connect uri {:client-id (get-in config [:client-id])}))
+  (mh/connect uri {:client-id (get-in tpx.config/config [:client-id])}))
   (subscribe [this topic on-receive-fn])
   (publish [this topic message])
   (disconnect [this])
   (disconnect-and-close [this]))
 
 
-(def client [config]
+(def client [tpx.config/config]
   (map->Client {:uri "http://127.0.0.0:1883"
                 :topic {"World" 0}}))
 
-;;! --- Sindre's stuff (adapted) ---
+;;! --- Sindre's and my stuff (adapted) ---
+(defn network-configuration
+  "Probably for connecting to a friend's jam and such."
+  ; #TODO
+  [])
 
 (defn common-connect-init ; Needed a temporary in-project substitute for (Sindre-)common's own
   "This function initiates a simple mqtt connection using machine head.
