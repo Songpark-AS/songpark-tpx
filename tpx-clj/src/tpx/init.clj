@@ -12,6 +12,7 @@
             [tpx.logger :as logger]
             [tpx.mqtt :as tpx.mqtt]))
 
+
 ;! --- Sindre's and my stuff ---
 (def handler-map
   {:tpx-unit {
@@ -33,6 +34,7 @@
               }
   ;;  :phone-app  { :dummy dumb }; Not used in tpx
    })
+
 
 (defonce system (atom nil))
 
