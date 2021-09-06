@@ -1,16 +1,42 @@
 (ns tpx.init
-  (:require [tpx.config :refer [config]]
-            [tpx.logger :as logger]
+  (:require ;! Fundamentals
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
+            #_[common.platform.connect.tp :as connect.tp]
+            ;! TPX
+            [tpx.audio :as tpx.audio]
+            #_[tpx.config :as tpx.config]
+            [tpx.config :refer [config]]
             [tpx.http :as tpx.http]
-            [tpx.mqtt :as tpx.mqtt]
-            [clojurewerkz.machine-head.client :as mh]
-            [common.platform.connect.client :as connect.client]
-            [common.platform.connect.tp :as connect.tp]
-            [common.mqtt.connection :as mqtt-connection]
-            [clojure.java.shell :as shell]))
+            [tpx.ipc :as tpx.ipc]
+            [tpx.logger :as logger]
+            [tpx.mqtt :as tpx.mqtt]))
 
+;! --- Sindre's and my stuff ---
+(def handler-map
+  {:tpx-unit {
+              ;! Gains
+              :adjust-gain-input       tpx.audio/adjust-gain-input
+              :adjust-gain-musician    tpx.audio/adjust-gain-musician
+              ;! Mute states
+              :toggle-mute-musician    tpx.audio/toggle-mute-musician
+              :toggle-mute-unit        tpx.audio/toggle-mute-unit
+              ;! Volumes
+              :adjust-volume-musician  tpx.audio/adjust-volume-musician
+              :adjust-volume-unit      tpx.audio/adjust-volume-unit
+              ;! Other effects
+              :adjust-dsp-effects      tpx.audio/adjust-dsp-effects
+              :toggle-phantom-power    tpx.audio/toggle-phantom-power
+              ;! Other
+              :audio-file-management   tpx.ipc/audio-file-management
+              :toggle-audio-recording  tpx.ipc/toggle-audio-recording
+              }
+  ;;  :phone-app  { :dummy dumb }; Not used in tpx
+   })
+
+(defonce system (atom nil))
+
+;! --- Daniel's stuff
 (defn- system-map [extra-components]
   (let [;; logger and config are started this way so that we can ensure
         ;; things are logged as we want and that the config is loaded
@@ -21,8 +47,6 @@
            (into [:logger logger
                   :config core-config]
                  extra-components))))
-
-(defonce system (atom nil))
 
 (defn stop []
   (when-not (nil? @system)
