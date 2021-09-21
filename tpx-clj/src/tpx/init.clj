@@ -4,13 +4,13 @@
             [taoensso.timbre :as log]
             #_[common.platform.connect.tp :as connect.tp]
             ;! TPX
-            [tpx.audio :as tpx.audio]
+            [tpx.logger :as logger]
             #_[tpx.config :as tpx.config]
             [tpx.config :refer [config]]
-            [tpx.http :as tpx.http]
             [tpx.ipc :as tpx.ipc]
-            [tpx.logger :as logger]
-            [tpx.mqtt :as tpx.mqtt]))
+            #_[tpx.http :as tpx.http]
+            [tpx.mqtt :as tpx.mqtt]
+            [tpx.audio :as tpx.audio]))
 
 
 ;! --- Sindre's and my stuff ---

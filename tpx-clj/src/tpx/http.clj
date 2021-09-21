@@ -1,13 +1,16 @@
 (ns tpx.http
-  (:require [taoensso.timbre :as log]
-            [songpark.common.communication :refer [POST]]))
+  (:require ;; [taoensso.timbre :as log]
+            #_[songpark.common.communication :refer [POST]]
+            [common.platform.connect.tp :as connect.tp]
+            [tpx.mqtt :as tpx.mqtt]
+            [tpx.ipc :as tpx.ipc]))
 
 ;;! Daniel's stuff
 
 ;; This will be handled via communication in common, such
 ;; that we only need to use the api endpoint part of the
 ;; url in our request fns
-(defonce url "http://localhost:3000/api/teleporter")
+#_#_#_#_#_#_#_(defonce url "http://localhost:3000/api/teleporter")
 
 ;; this will not be here, just for initial testing
 (defonce state (atom {}))
@@ -40,22 +43,11 @@
              :handler on-success
              :error-handler on-error}))
 
-(comment
-
-  ;; turn on teleporter
-  @(on-and-unavailable "0000")
-
-  ;; make teleporter available
-  @(available "0000")
-
-  ;; turn ff teleporter
-  @(off "0000")
-  
-  )
-
 ;;! --- Sindre's and my stuff ---
+;! --- Netcode ---
+(def global-conn-map (atom {}))
 
-#_(defn initiate-communications
+(defn initiate-communications
   "Initiates communications with the backend,
    telling the backend its tpID,
    then initiates communications to MQTT's pub/sub"
@@ -64,18 +56,27 @@
         plat-response (connect.tp/init {:tpid tpid}) ; Will be a map
         uuid (:uuid plat-response)
         status (:status plat-response)]
-   plat-response 
-    #_(if (and status uuid)
+    (if (and status uuid)
       (let [conn-map (tpx.mqtt/common-connect-init uuid)]
         (prn "Here be the conn-map from init arrrr!: " conn-map)
-        (reset! tpx.http/global-conn-map conn-map)
-        (prn "Here be global conn-map: " @tpx.http/global-conn-map)
+        (reset! global-conn-map conn-map)
+        (prn "Here be global conn-map: " @global-conn-map)
         ;; (mqtt-connection/subscribe conn-map handler-map))
         (tpx.mqtt/common-subscribe conn-map handler-map))
       (println "Teleporter connection to platform, failed"))
-    #_ (println "This is uuid: " uuid)))
+    (println "This is uuid: " uuid)
+    uuid))
+
+(comment
+  #_#_#_;; turn on teleporter
+  @(on-and-unavailable "0000")
+
+  ;; make teleporter available
+  @(available "0000")
+
+  ;; turn ff teleporter
+  @(off "0000")
+
+  )
 
 
-
-;! --- Netcode ---
-(def global-conn-map (atom {}))

@@ -1,8 +1,8 @@
 (ns tpx.mqtt
   (:require [clojurewerkz.machine-head.client :as mh]
-            [songpark.common.communication]
+            ;; [songpark.common.communication]
             [tpx.config :as tpx.config]
-            [tpx.http :refer [on-and-unavailable available]]))
+            #_[tpx.http :refer [on-and-unavailable available]]))
 
 ;;! --- Daniel's stuff ---
 
@@ -26,12 +26,12 @@
   (disconnect-and-close [this]))
 
 
-(def client [tpx.config/config]
+(def client
   (map->Client {:uri "http://127.0.0.0:1883"
                 :topic {"World" 0}}))
 
 (comment
-  @(on-and-unavailable "0000")
+  #_@(on-and-unavailable "0000")
   )
 
 
@@ -56,16 +56,24 @@
     :topic TOPIC}"
 
   ([topic uri]
-   (let [connection (mh/connect uri {:on-connect-complete (fn [& args] (println "Connection completed." args))
-                                     :on-connection-lost (fn [& args] (println "Connection lost." args))
-                                     :on-delivery-complete (fn [& args] (println "Delivery completed." args))
-                                     :on-unhandled-message (fn [& args] (println "Unhandled message encountered." args))
-                                     :opts {:auto-reconnect true
-                                            :keep-alive-interval 60}})]
+   (let 
+    [connection 
+     (mh/connect 
+      uri {:on-connect-complete (fn [& args] (println "Connection completed." args))
+           :on-connection-lost (fn [& args] (println "Connection lost." args))
+           :on-delivery-complete (fn [& args] (println "Delivery completed." args))
+           :on-unhandled-message (fn [& args] (println "Unhandled message encountered." args))
+           :opts {
+                  :auto-reconnect true
+                  :keep-alive-interval 60
+                  ;; :username "tpx"            ; Connection details towards Mathias
+                  ;; :password "SecretPass"
+                  }})]
      {:connection connection
       :topic topic}))
   ([topic]
-   (common-connect-init topic "tcp://127.0.0.1:1883")))
+  ;; (common-connect-init topic "tcp://192.168.11.123:1883"))) ; IP of Mathias
+   (common-connect-init topic "tcp://127.0.0.1:1883")))       ; IP of local docker
 
 (defn common-subscribe
   "Subscribes to a topic on an mqtt server, and waits for instructions.
@@ -75,19 +83,23 @@
    (subscribe CONNECTION TOPIC HANDLER-MAP)
    (subscribe CONNECTION-MAP HANDLER-MAP)"
   ([connection topic handler-map]
-   (mh/subscribe connection {topic 0} (fn [^String topic _ ^bytes payload]
-                                        (try
-                                          (let [payload (String. payload "UTF-8")
-                                                _ (prn "I am payload, destroyer of MQTTs" payload)
-                                                payload-map (clojure.core/read-string payload)
-                                                _ (prn :mapkeys (keys payload-map))
-                                                {pointer :pointer
-                                                 arguments :arguments} payload-map]
-                                            (prn
-                                             "pointerr:" pointer
-                                             "arrrrrrg:" arguments)
-                                            (apply (get-in handler-map pointer) arguments))
-                                          (catch Exception e (prn (str "Caught error in handler mapping: " (.getMessage e))))))))
+   (mh/subscribe connection {topic 0} 
+      (fn [^String topic _ ^bytes payload]
+        (try
+          (let 
+           [payload (String. payload "UTF-8")
+            _ (prn "I am payload, destroyer of MQTTs" payload)
+            payload-map (clojure.core/read-string payload)
+            _ (prn :mapkeys (keys payload-map))
+            {pointer :pointer
+              arguments :arguments} payload-map]
+            (prn
+              "pointerr:" pointer
+              "arrrrrrg:" arguments)
+            (apply (get-in handler-map pointer) arguments))
+          (catch Exception e 
+            (prn (str 
+                  "Caught error in handler mapping: " (.getMessage e))))))))
   ([{connection :connection
      topic :topic}
     handler-map]

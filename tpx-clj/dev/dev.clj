@@ -1,6 +1,10 @@
 (ns dev
   (:require [tpx.core :as tpx.core]
             [tpx.init :as tpx.init]
+            [tpx.http :as tpx.http]
+            [tpx.mqtt :as tpx.mqtt]
+            [common.platform.connect.client :as connect.client]
+            [common.mqtt.connection :as mqtt-connection]
             [taoensso.timbre :as log]))
 
 (defn restart
@@ -12,8 +16,44 @@
                       :ns-blacklist ["org.eclipse.jetty.*"
                                      "io.grpc.netty.shaded.io.netty.*"
                                      "org.opensaml.*"]})
-  (init/stop)
-  (init/init))
+  
+  (tpx.init/stop)
+  (tpx.init/init))
+
+;? Imitating communication between phone and TPX unit
+(defn establish-fake-phone
+  "Pretends to be a phone that hooks into the backend,
+   associates itself with a specific unit's tpID,
+   returns the constructed items"
+  []
+  (let [;nickname "christians.dream"
+        plat-response (connect.client/init {:nickname "christians.dream"})
+        uuid (:uuid plat-response)
+        status (:status plat-response)]
+    [uuid status]))
+
+(defn fake-phone-commands
+  "Pretends to be a phone to send commands over MQTT,
+   awaiting a response from the TPX"
+  [uuid]
+    (let [;uuid "d479bc4e-6a13-4dd2-ab0f-2ce1b3fb4c1f"
+          test-conn-map (tpx.mqtt/common-connect-init uuid)]
+      (mqtt-connection/publish test-conn-map [[:tpx-unit :adjust-volume-unit] [123]])
+      #_#_#_#_#_#_(mqtt-connection/publish test-conn-map [[:tpx-unit :adjust-volume-unit] [123]])
+      (mqtt-connection/publish test-conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
+      (mqtt-connection/publish test-conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
+      (mqtt-connection/publish test-conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
+      (mqtt-connection/publish test-conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
+      (mqtt-connection/publish test-conn-map [[:tpx-unit :adjust-volume-unit] [321]])
+      #_#_#_#_#_#_#_(mqtt-connection/publish test-conn-map [[:tpx-unit :adjust-volume-unit] [123]])
+      (mqtt-connection/publish test-conn-map [[:tpx-unit :adjust-volume-unit] [123]])
+      (mqtt-connection/publish test-conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
+      (mqtt-connection/publish test-conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
+      (mqtt-connection/publish test-conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
+      (mqtt-connection/publish test-conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
+      (mqtt-connection/publish test-conn-map [[:tpx-unit :adjust-volume-unit] [321]])
+      (println "Client publishes finished"))
+    (println "Client connection to platform, failed"))
 
 (comment ;? Commence imitation
   "; Evaluate the forms in this comment to see proof of concept, where tp tells platform that it's on,
@@ -22,45 +62,18 @@
    ; published a number of requests on topic.
    ; (Feel free to delete/change this in any way you want)"
   (tpx.core/-main)
-  (tpx.init/initiate-communications tpx.init/handler-map)
-  ;(fake-phone-commands)
+  (tpx.http/initiate-communications tpx.init/handler-map)
+  (def plat-response-uuid-status (establish-fake-phone))
+  (fake-phone-commands plat-response-uuid-status )
   )
 
-;? Imitating communication between phone and TPX unit
-;; (defn fake-phone-commands
-;;   "Pretends to be a phone that hooks into the backend,
-;;    associates itself with a specific unit's tpID,
-;;    then queries TPX via MQTT to interact with CS7."
-;;   []
-;;   (let [;nickname "christians.dream"
-;;         plat-response (connect.client/init {:nickname "christians.dream"})
-;;         uuid (:uuid plat-response)
-;;         status (:status plat-response)]
+;? Basic MQTT functionality
+#_(comment test-area-of-mqtt-setup
+         (connect.client/init {:nickname "christians.dream"})
+         (def conn-map (mqtt-connection/init "my-topic2"))
+         (def handler-map {:volume_control #(println (apply - %&))})
+         (let [conn-map (mqtt-connection/init "my-topic")
+               handler-map {:volume_control #(println (apply - %&))}])
 
-;;     (if (and status uuid)
-;;       (let [uuid "3266f6d8-c50e-448b-a7f6-3f860cc47a1e"
-;;             conn-map (mqtt-connection/init uuid)]
-;;         (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [123]])
-;;         (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [123]])
-;;         (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
-;;         (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
-;;         (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
-;;         (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [(rand)]])
-;;         (mqtt-connection/publish conn-map [[:tpx-unit :adjust-volume-unit] [321]])
-;;         (println "Client publishes finished"))
-;;       (println "Client connection to platform, failed"))))
-
-;; ;? Basic MQTT functionality
-;; (comment test-area-of-mqtt-setup
-;;          (connect.client/init {:nickname "christians.dream"})
-;;          (def conn-map (mqtt-connection/init "my-topic2"))
-;;          (def handler-map {:volume_control #(println (apply - %&))})
-;;          (let [conn-map (mqtt-connection/init "my-topic")
-;;                handler-map {:volume_control #(println (apply - %&))}])
-
-;;          (mqtt-connection/subscribe conn-map handler-map)
-;;          (mqtt-connection/publish conn-map [[:volume_control] [1 2 3 3 3 3]]))
-
-(comment
-  ;; stop and star
-  (restart))
+         (mqtt-connection/subscribe conn-map handler-map)
+         (mqtt-connection/publish conn-map [[:volume_control] [1 2 3 3 3 3]]))

@@ -1,0 +1,47 @@
+2021-09-07T11:28:44.213Z mb-iwb INFO [tpx.logger:19] - Starting Logger
+2021-09-07T11:28:44.220Z mb-iwb INFO [tpx.init:55] - Shutting TPX down
+2021-09-07T11:28:44.221Z mb-iwb INFO [tpx.config:29] - Stopping ConfigManager
+2021-09-07T11:28:44.222Z mb-iwb INFO [tpx.config:30] - Unloading configuration
+2021-09-07T11:28:44.223Z mb-iwb INFO [tpx.logger:25] - Stopping Logger
+2021-09-07T11:28:44.223Z mb-iwb INFO [tpx.init:59] - TPX is now shut down
+2021-09-07T14:30:29.216Z mb-iwb INFO [tpx.logger:19] - Starting Logger
+2021-09-07T14:30:36.580Z mb-iwb INFO [tpx.init:64] - TPX already running
+2021-09-08T10:37:55.542Z mb-iwb INFO [tpx.init:64] - TPX already running
+2021-09-08T10:38:13.552Z mb-iwb INFO [tpx.init:55] - Shutting TPX down
+2021-09-08T10:38:13.555Z mb-iwb INFO [tpx.config:29] - Stopping ConfigManager
+2021-09-08T10:38:13.556Z mb-iwb INFO [tpx.config:30] - Unloading configuration
+2021-09-08T10:38:13.557Z mb-iwb INFO [tpx.logger:25] - Stopping Logger
+2021-09-08T10:38:13.558Z mb-iwb INFO [tpx.init:59] - TPX is now shut down
+2021-09-08T14:40:02.582Z mb-iwb INFO [tpx.logger:19] - Starting Logger
+2021-09-10T11:51:29.714Z mb-iwb INFO [tpx.logger:19] - Starting Logger
+2021-09-10T12:14:48.836Z mb-iwb INFO [tpx.init:64] - TPX already running
+2021-09-21T09:21:02.874Z mb-iwb INFO [tpx.init:55] - Shutting TPX down
+2021-09-21T09:21:02.876Z mb-iwb INFO [tpx.config:29] - Stopping ConfigManager
+2021-09-21T09:21:02.877Z mb-iwb INFO [tpx.config:30] - Unloading configuration
+2021-09-21T09:21:02.878Z mb-iwb INFO [tpx.logger:25] - Stopping Logger
+2021-09-21T09:21:02.879Z mb-iwb INFO [tpx.init:59] - TPX is now shut down
+2021-09-21T09:29:15.419Z mb-iwb INFO [tpx.logger:19] - Starting Logger
+2021-09-21T09:33:50.928Z mb-iwb INFO [tpx.init:55] - Shutting TPX down
+2021-09-21T09:33:50.930Z mb-iwb INFO [tpx.config:29] - Stopping ConfigManager
+2021-09-21T09:33:50.931Z mb-iwb INFO [tpx.config:30] - Unloading configuration
+2021-09-21T09:33:50.932Z mb-iwb INFO [tpx.logger:25] - Stopping Logger
+2021-09-21T09:33:50.933Z mb-iwb INFO [tpx.init:59] - TPX is now shut down
+2021-09-21T09:35:56.202Z mb-iwb INFO [tpx.logger:19] - Starting Logger
+2021-09-21T09:37:53.709Z mb-iwb INFO [tpx.init:55] - Shutting TPX down
+2021-09-21T09:37:53.712Z mb-iwb INFO [tpx.config:29] - Stopping ConfigManager
+2021-09-21T09:37:53.713Z mb-iwb INFO [tpx.config:30] - Unloading configuration
+2021-09-21T09:37:53.714Z mb-iwb INFO [tpx.logger:25] - Stopping Logger
+2021-09-21T09:37:53.714Z mb-iwb INFO [tpx.init:59] - TPX is now shut down
+2021-09-21T10:37:46.716Z mb-iwb INFO [tpx.logger:19] - Starting Logger
+2021-09-21T11:39:33.723Z mb-iwb INFO [tpx.init:55] - Shutting TPX down
+2021-09-21T11:39:33.726Z mb-iwb INFO [tpx.config:29] - Stopping ConfigManager
+2021-09-21T11:39:33.727Z mb-iwb INFO [tpx.config:30] - Unloading configuration
+2021-09-21T11:39:33.727Z mb-iwb INFO [tpx.logger:25] - Stopping Logger
+2021-09-21T11:39:33.728Z mb-iwb INFO [tpx.init:59] - TPX is now shut down
+2021-09-21T11:40:46.976Z mb-iwb INFO [tpx.logger:19] - Starting Logger
+2021-09-21T11:45:05.518Z mb-iwb INFO [tpx.init:55] - Shutting TPX down
+2021-09-21T11:45:05.520Z mb-iwb INFO [tpx.config:29] - Stopping ConfigManager
+2021-09-21T11:45:05.521Z mb-iwb INFO [tpx.config:30] - Unloading configuration
+2021-09-21T11:45:05.522Z mb-iwb INFO [tpx.logger:25] - Stopping Logger
+2021-09-21T11:45:05.522Z mb-iwb INFO [tpx.init:59] - TPX is now shut down
+2021-09-21T11:45:47.034Z mb-iwb INFO [tpx.logger:19] - Starting Logger
