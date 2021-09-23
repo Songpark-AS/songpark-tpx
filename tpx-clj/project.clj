@@ -18,6 +18,7 @@
                  [com.stuartsierra/component "1.0.0"]
                  ;; mqtt implementation
                  [clojurewerkz/machine_head "1.0.0"]
+                 [com.cognitect/transit-clj "1.0.324"]
                  ;; songpark's common (will also contain an mqtt implementation later)
                  [songpark/common "0.1.0-SNAPSHOT"]
                 ;;  [songpark/common "0.1.1-SNAPSHOT"]

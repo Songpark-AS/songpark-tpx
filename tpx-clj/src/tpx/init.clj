@@ -9,7 +9,6 @@
             [tpx.config :refer [config]]
             [tpx.ipc :as tpx.ipc]
             #_[tpx.http :as tpx.http]
-            [tpx.mqtt :as tpx.mqtt]
             [tpx.audio :as tpx.audio]))
 
 
@@ -52,11 +51,11 @@
 
 (defn stop []
   (when-not (nil? @system)
-    (log/info "Shutting TPX down")
+    (log/info "---Shutting TPX down---")
     (try (component/stop @system)
          (catch Throwable t
-           (log/error "Tried to shut down TPX. Got" t)))
-    (log/info "TPX is now shut down")
+           (log/error "Tried to shut down TPX. Got:" t)))
+    (log/info "===TPX is now shut down===")
     (reset! system nil)))
 
 (defn init [& extra-components]
