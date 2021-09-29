@@ -1,7 +1,6 @@
 (ns tpx.http
-  (:require ;; [taoensso.timbre :as log]
-            #_[songpark.common.communication :refer [POST]]
-            [common.platform.connect.tp :as connect.tp]
+  (:require [taoensso.timbre :as log]
+            [songpark.common.communication :refer [POST]]
             [tpx.mqtt :as tpx.mqtt]
             [tpx.ipc :as tpx.ipc]))
 
@@ -47,7 +46,7 @@
 ;! --- Netcode ---
 (def global-conn-map (atom {}))
 
-(defn initiate-communications
+#_(defn initiate-communications
   "Initiates communications with the backend,
    telling the backend its tpID,
    then initiates communications to MQTT's pub/sub"
@@ -66,17 +65,3 @@
       (println "Teleporter connection to platform, failed"))
     (println "This is uuid: " uuid)
     uuid))
-
-(comment
-  #_#_#_;; turn on teleporter
-  @(on-and-unavailable "0000")
-
-  ;; make teleporter available
-  @(available "0000")
-
-  ;; turn ff teleporter
-  @(off "0000")
-
-  )
-
-

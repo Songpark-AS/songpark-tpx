@@ -2,8 +2,8 @@
   (:require [clojurewerkz.machine-head.client :as mh]
             ;; [songpark.common.communication]
             [tpx.config :as tpx.config]
-            [tpx.init :as tpx.init]
-            '[cognitect.transit :as transit]
+            ;; [tpx.init :as tpx.init]
+            [cognitect.transit :as transit]
             #_[tpx.http :refer [on-and-unavailable available]]))
 
 ;;! --- Daniel's stuff ---
@@ -17,7 +17,7 @@
   (disconnect-and-close [this]))
 
 
-(defrecord Client [config]
+#_(defrecord Client [config]
   IMqttClient
   #_(connect [this uri]
     (mh/connect uri {:client-id (get-in tpx.config/config [:client-id])}))
@@ -75,7 +75,7 @@
   (disconnect-and-close [this]))
 
 
-(def client
+#_(def client
   (map->Client {:uri "http://192.168.11.193:1883" ; Mathias
                 :topic {"World" 0}})
   #_(map->Client {:uri "http://127.0.0.0:1883" ; docker
