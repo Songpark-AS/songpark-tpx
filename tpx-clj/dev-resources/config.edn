@@ -1,6 +1,4 @@
-{:platform {:host "127.0.0.1"
-            :port 3000}
- :logger {:sentry-settings {:log? false
+{:logger {:sentry-settings {:log? false
                             :dsn ""}}
  :mqtt {:config {:scheme "tcp"
                  :host "127.0.0.1"
@@ -10,6 +8,7 @@
                                    ;; :username "tpx"
                                    ;;:password "SecretPass"
                                    }}}
+ :ipc {:platform "http://127.0.0.1:3000"}
  :voip {:server "voip1.inonit.no"
         :accounts {#uuid "1d84be2b-44d1-5da8-91ae-a9b97f133cb9" {:name :tp-01
                                                                  :voip/username "9111"

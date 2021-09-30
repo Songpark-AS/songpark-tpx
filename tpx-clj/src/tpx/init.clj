@@ -26,7 +26,8 @@
                                                       :handlers {:incoming incoming/handler
                                                                  :outgoing outgoing/handler}})
                                                     {:mqtt :mqtt-manager})
-                  :ipc-service (component/using (ipc/ipc-service {:injection-ks [:message-service]})
+                  :ipc-service (component/using (ipc/ipc-service {:injection-ks [:message-service]
+                                                                  :config (:ipc config)})
                                                 [:message-service])]
                  extra-components))))
 

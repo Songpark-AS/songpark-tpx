@@ -4,8 +4,8 @@
 
 (defmulti handler :message/type)
 
-(defmethod handler :platform.cmd/subscribe [{:message/keys [topics]
-                                             :keys [mqtt]}]
+(defmethod handler :teleporter.cmd/subscribe [{:message/keys [topics]
+                                               :keys [mqtt]}]
   (log/debug :handler (str "Subscribing to " (keys topics)))
   (.subscribe mqtt topics))
 
@@ -21,6 +21,3 @@
 (defmethod handler :default [{:message/keys [type] :as message}]
   (throw
    (ex-info (str "No message handler defined for message type " type) message)))
-
-
-

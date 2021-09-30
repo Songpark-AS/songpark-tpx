@@ -19,15 +19,21 @@
                        (assoc :ipc ipc))]
     (.send-message! (:message-service injections) msg)))
 
-(defrecord IpcService [injection-ks started? mqtt]
+(defrecord IpcService [injection-ks started? config message-service]
   component/Lifecycle
   (start [this]
     (if started?
       this
-      (do (log/info "Starting IpcService")
-          (let [new-this (assoc this
-                                :started? true)]
+      (do (log/info "Starting IpcService")          
+          (let [mac (get-device-mac)
+                new-this (assoc this
+                                :started? true)]            
             (reset! store new-this)
+            (PUT (str (:platform config) "/api/teleporter") {:teleporter/mac mac}
+                 (fn [{:teleporter/keys [uuid] :as response}]
+                   (log/debug ::PUTTTTT response)
+                   (send-message! {:message/type :teleporter.cmd/subscribe
+                                   :message/topics {(str uuid) 0}})))
             new-this))))
   
   (stop [this]
@@ -47,7 +53,8 @@
 
 
 (comment
-
-
+  (pr-str @store)
+  
+  (get-device-mac)
   )
 
