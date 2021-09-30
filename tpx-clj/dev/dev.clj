@@ -1,5 +1,5 @@
 (ns dev
-  (:require [tpx.init :as tpx.init]
+  (:require [tpx.init :as init]
             [taoensso.timbre :as log]))
 
 (defn restart
@@ -12,12 +12,12 @@
                                      "io.grpc.netty.shaded.io.netty.*"
                                      "org.opensaml.*"]})
   
-  (tpx.init/stop)
-  (tpx.init/init))
+  (init/stop)
+  (init/init))
 
 
 (comment 
-  (tpx.init/stop)
+  (init/stop)
   (restart)
   
   )
