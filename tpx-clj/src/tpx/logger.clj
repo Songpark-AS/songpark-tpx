@@ -22,7 +22,7 @@
                         (:level data)
                         :util)}))))
 
-(defrecord Logger [started? sentry-settings]
+(defrecord Logger [started? sentry-settings reveal?]
   component/Lifecycle
   (start [this]
     (if started?
