@@ -1,13 +1,11 @@
 (ns tpx.init
   (:require [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]   
-            [songpark.common.impl.mqtt.manager :as mqtt]
-            [songpark.common.impl.message.service :as message]            
             [tpx.config :refer [config]]
             [tpx.logger :as logger]
             [tpx.ipc :as ipc]
-            [tpx.message.incoming :as incoming]
-            [tpx.message.outgoing :as outgoing]))
+            [tpx.mqtt :as mqtt]
+            [tpx.message :as message]))
 
 
 (defn- system-map [extra-components]
@@ -22,10 +20,8 @@
                   :config core-config
                   :mqtt-manager (mqtt/mqtt-manager (:mqtt config))
                   :message-service (component/using (message/message-service
-                                                     {:injection-ks [:mqtt]
-                                                      :handlers {:incoming incoming/handler
-                                                                 :outgoing outgoing/handler}})
-                                                    {:mqtt :mqtt-manager})
+                                                     {:injection-ks [:mqtt-manager]})
+                                                    [:mqtt-manager])
                   :ipc-service (component/using (ipc/ipc-service {:injection-ks [:message-service]
                                                                   :config (:ipc config)})
                                                 [:message-service])]

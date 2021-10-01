@@ -6,7 +6,7 @@
 
 (defonce ^:private store (atom nil))
 
-(defn get-device-mac []
+(defn- get-device-mac []
   (-> (clojure.string/split (:out (sh "ip" "n")) #"\n")
       first
       (clojure.string/split #"\s")
@@ -19,21 +19,24 @@
                        (assoc :ipc ipc))]
     (.send-message! (:message-service injections) msg)))
 
+(defn broadcast-presence [config]
+  (PUT (str (:platform config) "/api/teleporter")
+       {:teleporter/nickname (get-in config [:teleporter :nickname])
+        :teleporter/mac (get-device-mac)}
+       (fn [{:teleporter/keys [uuid] :as response}]
+         (send-message! {:message/type :teleporter.cmd/subscribe
+                         :message/topics {(str uuid) 0}}))))
+
 (defrecord IpcService [injection-ks started? config message-service]
   component/Lifecycle
   (start [this]
     (if started?
       this
       (do (log/info "Starting IpcService")          
-          (let [mac (get-device-mac)
-                new-this (assoc this
-                                :started? true)]            
+          (let [new-this (assoc this
+                                :started? true)]
             (reset! store new-this)
-            (PUT (str (:platform config) "/api/teleporter") {:teleporter/mac mac}
-                 (fn [{:teleporter/keys [uuid] :as response}]
-                   (log/debug ::PUTTTTT response)
-                   (send-message! {:message/type :teleporter.cmd/subscribe
-                                   :message/topics {(str uuid) 0}})))
+            (broadcast-presence config)
             new-this))))
   
   (stop [this]
@@ -56,5 +59,8 @@
   (pr-str @store)
   
   (get-device-mac)
+
+
+
   )
 

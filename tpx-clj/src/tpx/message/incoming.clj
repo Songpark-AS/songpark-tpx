@@ -22,11 +22,6 @@
 
 
 (comment
-  (let [{:message/keys [type]
-         :keys [message-service mqtt]} {:message/type :test
-                                        :message-service {}
-                                        :mqtt {}}]
-    [type message-service mqtt])
   
 
   )
