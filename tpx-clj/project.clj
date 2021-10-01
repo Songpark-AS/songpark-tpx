@@ -12,6 +12,7 @@
                  [com.taoensso/timbre "5.1.2"]
                  [com.fzakaria/slf4j-timbre "0.3.21"]
                  [raven-clj "1.6.0"]
+                 [vlaaad/reveal "1.3.221"]
                  ;; redis support
                  [com.taoensso/carmine "3.1.0"]
                  ;; structure
@@ -25,5 +26,15 @@
   :main ^:skip-aot tpx.core
   :target-path "target/%s"
   :test-paths ["test"]
-  :profiles {:uberjar {:aot :all
+  :profiles {:dev {:source-paths ["src" "dev"]
+                   :resource-paths ["dev-resources" "resources"]
+                   :dependencies [[midje "1.9.9"]
+                                  [ring/ring-mock "0.4.0"]
+                                  [http-kit "2.3.0"]
+                                  [hashp "0.2.0"]
+                                  [clj-commons/spyscope "0.1.48"]]
+                   :injections [(require 'spyscope.core)]
+                   :plugins [[lein-midje "3.1.3"]
+                             [lein-plantuml "0.1.22"]]}
+             :uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
