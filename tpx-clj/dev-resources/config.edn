@@ -1,6 +1,5 @@
 {:logger {:sentry-settings {:log? false
-                            :dsn ""}
-          :reveal? true}
+                            :dsn ""}}
  :mqtt {:config {:scheme "tcp"
                  :host "127.0.0.1"
                  :port 1883
