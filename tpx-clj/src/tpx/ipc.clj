@@ -56,7 +56,8 @@
 
 
 (comment
-  (pr-str @store)
+  (pr-str (:teleporter (:config @store)))
+  @(broadcast-presence (:config @store))
   
   (get-device-mac)
 

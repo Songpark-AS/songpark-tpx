@@ -9,14 +9,15 @@
 (def ^:private default-options
   {:on-connect-complete
    (fn [& args]
+     (log/debug ::on-connect-complete "Connection completed.")
      (let [client @store
            topics (:topics client)
            on-message (:on-message (:config client))]
        (log/debug ::on-connect-complete [topics on-message])
        (when-not (empty? @topics)
          (do (.subscribe client @topics on-message)
-             (log/debug ::on-connect-complete "Resubscribed to topics: " @topics)))
-       (log/debug ::on-connect-complete "Connection completed.")))
+             (log/debug ::on-connect-complete "Resubscribed to topics: " @topics)))))
+   ;; TODO: Tell Platform about MQTT connection loss over HTTP
    :on-connection-lost (fn [& args] (println "Connection lost." args))
    :on-delivery-complete (fn [& args] (println "Delivery completed." args))
    :on-unhandled-message (fn [& args] (println "Unhandled message encountered." args))})

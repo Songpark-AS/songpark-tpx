@@ -12,7 +12,6 @@
                  [com.taoensso/timbre "5.1.2"]
                  [com.fzakaria/slf4j-timbre "0.3.21"]
                  [raven-clj "1.6.0"]
-                 [vlaaad/reveal "1.3.221"]
                  ;; redis support
                  [com.taoensso/carmine "3.1.0"]
                  ;; structure

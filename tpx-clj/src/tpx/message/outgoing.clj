@@ -5,9 +5,9 @@
 (defmulti handler :message/type)
 
 (defmethod handler :teleporter.cmd/subscribe [{:message/keys [topics]
-                                               :keys [mqtt]}]
+                                               :keys [mqtt-manager]}]
   (log/debug :handler (str "Subscribing to " (keys topics)))
-  (.subscribe mqtt topics))
+  (.subscribe mqtt-manager topics))
 
 (defmethod handler :platform.cmd/unsubscribe [{:message/keys [topics]
                                                :keys [mqtt]}]
