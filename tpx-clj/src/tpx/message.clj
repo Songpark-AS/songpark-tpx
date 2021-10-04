@@ -2,26 +2,18 @@
   (:require [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
             [songpark.common.protocol.message :as protocol.message]
-            [tpx.message.incoming :as message.incoming]
-            [tpx.message.outgoing :as message.outgoing]))
+            [tpx.message.dispatch :as dispatch]))
 
 (defonce ^:private store (atom nil))
 
-(defn handle-message [msg]
-  (let [message-service @store
-        injections (-> message-service
-                       (select-keys (:injection-ks message-service))
-                       (assoc :message-service message-service))]   
-    (message.incoming/handler (merge msg injections))))
 
 (defn send-message!* [message-service msg]
-  (let [message-service @store
-        injections (-> message-service
+  (let [injections (-> message-service
                        (select-keys (:injection-ks message-service))
                        (assoc :message-service message-service))]
-    (message.outgoing/handler (merge msg injections))))
+    (dispatch/handler (merge msg injections))))
 
-(defrecord MessageService [injection-ks started? mqtt-manager]
+(defrecord MessageService [injection-ks started?]
   component/Lifecycle
   (start [this]
     (if started?
@@ -47,3 +39,4 @@
 
 (defn message-service [settings]
   (map->MessageService settings))
+

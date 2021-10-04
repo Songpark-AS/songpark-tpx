@@ -4,10 +4,11 @@
             [taoensso.timbre :as log]
             [songpark.common.communication :refer [write-handlers]]
             [songpark.common.protocol.mqtt.manager :as protocol.mqtt.manager]
-            [tpx.mqtt.client :as mqtt.client]
-            [tpx.message :refer [handle-message]])
+            [tpx.mqtt.client :as mqtt.client])
   (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
+
+(defonce ^:private store (atom nil))
 
 ;; transit reader/writer from/to string, since
 ;; mosquitto does not know anything about transit
@@ -22,9 +23,15 @@
     (catch Exception e (do (log/warn "Message not in transit format")
                            (apply str (map char b))))))
 
-(defn- on-message [^String topic _ ^bytes payload]            
-  (->> (merge (<-transit payload) {:message/topic topic})
-       handle-message))
+(defn- on-message [^String topic _ ^bytes payload]
+  (let [mqtt-manager @store
+        injections (-> mqtt-manager
+                       (select-keys (:injection-ks mqtt-manager))
+                       (assoc :mqtt-manager mqtt-manager))]
+    (->> (merge {:message/meta {:origin :mqtt :topic topic}}  
+                (<-transit payload)
+                (merge injections))
+         (.send-message! (:message-service injections)))))
 
 (defn- subscribe* [{:keys [client] :as mqtt-manager} topics]
   (.subscribe client topics on-message))
@@ -35,24 +42,28 @@
 (defn- publish* [{:keys [client] :as mqtt-manager} topic msg]
   (.publish client topic (->transit msg)))
 
-(defrecord MQTTManager [injection-ks started? config]
+(defrecord MQTTManager [injection-ks started? config message-service]
   component/Lifecycle
   (start [this]
     (if started?
       this      
       (do
         (log/info "Starting MQTTManager")          
-        (assoc this
-               :started? true
-               :client (mqtt.client/create (assoc config :on-message on-message))))))
+        (let [new-this (assoc this
+                              :started? true
+                              :client (mqtt.client/create (assoc config :on-message on-message)))]
+          (reset! store new-this)
+          new-this))))
   
   (stop [this]
     (if-not started?
       this
       (do (log/info "Stopping MQTTManager")
-          (when (.connected? (:client this))            
-            (.disconnect (:client this)))
-          (assoc this :started? false))))
+          (let [new-this (assoc this :started? false)]
+            (when (.connected? (:client this))            
+              (.disconnect (:client this)))
+            (reset! store this)
+            new-this))))
 
   protocol.mqtt.manager/IMqttManager
   (subscribe [this topics]

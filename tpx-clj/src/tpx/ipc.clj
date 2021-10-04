@@ -17,7 +17,7 @@
         injections (-> ipc
                        (select-keys (:injection-ks ipc))
                        (assoc :ipc ipc))]
-    (.send-message! (:message-service injections) msg)))
+    (.send-message! (:message-service injections) (merge msg injections))))
 
 (defn broadcast-presence [config]
   (PUT (str (:platform config) "/api/teleporter")
@@ -25,9 +25,9 @@
         :teleporter/mac (get-device-mac)}
        (fn [{:teleporter/keys [uuid] :as response}]
          (send-message! {:message/type :teleporter.cmd/subscribe
-                         :message/topics {(str uuid) 0}}))))
+                         :message/meta {:mqtt/topics {(str uuid) 0}}}))))
 
-(defrecord IpcService [injection-ks started? config message-service]
+(defrecord IpcService [injection-ks started? config message-service mqtt-manager]
   component/Lifecycle
   (start [this]
     (if started?

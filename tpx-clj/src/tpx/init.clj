@@ -18,13 +18,13 @@
     (apply component/system-map
            (into [:logger logger
                   :config core-config
-                  :mqtt-manager (mqtt/mqtt-manager (:mqtt config))
-                  :message-service (component/using (message/message-service
-                                                     {:injection-ks [:mqtt-manager]})
-                                                    [:mqtt-manager])
-                  :ipc-service (component/using (ipc/ipc-service {:injection-ks [:message-service]
+                  :message-service (message/message-service (:message config))
+                  :mqtt-manager (component/using (mqtt/mqtt-manager (merge (:mqtt config)
+                                                                           {:injection-ks [:message-service]}))
+                                                 [:message-service])
+                  :ipc-service (component/using (ipc/ipc-service {:injection-ks [:message-service :mqtt-manager]
                                                                   :config (:ipc config)})
-                                                [:message-service])]
+                                                [:message-service :mqtt-manager])]
                  extra-components))))
 
 
