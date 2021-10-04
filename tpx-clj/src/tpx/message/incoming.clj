@@ -5,11 +5,16 @@
 (defmulti handler :message/type)
 
 (defmethod handler :teleporter.cmd/disconnect [{:message/keys [topic]
-                                                :keys [message-service mqtt]}]
+                                                :keys [message-service mqtt-manager]}]
   ;; remove teleporter from global store
   ;; send a service response to topic (might be jam)
   )
 
+(defmethod handler :teleporter.msg/info [message]
+  ;; remove teleporter from global store
+  ;; send a service response to topic (might be jam)
+  (log/debug ::handler "Is this volume?" (:audio/volume message))
+  )
 
 (defmethod handler :debug/info [{:keys [message/topic message/body]}]
   (log/debug :handler.debug [topic body]))
