@@ -10,13 +10,13 @@
   (.subscribe mqtt-manager topics))
 
 (defmethod handler :platform.cmd/unsubscribe [{:message/keys [topics]
-                                               :keys [mqtt]}]
+                                               :keys [mqtt-manager]}]
   (log/debug :handler (str "Unsubscribing from " (keys topics)))
-  (.unsubscribe mqtt topics))
+  (.unsubscribe mqtt-manager topics))
 
 (defmethod handler :teleporter.msg/info [{:message/keys [topic body]
-                                          :keys [mqtt]}]
-  (.publish mqtt topic body))
+                                          :keys [mqtt-manager]}]
+  (.publish mqtt-manager topic body))
 
 (defmethod handler :default [{:message/keys [type] :as message}]
   (throw
