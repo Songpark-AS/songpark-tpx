@@ -25,7 +25,8 @@
   #_(.publish mqtt-manager topics body))
 
 
-
+(defmethod message/dispatch :teleporter.msg/ipv4 [{:message/keys [values]}]
+  (log/debug "Got new IPv4 config" values))
 
 
 (comment
