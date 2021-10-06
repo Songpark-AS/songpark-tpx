@@ -17,7 +17,7 @@
                  ;; structure
                  [com.stuartsierra/component "1.0.0"]
                  ;; serial comms
-                 [clj-serial "2.0.6-SNAPSHOT"]
+                 [clj-serial "2.0.5"]
                  ;; mqtt implementation
                  [clojurewerkz/machine_head "1.0.0"]
                  [com.cognitect/transit-clj "1.0.324"]
