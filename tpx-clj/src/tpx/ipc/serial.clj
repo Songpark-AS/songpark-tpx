@@ -7,8 +7,13 @@
   #{:volume/g :volume/l :volume/r
     :filer/b :filter/l :filter/h})
 
-
-(defonce config (atom {:pts "/dev/pts/1"}))
+;; This is set on the zedboard, by a systemd
+;; service running socat, such that we do not have to deal
+;; with arbitrary pseudo terminai numbering,
+;; even if it might not pose a problem on the
+;; zedboards, given no other services appear
+;; to be using /dev/ptmx
+(defonce config (atom {:pts "/tmp/ttyTPX"}))
 
 (defn process [s]
   (future (log/debug ::process (read-string s))))
@@ -24,13 +29,11 @@
         (finally
           (.close reader))))))
 
-
 (defn connect-to-port [pts]
   (log/debug ::connect-to-port "connecting...")
   (let [port (serial/open pts)]
     (swap! config assoc :port port)
     (serial/listen! port handler false)))
-
 
 (defn disconnect [port]
   (log/debug ::disconnect "bye...")
