@@ -6,10 +6,8 @@
                                     lines]]))
 
 
-(def startup (io/resource "serial-output/startup.txt"))
-(def sip-call (io/resource "serial-output/sip-call.txt"))
-(def gain-input-global-gain (io/resource "serial-output/gain-input-global-gain.txt"))
-(def gain-input-faulty (io/resource "serial-output/gain-input-faulty.txt"))
+(defn- get-lines [file-name]
+  (line-seq (io/reader (io/resource (str "serial-output/" file-name)))))
 
 (fact
  "process-line"
@@ -39,7 +37,18 @@
      :network (last result)}
     => {:match? true
         :loopback "5"
-        :network "5"})))
+        :network "5"}))
+
+ (fact
+  "gain-input-volume-l"
+  (let [line1 "|  Volume_L  +      30    +      30    |"
+        result (process-line :gain-input-volume-l line1)]
+    {:match? (some? result)
+     :loopback (second result)
+     :network (last result)}
+    => {:match? true
+        :loopback "30"
+        :network "30"})))
 
 (defn- reset-lines!
   "Reset the lines in tpx.ipc.output for each test"
@@ -48,10 +57,11 @@
 
 (fact
  "handle-output"
- (let [lines-startup (line-seq (io/reader startup))
-       lines-sip-call (line-seq (io/reader sip-call))
-       lines-gain-faulty (line-seq (io/reader gain-input-faulty))
-       lines-gain-input-global-gain (line-seq (io/reader gain-input-global-gain))
+ (let [lines-startup (get-lines "startup.txt")
+       lines-sip-call (get-lines "sip-call.txt")
+       lines-gain-faulty (get-lines "gain-input-faulty.txt")
+       lines-gain-input-global-gain (get-lines "gain-input-global-gain.txt")
+       lines-gain-input-left-gain (get-lines "gain-input-left-gain.txt")
        context (atom {:sip-has-started false
                       :sip-call false
                       :gain-input-global-gain nil})
@@ -60,7 +70,9 @@
             :sip-call (fn [data context]
                         (swap! context assoc :sip-call true))
             :gain-input-global-gain (fn [data context]
-                          (swap! context assoc :gain-input-global-gain data))}]
+                                      (swap! context assoc :gain-input-global-gain data))
+            :gain-input-left-gain (fn [data context]
+                                    (swap! context assoc :gain-input-left-gain data))}]
    
    
    (fact
@@ -85,7 +97,14 @@
     (doseq [line lines-gain-input-global-gain]
       (handle-output context fns line))
     (:gain-input-global-gain @context) => {:loopback "5"
-                                           :network "5"} [])
+                                           :network "5"})
+   (fact
+    "gain-input-left-gain"
+    (reset-lines!)
+    (doseq [line lines-gain-input-left-gain]
+      (handle-output context fns line))
+    (:gain-input-left-gain @context) => {:loopback "30"
+                                         :network "30"})
    (fact
     "faulty gain-input-global-gain"
     (reset-lines!)
@@ -95,4 +114,4 @@
     (doseq [line lines-gain-input-global-gain]
       (handle-output context fns line))
     (:gain-input-global-gain @context) => {:loopback "5"
-                                           :network "5"} [])))
+                                           :network "5"})))

@@ -8,9 +8,9 @@
               :sip-call-choices #"Choices:"
               :sip-call-enter #"  <Enter>    Empty input \(or 'q'\) to cancel"
               :gain-input-titles #"\| Parameters \+  Loopback  \+   Network  \|"
-              :gain-input-volume-g #"\|  Volume_G.*(\d+).*(\d+).*\|"
-              :gain-input-volume-l #"\|  Volume_L.*(\d+).*(\d+).*\|"
-              :gain-input-volume-r #"\|  Volume_R.*(\d+).*(\d+).*\|"
+              :gain-input-volume-g #"\|  Volume_G\s+\+\s+(\d+)\s+\+\s+(\d+)\s+\|"
+              :gain-input-volume-l #"\|  Volume_L\s+\+\s+(\d+)\s+\+\s+(\d+)\s+\|"
+              :gain-input-volume-r #"\|  Volume_R\s+\+\s+(\d+)\s+\+\s+(\d+)\s+\|"
               :gain-input-global-gain #"Entered global gain"
               :gain-input-left-gain #"Entered left gain"
               :gain-input-right-gain #"Entered right gain"})
