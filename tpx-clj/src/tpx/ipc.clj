@@ -1,4 +1,5 @@
 (ns tpx.ipc
+  "Interactive Process Communication"
   (:require [clojure.java.shell :refer [sh]]
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
