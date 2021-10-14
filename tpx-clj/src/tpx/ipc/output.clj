@@ -4,27 +4,40 @@
             [taoensso.timbre :as log]))
 
 (def regexes {:sip-has-started #".*pjsua_acc.c  ....sip:[^:]+: registration success, status=200 \(OK\).*"
+              ;; sip call
               :sip-call-buddy-list #"Buddy list:"
               :sip-call-choices #"Choices:"
               :sip-call-enter #"  <Enter>    Empty input \(or 'q'\) to cancel"
+              ;; gains
               :gain-input-titles #"\| Parameters \+  Loopback  \+   Network  \|"
               :gain-input-volume-g #"\|  Volume_G\s+\+\s+(\d+)\s+\+\s+(\d+)\s+\|"
               :gain-input-volume-l #"\|  Volume_L\s+\+\s+(\d+)\s+\+\s+(\d+)\s+\|"
               :gain-input-volume-r #"\|  Volume_R\s+\+\s+(\d+)\s+\+\s+(\d+)\s+\|"
               :gain-input-global-gain #"Entered global gain"
               :gain-input-left-gain #"Entered left gain"
-              :gain-input-right-gain #"Entered right gain"})
+              :gain-input-right-gain #"Entered right gain"
+
+              ;; sip-call-started
+
+              :sip-connect #".*Conf connect: \d+ \-\-\> \d+.*"
+              :sip-stream-established #".*Port \d+ \((.*)\) transmitting to port \d+ \((.*)\).*"
+
+              ;; sip-call-stopped
+              })
 
 (def controller-steps ^{:doc "Last step in the regex steps above"}
   #{:sip-has-started
     :sip-call-enter
     :gain-input-global-gain
     :gain-input-left-gain
-    :gain-input-right-gain})
+    :gain-input-right-gain
+    :sip-call-started})
 
 (defonce lines (atom []))
 
-(defn process-line [k line]
+(defn process-line
+  "Process the line and see if it matches any regex"
+  [k line]
   (if-let [regex (get regexes k)]
     (re-matches regex line)))
 
@@ -49,6 +62,9 @@
                          :sip-call-choices
                          :sip-call-enter} current-set)
           [:sip-call (into {} lines)]
+          (set/subset? #{:sip-connect
+                         :sip-stream-established} current-set)
+          [:sip-call-started (into {} lines)]
 
           (set/subset? #{:gain-input-titles
                          :gain-input-volume-g
@@ -82,6 +98,9 @@
     :gain-input-right-gain (let [[_ loopback network] (:gain-input-volume-r data)]
                              {:loopback loopback
                               :network network})
+    :sip-call-started (let [[_ from to] (:sip-stream-established data)]
+                        {:from from
+                         :to to})
     nil))
 
 (defn handle-output [context fns line]

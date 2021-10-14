@@ -48,7 +48,24 @@
      :network (last result)}
     => {:match? true
         :loopback "30"
-        :network "30"})))
+        :network "30"}))
+
+ (fact
+  "sip-connect"
+  (let [line1 "10:07:34.356    pjsua_aud.c  .....Conf connect: 3 --> 0"
+        result (process-line :sip-connect line1)]
+    {:match? (some? result)}
+    => {:match? true}))
+ (fact
+  "sip-stream-established"
+  (let [line1 "10:07:34.356   conference.c  ......Port 3 (sip:9115@voip1.inonit.no) transmitting to port 0 (Master/sound)"
+        result (process-line :sip-stream-established line1)]
+    {:match? (some? result)
+     :from (second result)
+     :to (last result)}
+    => {:match? true
+        :from "sip:9115@voip1.inonit.no"
+        :to "Master/sound"})))
 
 (defn- reset-lines!
   "Reset the lines in tpx.ipc.output for each test"
@@ -62,9 +79,13 @@
        lines-gain-faulty (get-lines "gain-input-faulty.txt")
        lines-gain-input-global-gain (get-lines "gain-input-global-gain.txt")
        lines-gain-input-left-gain (get-lines "gain-input-left-gain.txt")
+       lines-sip-call-started-tp1 (get-lines "jam-start-tp1.txt")
+       lines-sip-call-started-tp2 (get-lines "jam-start-tp2.txt")
        context (atom {:sip-has-started false
                       :sip-call false
-                      :gain-input-global-gain nil})
+                      :gain-input-global-gain nil
+                      :gain-input-left-gain nil
+                      :sip-call-started []})
        fns {:sip-has-started (fn [data context]
                                (swap! context assoc :sip-has-started true))
             :sip-call (fn [data context]
@@ -72,7 +93,9 @@
             :gain-input-global-gain (fn [data context]
                                       (swap! context assoc :gain-input-global-gain data))
             :gain-input-left-gain (fn [data context]
-                                    (swap! context assoc :gain-input-left-gain data))}]
+                                    (swap! context assoc :gain-input-left-gain data))
+            :sip-call-started (fn [data context]
+                                (swap! context update-in [:sip-call-started] conj data))}]
    
    
    (fact
@@ -114,4 +137,27 @@
     (doseq [line lines-gain-input-global-gain]
       (handle-output context fns line))
     (:gain-input-global-gain @context) => {:loopback "5"
-                                           :network "5"})))
+                                           :network "5"})
+
+   (fact
+    "call started tp1"
+    (reset-lines!)
+    (doseq [line lines-sip-call-started-tp1]
+      (handle-output context fns line))
+    (:sip-call-started @context) => [{:from "sip:9115@voip1.inonit.no"
+                                      :to "Master/sound"}
+                                     {:from "Master/sound"
+                                      :to "sip:9115@voip1.inonit.no"}])
+
+   (fact
+    "call started tp1"
+    (reset-lines!)
+    (swap! context assoc :sip-call-started [])
+    (doseq [line lines-sip-call-started-tp2]
+      (handle-output context fns line))
+    (:sip-call-started @context) => [{:from "ring"
+                                      :to "Master/sound"}
+                                     {:from "sip:9114@voip1.inonit.no"
+                                      :to "Master/sound"}
+                                     {:from "Master/sound"
+                                      :to "sip:9114@voip1.inonit.no"}])))
