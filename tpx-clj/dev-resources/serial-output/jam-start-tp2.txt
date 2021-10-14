@@ -1,0 +1,184 @@
+*************************************EXTRACTED IP***********************************
+IP:192.168.11.162
+************************************************************************************
+
+*************************INCOMING CALL NO SYNC**************************
+10:07:34.255   pjsua_call.c  .Incoming Request msg INVITE/cseq=21974 (rdata0xb5403eec)
+10:07:34.257  pjsua_media.c  ..Call 0: initializing media..
+10:07:34.257        icetp00  ...Creating ICE stream transport with 2 component(s)
+10:07:34.257        icetp00  ....Comp 1: srflx candidate (tpid=64) starts Binding discovery
+10:07:34.262        icetp00  ....Comp 1/1: host candidate 192.168.11.162:7814 (tpid=64) added
+10:07:34.262        icetp00  ....Comp 1/2: host candidate 10.100.200.15:7814 (tpid=64) added
+10:07:34.262        icetp00  ....Comp 2: srflx candidate (tpid=64) starts Binding discovery
+10:07:34.266        icetp00  ....Comp 2/1: host candidate 192.168.11.162:7811 (tpid=64) added
+10:07:34.266        icetp00  ....Comp 2/2: host candidate 10.100.200.15:7811 (tpid=64) added
+10:07:34.266        icetp00  ....ICE stream transport 0xb540c3c4 created
+10:07:34.266  pjsua_media.c  ...Media index 0 selected for audio call 0
+10:07:34.267   pjsua_core.c  .....TX 541 bytes Response msg 100/INVITE/cseq=21974 (tdta0xb541463c) to UDP 18.198.222.104:5060:
+SIP/2.0 100 Trying
+Via: SIP/2.0/UDP 18.198.222.104:5060;received=18.198.222.104;branch=z9hG4bK50e6.7812ddfbe063071d44a35433006bb868.0
+Via: SIP/2.0/UDP 193.69.145.66:1774;rport=1774;received=193.69.145.66;branch=z9hG4bKPj3ejdD7eqzwNr2f5b5pHXF-n8-jUmpCiP
+Record-Route: <sip:18.198.222.104;lr;ftag=VhqKeuRyWkjlyX4C5natuQZJex8NaGC5;did=cbc.16e;nat=yes>
+Call-ID: kmB-mtx5bFo-0syx6ZMSSz45JMgM6tWW
+From: <sip:9114@voip1.inonit.no>;tag=VhqKeuRyWkjlyX4C5natuQZJex8NaGC5
+To: <sip:9115@voip1.inonit.no>
+CSeq: 21974 INVITE
+Content-Length:  0
+
+
+--end msg--
+10:07:34.267    pjsua_aud.c  ..Conf connect: 2 --> 0
+10:07:34.267    pjsua_aud.c  ...Set sound device: capture=-99, playback=-99
+10:07:34.267    pjsua_aud.c  ....Setting null sound device..
+10:07:34.267    pjsua_app.c  .....Turning sound device -99 -99 ON
+10:07:34.267    pjsua_aud.c  .....Opening null sound device..
+10:07:34.267   conference.c  ...Port 2 (ring) transmitting to port 0 (Master/sound)
+10:07:34.268   pjsua_call.c  ..Answering call 0: code=200
+10:07:34.268   pjsua_call.c  ...Pending answering call 0 upon completion of media transport
+10:07:34.289 stuntp0xb540f5  .STUN mapped address found/changed: 193.69.145.66:1774
+10:07:34.291        icetp00  .Comp 1: Binding discovery complete, srflx address is 193.69.145.66:1774
+10:07:34.292 stuntp0xb54120  .STUN mapped address found/changed: 193.69.145.66:7811
+10:07:34.294        icetp00  .Comp 2: Binding discovery complete, srflx address is 193.69.145.66:7811
+10:07:34.295        icetp00  ICE session created, comp_cnt=2, role is Controlled agent
+10:07:34.295        icetp00  ICE nomination type set to aggressive
+10:07:34.295        icetp00  Candidate 0 added: comp_id=1, type=srflx, foundation=Sc0a80ba2, addr=193.69.145.66:1774, base=192.168.11.162:7814, prio=0x6effffff (1862270975)
+10:07:34.295        icetp00  Candidate 1 added: comp_id=1, type=host, foundation=Hc0a80ba2, addr=192.168.11.162:7814, base=192.168.11.162:7814, prio=0x64ffffff (1694498815)
+10:07:34.295        icetp00  Candidate 2 added: comp_id=1, type=host, foundation=Ha64c80f, addr=10.100.200.15:7814, base=10.100.200.15:7814, prio=0x64fffeff (1694498559)
+10:07:34.295        icetp00  Candidate 3 added: comp_id=2, type=srflx, foundation=Sc0a80ba2, addr=193.69.145.66:7811, base=192.168.11.162:7811, prio=0x6efffffe (1862270974)
+10:07:34.295        icetp00  Candidate 4 added: comp_id=2, type=host, foundation=Hc0a80ba2, addr=192.168.11.162:7811, base=192.168.11.162:7811, prio=0x64fffffe (1694498814)
+10:07:34.296        icetp00  Candidate 5 added: comp_id=2, type=host, foundation=Ha64c80f, addr=10.100.200.15:7811, base=10.100.200.15:7811, prio=0x64fffefe (1694498558)
+10:07:34.296        icetp00  Processing SDP: support ICE=1, common comp_cnt=2, ice_mismatch=0, ice_restart=0, local_role=Controlled, trickle=0
+10:07:34.297   pjsua_call.c  Answering call 0: code=200
+10:07:34.298  inv0xb540352c  ..SDP negotiation done: Success
+10:07:34.298  pjsua_media.c  ...Call 0: updating media..
+10:07:34.298  pjsua_media.c  .....Media stream call00:0 is destroyed
+10:07:34.299        icetp00  ....Check 2: [1] 192.168.11.162:7814-->193.69.145.66:7809 pruned (duplicate found)
+10:07:34.299        icetp00  ....Check 4: [2] 192.168.11.162:7811-->193.69.145.66:7814 pruned (duplicate found)
+10:07:34.299        icetp00  ....Check 3: [1] 192.168.11.162:7814-->192.168.11.161:7809 pruned (duplicate found)
+10:07:34.299        icetp00  ....Check 4: [2] 192.168.11.162:7811-->192.168.11.161:7814 pruned (duplicate found)
+10:07:34.299        icetp00  ....Check 7: [1] 192.168.11.162:7814-->10.100.200.14:7809 pruned (duplicate found)
+10:07:34.299        icetp00  ....Check 11: [2] 192.168.11.162:7811-->10.100.200.14:7814 pruned (duplicate found)
+10:07:34.299        icetp00  ....Checklist created:
+10:07:34.299        icetp00  .... 0: [1] 192.168.11.162:7814-->193.69.145.66:7809 (not nominated, state=Frozen)
+10:07:34.299        icetp00  .... 1: [2] 192.168.11.162:7811-->193.69.145.66:7814 (not nominated, state=Frozen)
+10:07:34.299        icetp00  .... 2: [1] 192.168.11.162:7814-->192.168.11.161:7809 (not nominated, state=Frozen)
+10:07:34.299        icetp00  .... 3: [2] 192.168.11.162:7811-->192.168.11.161:7814 (not nominated, state=Frozen)
+10:07:34.299        icetp00  .... 4: [1] 10.100.200.15:7814-->193.69.145.66:7809 (not nominated, state=Frozen)
+10:07:34.299        icetp00  .... 5: [1] 192.168.11.162:7814-->10.100.200.14:7809 (not nominated, state=Frozen)
+10:07:34.299        icetp00  .... 6: [1] 10.100.200.15:7814-->192.168.11.161:7809 (not nominated, state=Frozen)
+10:07:34.299        icetp00  .... 7: [1] 10.100.200.15:7814-->10.100.200.14:7809 (not nominated, state=Frozen)
+10:07:34.299        icetp00  .... 8: [2] 10.100.200.15:7811-->193.69.145.66:7814 (not nominated, state=Frozen)
+10:07:34.299        icetp00  .... 9: [2] 192.168.11.162:7811-->10.100.200.14:7814 (not nominated, state=Frozen)
+10:07:34.299        icetp00  .... 10: [2] 10.100.200.15:7811-->192.168.11.161:7814 (not nominated, state=Frozen)
+10:07:34.300        icetp00  .... 11: [2] 10.100.200.15:7811-->10.100.200.14:7814 (not nominated, state=Frozen)
+10:07:34.300        icetp00  ....Starting ICE check..
+10:07:34.300        icetp00  .....Check 0: [1] 192.168.11.162:7814-->193.69.145.66:7809: state changed from Frozen to Waiting
+10:07:34.300        icetp00  .....Check 2: [1] 192.168.11.162:7814-->192.168.11.161:7809: state changed from Frozen to Waiting
+10:07:34.300        icetp00  .....Check 5: [1] 192.168.11.162:7814-->10.100.200.14:7809: state changed from Frozen to Waiting
+10:07:34.300        icetp00  .....Check 4: [1] 10.100.200.15:7814-->193.69.145.66:7809: state changed from Frozen to Waiting
+10:07:34.300        icetp00  .....Check 6: [1] 10.100.200.15:7814-->192.168.11.161:7809: state changed from Frozen to Waiting
+10:07:34.300        icetp00  .....Check 7: [1] 10.100.200.15:7814-->10.100.200.14:7809: state changed from Frozen to Waiting
+10:07:34.300    pjsua_aud.c  ....Audio channel update..
+10:07:34.300 strm0xb542492c  .....VAD temporarily disabled
+10:07:34.300 strm0xb542492c  .....Encoder stream started
+10:07:34.300 strm0xb542492c  .....Decoder stream started
+10:07:34.301  pjsua_media.c  ....Audio updated, stream #0: speex (sendrecv)
+10:07:34.301    pjsua_app.c  ...Call 0 media 0 [type=audio], status is Active
+10:07:34.301    pjsua_aud.c  ...Conf disconnect: 2 -x- 0
+10:07:34.301   conference.c  ....Port 2 (ring) stop transmitting to port 0 (Master/sound)
+10:07:34.301    pjsua_aud.c  ...Conf connect: 3 --> 0
+10:07:34.301   conference.c  ....Port 3 (sip:9114@voip1.inonit.no) transmitting to port 0 (Master/sound)
+10:07:34.301    pjsua_aud.c  ...Conf connect: 0 --> 3
+10:07:34.301   conference.c  ....Port 0 (Master/sound) transmitting to port 3 (sip:9114@voip1.inonit.no)
+10:07:34.301   pjsua_core.c  ....TX 1715 bytes Response msg 200/INVITE/cseq=21974 (tdta0xb5420744) to UDP 18.198.222.104:5060:
+SIP/2.0 200 OK
+Via: SIP/2.0/UDP 18.198.222.104:5060;received=18.198.222.104;branch=z9hG4bK50e6.7812ddfbe063071d44a35433006bb868.0
+Via: SIP/2.0/UDP 193.69.145.66:1774;rport=1774;received=193.69.145.66;branch=z9hG4bKPj3ejdD7eqzwNr2f5b5pHXF-n8-jUmpCiP
+Record-Route: <sip:18.198.222.104;lr;ftag=VhqKeuRyWkjlyX4C5natuQZJex8NaGC5;did=cbc.16e;nat=yes>
+Call-ID: kmB-mtx5bFo-0syx6ZMSSz45JMgM6tWW
+From: <sip:9114@voip1.inonit.no>;tag=VhqKeuRyWkjlyX4C5natuQZJex8NaGC5
+To: <sip:9115@voip1.inonit.no>;tag=9.4PSw2dKrRLYTF-suuPVcaxqdRkPmZv
+CSeq: 21974 INVITE
+Contact: <sip:9115@193.69.145.66:5060;ob>;+sip.ice
+Allow: PRACK, INVITE, ACK, BYE, CANCEL, UPDATE, INFO, SUBSCRIBE, NOTIFY, REFER, MESSAGE, OPTIONS
+Supported: replaces, 100rel, timer, norefersub
+Session-Expires: 1800;refresher=uac
+Require: timer
+Content-Type: application/sdp
+Content-Length:   856
+
+v=0
+o=- 3843194854 3843194855 IN IP4 193.69.145.66
+s=pjmedia
+b=AS:84
+t=0 0
+a=X-nat:8
+m=audio 1774 RTP/AVP 96 120
+c=IN IP4 193.69.145.66
+b=TIAS:64000
+a=rtcp:7811 IN IP4 193.69.145.66
+a=sendrecv
+a=rtpmap:96 speex/16000
+a=rtpmap:120 telephone-event/16000
+a=fmtp:120 0-16
+a=ssrc:1597316155 cname:57d68318157bceb1
+a=ice-ufrag:7d5cb0a0
+a=ice-pwd:1d8a6b627c59a6f2064dc937
+a=candidate:Sc0a80ba2 1 UDP 1862270975 193.69.145.66 1774 typ srflx raddr 192.168.11.162 rport 7814
+a=candidate:Hc0a80ba2 1 UDP 1694498815 192.168.11.162 7814 typ host
+a=candidate:Ha64c80f 1 UDP 1694498559 10.100.200.15 7814 typ host
+a=candidate:Sc0a80ba2 2 UDP 1862270974 193.69.145.66 7811 typ srflx raddr 192.168.11.162 rport 7811
+a=candidate:Hc0a80ba2 2 UDP 1694498814 192.168.11.162 7811 typ host
+a=candidate:Ha64c80f 2 UDP 1694498558 10.100.200.15 7811 typ host
+--end msg--
+10:07:34.302    pjsua_app.c  .......Call 0 state changed to CONNECTING
+10:07:34.307 strm0xb542492c !Resetting jitter buffer in stream playback start
+10:07:34.307        icetp00 !Checklist: state changed from Idle to Running
+10:07:34.307        icetp00  Starting checklist periodic check
+10:07:34.308        icetp00  .Sending connectivity check for check 0: [1] 192.168.11.162:7814-->193.69.145.66:7809
+10:07:34.308        icetp00  ..Check 0: [1] 192.168.11.162:7814-->193.69.145.66:7809: state changed from Waiting to In Progress
+10:07:34.328        icetp00 !Starting checklist periodic check
+10:07:34.328        icetp00  .Sending connectivity check for check 2: [1] 192.168.11.162:7814-->192.168.11.161:7809
+10:07:34.328        icetp00  ..Check 2: [1] 192.168.11.162:7814-->192.168.11.161:7809: state changed from Waiting to In Progress
+10:07:34.349        icetp00  Starting checklist periodic check
+10:07:34.349        icetp00  .Sending connectivity check for check 4: [1] 10.100.200.15:7814-->193.69.145.66:7809
+10:07:34.350        icetp00  ..Check 4: [1] 10.100.200.15:7814-->193.69.145.66:7809: state changed from Waiting to In Progress
+10:07:34.356   pjsua_core.c  .RX 493 bytes Request msg ACK/cseq=21974 (rdata0xb5403eec) from UDP 18.198.222.104:5060:
+ACK sip:9115@192.168.11.162:5060;ob SIP/2.0
+Via: SIP/2.0/UDP 18.198.222.104:5060;branch=z9hG4bK50e6.5243cc57747e2c35d8d687c6ce3ba07f.0
+Via: SIP/2.0/UDP 193.69.145.66:1774;received=193.69.145.66;rport=1774;branch=z9hG4bKPjqBSrP4-.yxjZgWXYTn4P3H3hFfT6TMov
+Max-Forwards: 69
+From: sip:9114@voip1.inonit.no;tag=VhqKeuRyWkjlyX4C5natuQZJex8NaGC5
+To: sip:9115@voip1.inonit.no;tag=9.4PSw2dKrRLYTF-suuPVcaxqdRkPmZv
+Call-ID: kmB-mtx5bFo-0syx6ZMSSz45JMgM6tWW
+CSeq: 21974 ACK
+Content-Length:  0
+
+
+--end msg--
+10:07:34.356    pjsua_app.c  ...Call 0 state changed to CONFIRMED
+
+
+
+
+*************************************INCOMING CALL NO SYNC*************************************************
+
+
+
+start_hw_streaming(): Incoming call wait for sync, mock to punch fire wall...
+Enable sync mock udp tx...
+Reg0F-Ctrl: 01111111 11111111 11111111 11100001
+Sync-Reg0: 00000000 00000000 00000000 00000000
+-----------start_hw_streaming() entering sync wait loop------------
+Check Sync Done Reg0: 00000000 00000000 00000000 00000000
+Check Sync Resp Reg0: 00000000 00000000 00000000 00000000
+10:07:34.927 strm0xb542492c !VAD re-enabled
+--------Waiting for sync packet to arrive: counter = 0 ----
+Check Sync Done Reg0: 00000000 00000000 00000000 00000000
+Check Sync Resp Reg0: 00000000 00000000 00000000 00000000
+--------Waiting for sync packet to arrive: counter = 1 ----
+Check Sync Done Reg0: 00000000 00000000 00000000 00000000
+Check Sync Resp Reg0: 00000000 00000000 00000000 00000000
+--------Waiting for sync packet to arrive: counter = 2 ----
+Check Sync Done Reg0: 00000000 00000000 00000000 00000000
+Check Sync Resp Reg0: 00000000 00000000 00000000 00000000

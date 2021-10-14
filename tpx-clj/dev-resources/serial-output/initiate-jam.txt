@@ -1,0 +1,15 @@
+(You currently have 0 calls)
+Buddy list:
+ [ 1] <?>  sip:9110@voip1.inonit.no
+ [ 2] <?>  sip:9112@voip1.inonit.no
+ [ 3] <?>  sip:9113@voip1.inonit.no
+ [ 4] <?>  sip:9114@voip1.inonit.no
+ [ 5] <?>  sip:9115@voip1.inonit.no
+ [ 6] <?>  sip:1003@voip1.inonit.no
+
+Choices:
+   0         For current dialog.
+  -1         All 6 buddies in buddy list
+  [1 - 6]    Select from buddy list
+  URL        An URL
+  <Enter>    Empty input (or 'q') to cancel
