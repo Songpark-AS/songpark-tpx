@@ -18,8 +18,8 @@
 (defn process [s]
   (future (log/debug ::process (read-string s))))
 
-(defn handler [io-stream]
-  "Read input stream from serial"
+(defn handler "Read input stream from serial"
+  [io-stream]
   (with-open [reader (io/reader io-stream)]
     (if-let [line (.readLine reader)]
       (try
@@ -58,13 +58,15 @@
 
 (comment
 
-  (log/debug @config)  
+  (log/debug @config)
   
   (connect-to-port (:pts @config))
 
   (send-command (:port @config) "vol" 100)
 
-  (disconnect (:port @config))  
+  (disconnect (:port @config))
+
+  (swap! config assoc :pts "/dev/ttys013")
 
   )
 
