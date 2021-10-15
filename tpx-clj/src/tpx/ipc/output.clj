@@ -23,7 +23,8 @@
               :sip-stream-established #".*Port \d+ \((.*)\) transmitting to port \d+ \((.*)\).*"
 
               ;; sip-call-stopped
-              })
+              :sip-call-hangup #".*\!Call \d+ hanging up: code=\d+.*"
+              :sip-call-status #"  \[(\w+)\] To: (sip:.*);.*"})
 
 (def controller-steps ^{:doc "Last step in the regex steps above"}
   #{:sip-has-started
@@ -31,7 +32,8 @@
     :gain-input-global-gain
     :gain-input-left-gain
     :gain-input-right-gain
-    :sip-call-started})
+    :sip-call-started
+    :sip-call-stopped})
 
 (defonce lines (atom []))
 
@@ -62,9 +64,14 @@
                          :sip-call-choices
                          :sip-call-enter} current-set)
           [:sip-call (into {} lines)]
+
           (set/subset? #{:sip-connect
                          :sip-stream-established} current-set)
           [:sip-call-started (into {} lines)]
+
+          (set/subset? #{:sip-call-hangup
+                         :sip-call-status} current-set)
+          [:sip-call-stopped (into {} lines)]
 
           (set/subset? #{:gain-input-titles
                          :gain-input-volume-g
@@ -100,6 +107,9 @@
                               :network network})
     :sip-call-started (let [[_ from to] (:sip-stream-established data)]
                         {:from from
+                         :to to})
+    :sip-call-stopped (let [[_ status to] (:sip-call-status data)]
+                        {:status status
                          :to to})
     nil))
 
