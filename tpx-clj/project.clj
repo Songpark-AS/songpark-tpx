@@ -10,10 +10,12 @@
                  [me.raynes/fs "1.4.6"]
                  ;; logging
                  [com.taoensso/timbre "5.1.2"]
-                 [com.fzakaria/slf4j-timbre "0.3.21"]
                  [raven-clj "1.6.0"]
-                 ;; redis support
-                 [com.taoensso/carmine "3.1.0"]
+                 ;; http server
+                 [http-kit "2.3.0"]
+                 [ring/ring-core "1.9.4"]
+                 ;; html rendering
+                 [hiccup "1.0.5"]
                  ;; structure
                  [com.stuartsierra/component "1.0.0"]
                  ;; serial comms
@@ -31,7 +33,7 @@
                    :resource-paths ["dev-resources" "resources"]
                    :dependencies [[midje "1.9.9"]
                                   [ring/ring-mock "0.4.0"]
-                                  [http-kit "2.3.0"]
+                                  
                                   [hashp "0.2.0"]
                                   [clj-commons/spyscope "0.1.48"]]
                    :injections [(require 'spyscope.core)]

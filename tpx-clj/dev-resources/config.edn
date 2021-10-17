@@ -1,5 +1,17 @@
 {:logger {:sentry-settings {:log? false
                             :dsn ""}}
+
+ :network {:check-network-status-cmd "ipconfig getifaddr en0"
+           ;; :check-network-status-cmd "ip -o link show eth0 | awk '{print $9}'"
+           :sleep-timer 5000
+           :default-network {:ip "192.168.0.168"
+                             :gateway "192.168.0.1"
+                             :netmask "255.255.255.0"}
+           :webserver {:ip "0.0.0.0"
+                       :port 8080
+                       :thread 1}
+           :fake-reset? true}
+ 
  :mqtt {:config {:scheme "tcp"
                  :host "127.0.0.1"
                  :port 1883
