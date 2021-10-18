@@ -1,5 +1,7 @@
 (ns dev
-  (:require [tpx.init :as init]
+  (:require [com.stuartsierra.component :as component]
+            [tpx.init :as init]
+            [tpx.logger :as logger]
             [taoensso.timbre :as log]))
 
 (defn restart
@@ -17,9 +19,20 @@
   (init/stop)
   (init/init))
 
+(defonce logger (atom nil))
+
+(defn start-logging []
+  (if-let [l @logger]
+    (log/info "Logger already started")
+    (reset! logger (component/start (logger/logger {})))))
+
 
 (comment 
   (init/stop)
   (restart)
+
+  ;; start logging locally on the file system
+  ;; useful for multithreaded environments, as not every log is printed to stdout
+  (start-logging)
   
   )

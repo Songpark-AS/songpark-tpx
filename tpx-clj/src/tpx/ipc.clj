@@ -53,9 +53,6 @@
   (map->IpcService settings))
 
 
-
-
-
 (comment
   (pr-str (:teleporter (:config @store)))
   @(broadcast-presence (:config @store))

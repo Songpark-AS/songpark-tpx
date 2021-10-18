@@ -1,11 +1,11 @@
 (ns tpx.ipc.serial
-  (:require [taoensso.timbre :as log]
+  (:require [com.stuartsierra.component :as component]
+            [clojure.java.io :as io]
             [serial.core :as serial]
-            [clojure.java.io :as io]))
-
-(def commands
-  #{:volume/g :volume/l :volume/r
-    :filer/b :filter/l :filter/h})
+            [taoensso.timbre :as log]
+            [tpx.ipc.output :refer [handle-output]]
+            [tpx.ipc.handler :as ipc.handler]
+            [tpx.ipc.tmp :refer [listen!]]))
 
 ;; This is set on the zedboard, by a systemd
 ;; service running socat, such that we do not have to deal
@@ -15,25 +15,34 @@
 ;; to be using /dev/ptmx
 (defonce config (atom {:pts "/tmp/ttyTPX"}))
 
-(defn process [s]
-  (future (log/debug ::process (read-string s))))
+
+;; TODO: examine possibility to have open-handler? inside the handler function
+;; and let it reset the atom to false itself. The observed behaviour of the BP
+;; and clj-serial is that the stream is closed every now and then, and then a new one
+;; is created. This means to be fixed.
+(def ^:private open-handler? (atom true))
 
 (defn handler "Read input stream from serial"
-  [io-stream]
-  (with-open [reader (io/reader io-stream)]
-    (if-let [line (.readLine reader)]
-      (try
-        (process line)
-        (catch Exception e
-          (log/warn (ex-message e)))
-        (finally
-          (.close reader))))))
+  [context fns]
+  (reset! open-handler? true)
+  (fn [io-stream]
+    (log/debug "Ready to read stream from BP")
+    (future
+      (with-open [reader (io/reader io-stream)]
+        (while @open-handler?
+          (if-let [line (.readLine reader)]
+            (try
+              (handle-output context fns line)
+              (catch Exception e
+                (log/warn (ex-message e))))
+            (log/debug ::unable-to-read-line)))))))
 
-(defn connect-to-port [pts]
+(defn connect-to-port [context fns pts]
   (log/debug ::connect-to-port "connecting...")
-  (let [port (serial/open pts)]
+  (let [port (serial/open pts)
+        my-handler (handler context fns)        ]
     (swap! config assoc :port port)
-    (serial/listen! port handler false)))
+    (serial/listen! port my-handler false)))
 
 (defn disconnect [port]
   (log/debug ::disconnect "bye...")
@@ -41,9 +50,10 @@
     (serial/unlisten! port)
     (serial/close! port)
     (swap! config dissoc :port)
+    (reset! open-handler? false)
     (catch Exception e
-      (log/error ::disconnect (ex-message))
-      (log/error ::disconnect (ex-data)))))
+      (log/error ::disconnect (ex-message e))
+      (log/error ::disconnect (ex-data e)))))
 
 
 (defn- str->ba [s]
@@ -60,9 +70,23 @@
 
   (log/debug @config)
   
-  (connect-to-port (:pts @config))
+  (connect-to-port {:mycontext true} {:sip-call-started #'ipc.handler/handle-sip-call-started
+                                      :sip-call-stopped #'ipc.handler/handle-sip-call-stopped
+                                      :sip-has-started #'ipc.handler/handle-sip-has-started
+                                      :sip-call #'ipc.handler/handle-sip-call
+                                      :gain-input-global-gain #'ipc.handler/handle-gain-input-global-gain
+                                      :gain-input-left-gain #'ipc.handler/handle-gain-input-left-gain
+                                      :gain-input-right-gain #'ipc.handler/handle-gain-input-right-gain} (:pts @config))
+  
 
   (send-command (:port @config) "vol" 100)
+  (send-command (:port @config) "m" "")
+  (send-command (:port @config) "\n" "")
+  
+  (send-command (:port @config) "sip:9115@voip1.inonit.no" "")
+  (send-command (:port @config) "h" "")
+
+  (send-command (:port @config) "rr" "")
 
   (disconnect (:port @config))
 
