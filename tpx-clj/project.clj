@@ -27,7 +27,7 @@
   :main ^:skip-aot tpx.core
   :target-path "target/%s"
   :test-paths ["test"]
-  :repl-options {:timeout 120000}
+  :repl-options {:timeout 600000}
   :profiles {:dev {:source-paths ["src" "dev"]
                    :resource-paths ["dev-resources" "resources"]
                    :dependencies [[midje "1.9.9"]
