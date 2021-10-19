@@ -12,9 +12,9 @@
 (fact
  "process-line"
  (fact
-  "sip-has-started"
+  "sip-registered"
   (let [line "10:00:05.954    pjsua_acc.c  ....sip:9114@voip1.inonit.no: registration success, status=200 (OK), will re-register in 300 seconds"]
-    (some? (process-line :sip-has-started line))
+    (some? (process-line :sip-registered line))
     => true))
  (fact
   "sip-call"
@@ -74,14 +74,14 @@
 
 (fact
  "handle-output"
- (let [context (atom {:sip-has-started false
+ (let [context (atom {:sip-registered false
                       :sip-call false
                       :gain-input-global-gain nil
                       :gain-input-left-gain nil
                       :sip-call-started []
                       :sip-call-stopped []})
-       fns {:sip-has-started (fn [data context]
-                               (swap! context assoc :sip-has-started true))
+       fns {:sip-registered (fn [data context]
+                               (swap! context assoc :sip-registered true))
             :sip-call (fn [data context]
                         (swap! context assoc :sip-call true))
             :gain-input-global-gain (fn [data context]
@@ -95,11 +95,11 @@
    
    
    (fact
-    "sip-has-started"
+    "sip-registered"
     (reset-lines!)
     (doseq [line (get-lines "startup.txt")]
       (handle-output context fns line))
-    (:sip-has-started @context) => true)
+    (:sip-registered @context) => true)
 
    
    (fact
