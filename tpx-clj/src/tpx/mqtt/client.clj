@@ -66,7 +66,7 @@
 (defn create [config]
   (log/info "Connecting to broker")
   (let [c (map->MqttClient {:config config
-                            :topics (atom {})                            
+                            :topics (atom {})
                             :client (mh/connect (gen-uri-string config)
                                                 (gen-paho-options config))})]
     (reset! store c)

@@ -28,7 +28,8 @@
         injections (-> mqtt-manager
                        (select-keys (:injection-ks mqtt-manager))
                        (assoc :mqtt-manager mqtt-manager))]
-    (->> (merge {:message/meta {:origin :mqtt :topic topic}}  
+    (->> (merge {:message/meta {:origin :mqtt :topic topic}
+                 :message/topic topic}
                 (<-transit payload)
                 (merge injections))
          (.send-message! (:message-service injections)))))
