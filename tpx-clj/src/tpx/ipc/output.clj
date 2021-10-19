@@ -3,7 +3,7 @@
             [clojure.string :as str]
             [taoensso.timbre :as log]))
 
-(def regexes {:sip-has-started #".*pjsua_acc.c  ....sip:[^:]+: registration success, status=200 \(OK\).*"
+(def regexes {:sip-registered #".*pjsua_acc.c  ....sip:[^:]+: registration success, status=200 \(OK\).*"
               ;; sip call
               :sip-call-buddy-list #"Buddy list:"
               :sip-call-choices #"Choices:"
@@ -27,7 +27,7 @@
               :sip-call-status #"  \[(\w+)\] To: (sip:.*);.*"})
 
 (def controller-steps ^{:doc "Last step in the regex steps above"}
-  #{:sip-has-started
+  #{:sip-registered
     :sip-call-enter
     :gain-input-global-gain
     :gain-input-left-gain
@@ -57,8 +57,8 @@
         current-set (->> lines
                          (map first)
                          (into #{}))]
-    (cond (set/subset? #{:sip-has-started} current-set)
-          [:sip-has-started (into {} lines)]
+    (cond (set/subset? #{:sip-registered} current-set)
+          [:sip-registered (into {} lines)]
 
           (set/subset? #{:sip-call-buddy-list
                          :sip-call-choices
@@ -114,6 +114,7 @@
     nil))
 
 (defn handle-output [context fns line]
+  ;;(log/debug :read-line line)
   (when-let [[found match] (reduce (fn [_ [k regex]]
                                      (if-let [match (process-line k line)]
                                        (reduced [k match])
