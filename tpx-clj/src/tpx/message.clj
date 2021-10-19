@@ -6,7 +6,6 @@
 
 (defonce ^:private store (atom nil))
 
-
 (defn send-message!* [message-service msg]
   (let [injections (-> message-service
                        (select-keys (:injection-ks message-service))
