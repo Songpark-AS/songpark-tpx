@@ -31,8 +31,8 @@
   (let [tp-id (data/get-tp-id)
         other-sips (dissoc sips tp-id)
         sips-call-order (get-call-order tp-id join-order sips)]
-    (log/debug :sips-call-order sips-call-order)
-    #_(doseq [sip sips-call-order]
+    (log/debug :sips-call-order (mapv identity sips-call-order))
+    (doseq [sip sips-call-order]
       (call-via-sip sip))))
 
 (defn jam-stop [join-order sips]
@@ -41,10 +41,13 @@
   (let [tp-id (data/get-tp-id)
         other-sips (dissoc sips tp-id)
         sips-hangup-order (get-call-order tp-id join-order sips)]
-    (log/debug :sips-hangup-order sips-hangup-order)
-    #_(doseq [sip sips-hangup-order]
+    (log/debug :sips-hangup-order (mapv identity sips-hangup-order))
+    (doseq [sip sips-hangup-order]
       (hangup-via-sip sip))))
 
 
 
-
+(comment
+  (call-via-sip "sip:9115@voip1.inonit.no")
+  (hangup-via-sip "sip:9115@voip1.inonit.no")
+  )

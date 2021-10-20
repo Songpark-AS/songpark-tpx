@@ -114,7 +114,7 @@
     nil))
 
 (defn handle-output [context fns line]
-  ;;(log/debug :read-line line)
+  (log/debug :read-line line)
   (when-let [[found match] (reduce (fn [_ [k regex]]
                                      (if-let [match (process-line k line)]
                                        (reduced [k match])
