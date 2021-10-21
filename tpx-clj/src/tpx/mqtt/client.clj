@@ -59,7 +59,7 @@
 
   (unsubscribe [this topics]
     (when (.connected? this)
-      (doseq [k (keys topics)]
+      (doseq [k topics]
         (swap! (:topics this) dissoc k))
       (mh/unsubscribe (:client this) topics))))
 
