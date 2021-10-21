@@ -1,7 +1,7 @@
 (ns tpx.message.dispatch.teleporter
   (:require [tpx.message.dispatch.interface :as message]
-            [tpx.ipc.serial :as serial]
-            [tpx.utils :refer [scale-value]]
+            [tpx.ipc.command :as ipc.command]
+            [tpx.data :as data]
             [taoensso.timbre :as log]))
 
 
@@ -19,16 +19,21 @@
   )
 
 
-(defmethod message/dispatch :teleporter.cmd.volume/global [{:teleporter/keys [volume]}]
-  (let [volume (int (* volume 100))] 
-    (log/debug ::set-global-volume "volume: " volume)
-    #_(serial/send-command (:port @serial/config) "vol" volume)))
+(defmethod message/dispatch :teleporter.cmd/global-volume [{{:teleporter/keys [volume id]} :message/body}]
+  (if (data/same-tp? id)
+    (do
+      (log/debug ::set-global-volume {:volume volume})
+      (ipc.command/global-volume volume))
+    (log/debug :set-global-volume-wrong-teleporter {:id id
+                                                    :volume volume})))
 
-(defmethod message/dispatch :teleporter.cmd/balance [{:teleporter/keys [balance]}]
-  (let [balance (int (scale-value balance [0 1] [-50 50]))] 
-    (log/debug ::set-balance "balance: " balance)
-    #_(serial/send-command (:port @serial/config) "bal" balance))
-  )
+(defmethod message/dispatch :teleporter.cmd/network-volume [{{:teleporter/keys [volume id]} :message/body}]
+  (if (data/same-tp? id)
+    (do
+      (log/debug ::set-network-volume {:volume volume})
+      (ipc.command/network-volume volume))
+    (log/debug :set-network-volume-wrong-teleporter {:id id
+                                                    :volume volume})))
 
 ;; send an informational message to teleporter topics
 (defmethod message/dispatch :teleporter.msg/info [{:message/keys [body]

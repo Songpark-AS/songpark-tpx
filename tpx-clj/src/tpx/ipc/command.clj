@@ -3,6 +3,17 @@
             [tpx.ipc.serial :refer [send-command]]
             [taoensso.timbre :as log]))
 
+(defn global-volume [value]
+  (do (send-command "pc" "")
+      (send-command "vol" value)))
+
+(defn network-volume [value]
+  (do (send-command "pc" "")
+      (send-command "netvoll" value)
+
+      (send-command "pc" "")
+      (send-command "netvolr" value)))
+
 
 (defn- call-via-sip [sip]
   (log/debug ::m)
@@ -12,7 +23,9 @@
   (send-command sip ""))
 
 (defn- hangup-via-sip [sip]
-  (send-command "h" sip))
+  ;; this should take the sip as a command
+  ;; but the h command for SIP/BP does not appear to take it
+  (send-command "h" ""))
 
 (defn- get-call-order [tp-id join-order sips]
   (let [indexed-join-order (map vector join-order (range))
@@ -50,4 +63,32 @@
 (comment
   (call-via-sip "sip:9115@voip1.inonit.no")
   (hangup-via-sip "sip:9115@voip1.inonit.no")
+
+  (send-command "" "")
+
+  ;; check active calls
+  (do (send-command "m" "")
+      (Thread/sleep 200)
+      (send-command "q" ""))
+
+  (do (send-command "pc" "")
+      (send-command "vll" "10")
+      (send-command "pc" "")
+      (send-command "vlr" "10"))
+
+  (do (send-command "pc" "")
+      (send-command "vll" "10"))
+
+  (do (send-command "pc" "")
+      (send-command "vol" "50"))
+
+  (do (send-command "pc" "")
+      (send-command "vlr" "10"))
+
+  (do (send-command "pc" "")
+      (send-command "netvoll" "10")
+
+      (send-command "pc" "")
+      (send-command "netvolr" "10"))
+)
   )

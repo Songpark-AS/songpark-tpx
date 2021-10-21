@@ -26,3 +26,8 @@
 
 (defn get-tp-id []
   (str @tp-id*))
+
+
+(defn same-tp? [tp-id]
+  (and (some? @tp-id*)
+       (= (str @tp-id*) (str tp-id))))
