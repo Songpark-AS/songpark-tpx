@@ -1,6 +1,7 @@
 (ns tpx.data)
 
 (defonce ^:private jam-id* (atom nil))
+(defonce ^:private jam-session* (atom nil))
 (defonce ^:private tp-id* (atom nil))
 
 ;; Jam ID (UUID)
@@ -10,11 +11,20 @@
 (defn clear-jam-id! []
   (reset! jam-id* nil))
 
+(defn get-jam-id []
+  @jam-id*)
+
 (defn get-jam-teleporters []
   (str @jam-id* "/teleporters"))
 
 (defn get-jam []
   (str @jam-id* "/jam"))
+
+(defn set-jam-session! [jam-session]
+  (reset! jam-session* jam-session))
+
+(defn clear-jam-session! []
+  (reset! jam-session* nil))
 
 
 ;; TP ID (UUID)
