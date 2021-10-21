@@ -27,13 +27,22 @@
     (log/debug :set-global-volume-wrong-teleporter {:id id
                                                     :volume volume})))
 
+(defmethod message/dispatch :teleporter.cmd/local-volume [{{:teleporter/keys [volume id]} :message/body}]
+  (if (data/same-tp? id)
+    (do
+      (log/debug ::set-local-volume {:volume volume})
+      (ipc.command/local-volume volume))
+    (log/debug :set-local-volume-wrong-teleporter {:id id
+                                                   :volume volume})))
+
+
 (defmethod message/dispatch :teleporter.cmd/network-volume [{{:teleporter/keys [volume id]} :message/body}]
   (if (data/same-tp? id)
     (do
       (log/debug ::set-network-volume {:volume volume})
       (ipc.command/network-volume volume))
     (log/debug :set-network-volume-wrong-teleporter {:id id
-                                                    :volume volume})))
+                                                     :volume volume})))
 
 ;; send an informational message to teleporter topics
 (defmethod message/dispatch :teleporter.msg/info [{:message/keys [body]

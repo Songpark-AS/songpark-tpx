@@ -7,6 +7,12 @@
   (do (send-command "pc" "")
       (send-command "vol" value)))
 
+(defn local-volume [value]
+  (do (send-command "pc" "")
+      (send-command "vll" value)
+      (send-command "pc" "")
+      (send-command "vlr" value)))
+
 (defn network-volume [value]
   (do (send-command "pc" "")
       (send-command "netvoll" value)
