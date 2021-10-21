@@ -64,8 +64,6 @@
     (doseq [sip sips-hangup-order]
       (hangup-via-sip sip))))
 
-
-
 (comment
   (call-via-sip "sip:9115@voip1.inonit.no")
   (hangup-via-sip "sip:9115@voip1.inonit.no")
