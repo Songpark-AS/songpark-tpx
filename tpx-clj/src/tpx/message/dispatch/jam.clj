@@ -35,25 +35,3 @@
       (data/clear-jam-session!)
       (catch Throwable t
         (log/error "Caught " (str t))))))
-
-#_(let [mqtt-manager (:mqtt-manager @tpx.init/system)]
-
-  #_(.publish mqtt-manager (data/get-jam) {:message/type :jam.cmd/ended
-                                         :message/body {:teleporter/id (data/get-tp-id)
-                                                        :jam/uuid (data/get-jam-id)}})
-  #_(.publish mqtt-manager (data/get-jam) {:message/type :testus
-                                         :message/body {:teleporter/id (data/get-tp-id)
-                                                        :jam/uuid (data/get-jam-id)}})
-  (log/debug "Sleeping for 5 seconds, before unsubscribing from jam-teleporters channel and clearing jam-id and jam-session")
-  ;;(Thread/sleep (* 5 1000))
-  (log/debug :dispatch (str "Unsubscribing from " (data/get-jam-teleporters)))
-  ;;(.unsubscribe mqtt-manager [(data/get-jam-teleporters)])
-  (.unsubscribe mqtt-manager ["foobar"])
-  #_#_#_(.publish mqtt-manager (data/get-jam) {:message/type :jam.cmd/ended
-                                         :message/body {:teleporter/id (data/get-tp-id)
-                                                        :jam/uuid (data/get-jam-id)}})
-  (data/clear-jam-id!)
-  (data/clear-jam-session!)
-  
-
-  )

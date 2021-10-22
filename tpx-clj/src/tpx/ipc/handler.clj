@@ -47,30 +47,7 @@
                                          :message/body {:teleporter/id (data/get-tp-id)
                                                         :sip/data data}}))
 
-(defn handle-info-log [data {:keys [mqtt-manager] :as _context}]
-  (log/debug :handle-info-log data)
+(defn handle-log [data {:keys [mqtt-manager] :as _context}]
+  (log/debug :handle-log data)
   (.publish mqtt-manager (data/get-tp-log-topic) {:message/type :teleporter/log
-                                                  :message/body {:log/level :info
-                                                                 :log/data data
-                                                                 :teleporter/id (data/get-tp-id)}}))
-
-(defn handle-error-log [data {:keys [mqtt-manager] :as _context}]
-  (log/debug :handle-error-log data)
-  (.publish mqtt-manager (data/get-tp-log-topic) {:message/type :teleporter/log
-                                                  :message/body {:log/level :error
-                                                                 :log/data data
-                                                                 :teleporter/id (data/get-tp-id)}}))
-
-(defn handle-warn-log [data {:keys [mqtt-manager] :as _context}]
-  (log/debug :handle-warn-log data)
-  (.publish mqtt-manager (data/get-tp-log-topic) {:message/type :teleporter/log
-                                                  :message/body {:log/level :warn
-                                                                 :log/data data
-                                                                 :teleporter/id (data/get-tp-id)}}))
-
-(defn handle-debug-log [data {:keys [mqtt-manager] :as _context}]
-  (log/debug :handle-debug-log data)
-  (.publish mqtt-manager (data/get-tp-log-topic) {:message/type :teleporter/log
-                                                  :message/body {:log/level :debug
-                                                                 :log/data data
-                                                                 :teleporter/id (data/get-tp-id)}}))
+                                                  :message/body (assoc data :teleporter/id (data/get-tp-id))}))

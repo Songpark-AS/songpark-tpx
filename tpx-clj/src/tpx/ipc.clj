@@ -40,10 +40,10 @@
                                :sip-call-stopped #'ipc.handler/handle-sip-call-stopped
                                :sip-registered #'ipc.handler/handle-sip-registered
                                :sip-call #'ipc.handler/handle-sip-call
+                               :log #'ipc.handler/handle-log
                                :gain-input-global-gain #'ipc.handler/handle-gain-input-global-gain
                                :gain-input-left-gain #'ipc.handler/handle-gain-input-left-gain
-                               :gain-input-right-gain #'ipc.handler/handle-gain-input-right-gain})
-  )
+                               :gain-input-right-gain #'ipc.handler/handle-gain-input-right-gain}))
 
 (defrecord IpcService [injection-ks started? config message-service mqtt-manager]
   component/Lifecycle

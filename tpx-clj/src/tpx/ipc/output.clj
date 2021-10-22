@@ -17,6 +17,8 @@
               :gain-input-left-gain #"Entered left gain"
               :gain-input-right-gain #"Entered right gain"
 
+              :log #"^([A-Z]+)::([0-9]{2,2}\:[0-9]{2,2}\:[0-9]{2,2}\.[0-9]{3,3})(.*)"
+
               ;; sip-call-started
 
               :sip-connect #".*Conf connect: \d+ \-\-\> \d+.*"
@@ -33,7 +35,8 @@
     :gain-input-left-gain
     :gain-input-right-gain
     :sip-call-started
-    :sip-call-stopped})
+    :sip-call-stopped
+    :log})
 
 (defonce lines (atom []))
 
@@ -64,6 +67,9 @@
                          :sip-call-choices
                          :sip-call-enter} current-set)
           [:sip-call (into {} lines)]
+
+          (set/subset? #{:log} current-set)
+          [:log (into {} lines)]
 
           (set/subset? #{:sip-connect
                          :sip-stream-established} current-set)
@@ -111,6 +117,10 @@
     :sip-call-stopped (let [[_ status to] (:sip-call-status data)]
                         {:status status
                          :to to})
+    :log (let [[_ level timestamp data] (:log data)]
+           {:log/level (-> level str/lower-case keyword)
+            :log/timestamp timestamp
+            :log/data data})
     nil))
 
 (defn handle-output [context fns line]
