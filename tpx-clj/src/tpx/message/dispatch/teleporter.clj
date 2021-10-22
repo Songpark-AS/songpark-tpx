@@ -44,6 +44,13 @@
     (log/debug :set-network-volume-wrong-teleporter {:id id
                                                      :volume volume})))
 
+(defmethod message/dispatch :teleporter.cmd/hangup-all [{{:teleporter/keys [id]} :message/body}]
+  (if (data/same-tp? id)
+    (do
+      (log/debug ::hangup-all)
+      (ipc.command/hangup-all))
+    (log/debug :hangup-all-wrong-teleporter {:id id})))
+
 ;; send an informational message to teleporter topics
 (defmethod message/dispatch :teleporter.msg/info [{:message/keys [body]
                                                    :keys [mqtt-manager]}]

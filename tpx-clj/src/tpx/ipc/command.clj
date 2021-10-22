@@ -33,7 +33,7 @@
   ;; but the h command for SIP/BP does not appear to take it
   (send-command "h" ""))
 
-(defn- hangup-all []
+(defn hangup-all []
   ;; hangup all calls
   (send-command "ha" ""))
 
@@ -104,4 +104,3 @@
       (send-command "pc" "")
       (send-command "netvolr" "10"))
 )
-  )
