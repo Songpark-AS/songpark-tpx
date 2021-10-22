@@ -37,6 +37,9 @@
 (defn get-tp-id []
   (str @tp-id*))
 
+(defn get-tp-log-topic []
+  (str @tp-id* "/log"))
+
 
 (defn same-tp? [tp-id]
   (and (some? @tp-id*)
