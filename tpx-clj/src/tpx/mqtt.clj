@@ -42,8 +42,7 @@
   (.unsubscribe client topics))
 
 (defn- publish* [{:keys [client] :as mqtt-manager} topic msg]
-  (.publish client topic (->transit (assoc msg :message/id @counter)))
-  (swap! counter inc))
+  (.publish client topic (->transit (assoc msg :message/id (swap! counter inc)))))
 
 (defrecord MQTTManager [injection-ks started? config message-service]
   component/Lifecycle
