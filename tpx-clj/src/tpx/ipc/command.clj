@@ -33,6 +33,11 @@
   ;; but the h command for SIP/BP does not appear to take it
   (send-command "h" ""))
 
+(defn- hangup-all []
+  ;; hangup all calls
+  (send-command "ha" ""))
+
+
 (defn- get-call-order [tp-id join-order sips]
   (let [indexed-join-order (map vector join-order (range))
         starting-position (reduce (fn [_ [id idx]]
@@ -47,6 +52,9 @@
 (defn jam-start [join-order sips]
   (log/debug :jam-start {:join-order join-order
                          :sips sips})
+  (hangup-all)
+  ;; Sleep for 200ms to make sure the calls are all ended
+  (Thread/sleep 200)
   (let [tp-id (data/get-tp-id)
         other-sips (dissoc sips tp-id)
         sips-call-order (get-call-order tp-id join-order sips)]
@@ -69,6 +77,7 @@
   (hangup-via-sip "sip:9115@voip1.inonit.no")
 
   (send-command "" "")
+  (send-command "ha" "")
 
   ;; check active calls
   (do (send-command "m" "")

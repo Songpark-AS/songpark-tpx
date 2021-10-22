@@ -36,7 +36,6 @@
       (catch Throwable t
         (log/error "Caught " (str t))))))
 
-
 #_(let [mqtt-manager (:mqtt-manager @tpx.init/system)]
 
   #_(.publish mqtt-manager (data/get-jam) {:message/type :jam.cmd/ended
