@@ -17,7 +17,7 @@
               :gain-input-left-gain #"Entered left gain"
               :gain-input-right-gain #"Entered right gain"
 
-              :log #"^([A-Z]+)::([0-9]{2,2}\:[0-9]{2,2}\:[0-9]{2,2}\.[0-9]{3,3})(.*)"
+              :log #".*(INFO|DEBUG|WARN|ERROR)(::)?(.*)"
 
               ;; sip-call-started
 
@@ -27,6 +27,7 @@
               ;; sip-call-stopped
               :sip-call-hangup #".*\!Call \d+ hanging up: code=\d+.*"
               :sip-call-status #"  \[(\w+)\] To: (sip:.*);.*"})
+
 
 (def controller-steps ^{:doc "Last step in the regex steps above"}
   #{:sip-registered
@@ -117,9 +118,8 @@
     :sip-call-stopped (let [[_ status to] (:sip-call-status data)]
                         {:status status
                          :to to})
-    :log (let [[_ level timestamp data] (:log data)]
+    :log (let [[_ level _ data] (:log data)]
            {:log/level (-> level str/lower-case keyword)
-            :log/timestamp timestamp
             :log/data data})
     nil))
 
