@@ -34,7 +34,7 @@
   protocol.mqtt.client/IMqttClient
   (connect [this]
     ;; only used for when/if client was disconnected after initial creation
-    (log/info "Connecting to broker")
+    (log/info (str "Connecting to broker" (select-keys config [:schema :host :port])))
     (.connect (:client this)))
 
   (connected? [this]

@@ -9,15 +9,7 @@
                                    ;;:password "SecretPass"
                                    }}}
  :ipc {:platform "http://127.0.0.1:3000"
-       :teleporter {:nickname "zedboard-01"}}
- :voip {:server "voip1.inonit.no"
-        :accounts {#uuid "1d84be2b-44d1-5da8-91ae-a9b97f133cb9" {:name :tp-01
-                                                                 :voip/username "9111"
-                                                                 :voip/password "ufd682?7"}
-                   ;; TODO: change this based on mac address of other tp
-                   #uuid "1d84be2b-44d1-5da8-91ae-a9b97f133c00" {:name :tp-02
-                                                                 :voip/username "9112"
-                                                                 :voip/password "sT-hjjd?kd"}}}}
+       :teleporter {:nickname "zedboard-01"}}}
 
 
 

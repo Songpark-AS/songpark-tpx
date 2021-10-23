@@ -10,10 +10,6 @@
                  [me.raynes/fs "1.4.6"]
                  ;; logging
                  [com.taoensso/timbre "5.1.2"]
-                 [com.fzakaria/slf4j-timbre "0.3.21"]
-                 [raven-clj "1.6.0"]
-                 ;; redis support
-                 [com.taoensso/carmine "3.1.0"]
                  ;; structure
                  [com.stuartsierra/component "1.0.0"]
                  ;; serial comms

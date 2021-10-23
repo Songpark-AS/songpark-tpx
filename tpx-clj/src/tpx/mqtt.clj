@@ -50,7 +50,7 @@
     (if started?
       this      
       (do
-        (log/info "Starting MQTTManager")          
+        (log/info "Starting MQTTManager")
         (let [new-this (assoc this
                               :started? true
                               :client (mqtt.client/create (assoc config :on-message on-message)))]
