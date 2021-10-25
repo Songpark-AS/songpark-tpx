@@ -3,9 +3,11 @@
   (:require [clojure.java.shell :refer [sh]]
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
+            [tpx.config :refer [config]]
             [tpx.data :as data]
-            [tpx.ipc.serial :as ipc.serial]
+            [tpx.ipc.command :as ipc.command]
             [tpx.ipc.handler :as ipc.handler]
+            [tpx.ipc.serial :as ipc.serial]
             [songpark.common.communication :refer [PUT]]))
 
 (defonce ^:private store (atom nil))
@@ -45,6 +47,10 @@
                                :gain-input-left-gain #'ipc.handler/handle-gain-input-left-gain
                                :gain-input-right-gain #'ipc.handler/handle-gain-input-right-gain}))
 
+(defn- set-hw-defaults! []
+  ;; set 
+  (ipc.command/set-playout-delay (get-in config [:defaults :playout-delay] 20)))
+
 (defrecord IpcService [injection-ks started? config message-service mqtt-manager]
   component/Lifecycle
   (start [this]
@@ -56,6 +62,7 @@
             (reset! store new-this)
             (broadcast-presence config)
             (setup-serial-ports! mqtt-manager)
+            (set-hw-defaults!)
             new-this))))
   
   (stop [this]
