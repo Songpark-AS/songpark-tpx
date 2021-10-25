@@ -1,11 +1,14 @@
 {:logger {:sentry-settings {:log? false
                             :dsn ""}
           :level :debug}
+ :defaults {:playout-delay 20 ;; in ms
+            }
  :mqtt {:config {:scheme "tcp"
                  :host "127.0.0.1"
                  :port 1883
                  :connect-options {:auto-reconnect true
                                    :keep-alive-interval 60
+                                   :max-inflight 100
                                    ;; :username "tpx"
                                    ;;:password "SecretPass"
                                    }}}
