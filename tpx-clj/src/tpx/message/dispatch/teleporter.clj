@@ -49,7 +49,14 @@
     (do
       (log/debug ::hangup-all)
       (ipc.command/hangup-all))
-    (log/debug :hangup-all-wrong-teleporter {:id id})))
+    (log/debug ::hangup-all-wrong-teleporter {:id id})))
+
+(defmethod message/dispatch :teleporter.cmd/set-playout-delay [{{:teleporter/keys [id playout-delay]} :message/body}]
+  (if (data/same-tp? id)
+    (do
+      (log/debug ::set-playout-delay playout-delay)
+      (ipc.command/set-playout-delay playout-delay))
+    (log/debug ::set-playout-delay-wrong-teleporter {:id id})))
 
 ;; send an informational message to teleporter topics
 (defmethod message/dispatch :teleporter.msg/info [{:message/keys [body]
