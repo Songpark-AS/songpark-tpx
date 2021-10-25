@@ -20,6 +20,11 @@
       (send-command "pc" "")
       (send-command "netvolr" value)))
 
+(defn set-playout-delay [value]
+  (send-command "pd" "")
+  (Thread/sleep 200)
+  (send-command "" value))
+
 
 (defn- call-via-sip [sip]
   (log/debug ::m)
@@ -78,11 +83,21 @@
 
   (send-command "" "")
   (send-command "ha" "")
+  (set-playout-delay 20)
 
   ;; check active calls
   (do (send-command "m" "")
       (Thread/sleep 200)
       (send-command "q" ""))
+
+  (do (send-command "pd" "")
+      (Thread/sleep 500)
+      (send-command "12" "")
+      (Thread/sleep 200)
+      (send-command "pd" "")
+      )
+
+  (playout-delay "11")
 
   (do (send-command "pc" "")
       (send-command "vll" "10")
