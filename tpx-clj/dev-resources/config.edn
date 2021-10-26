@@ -3,6 +3,7 @@
           :level :debug}
  :defaults {:playout-delay 20 ;; in ms
             }
+ :mac "00:00:00:00:00:01"
  :mqtt {:config {:scheme "tcp"
                  :host "127.0.0.1"
                  :port 1883

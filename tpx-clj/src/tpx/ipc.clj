@@ -13,10 +13,7 @@
 (defonce ^:private store (atom nil))
 
 (defn- get-device-mac []
-  (-> (clojure.string/split (:out (sh "ip" "n")) #"\n")
-      first
-      (clojure.string/split #"\s")
-      (nth 4)))
+  (:mac config))
 
 (defn send-message! [msg]
   (let [ipc @store
