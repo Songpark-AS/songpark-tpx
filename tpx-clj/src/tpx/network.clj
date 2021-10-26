@@ -4,29 +4,49 @@
             [com.stuartsierra.component :as component]
             [tpx.config :refer [config]]
             [tpx.network.webserver :as webserver]
+            [tpx.network.configurator :refer [gen-iface-config]]
             [clojure.java.shell :refer [sh]]
             [taoensso.timbre :as log]))
 
+
 (defonce run-checker? (atom false))
 
-(defn set-network! [{:keys [ip gateway netmask dhcp?] :as opts}]
+;; Currently not actually taking down/up eth1, due to completely
+;; different system on dev machine
+(defn activate-iface-config [iface-config]
+  (let [current-config (if (.exists (clojure.java.io/file "/tmp/net-eth1")) (slurp "/tmp/net-eth1"))]    
+    (do (log/debug ::activate-iface-config "Updating interface configuration")
+        #_(sh "bash" "-c" "ip link set eth1 down")
+        (spit "/tmp/net-eth1" iface-config) ;; TODO: Change to /etc/network/interfaces.d/eth1
+        #_(sh "bash" "-c" "ip link set eth1 up"))))
+
+(defn set-network! [{:keys [ip netmask gateway dhcp?] :as opts}]
   (let [fake-reset? (get-in config [:network :fake-reset?])]
     (log/info "Set network" opts)
     (if fake-reset?
-      (log/debug "I AM FAKE RESETTING THE NETWORK" opts)
-      )))
+      #_(log/debug "I AM FAKE RESETTING THE NETWORK" opts)
+      (if dhcp?
+        (let [cfg (gen-iface-config :dhcp opts)]
+          (log/debug ::set-network!)
+          (clojure.pprint/pprint cfg)
+          (activate-iface-config cfg))
+        ;; run ifdown, generate static ip config and spir to /etc/network/interfaces.d/eth1, run ifup
+        (let [cfg (gen-iface-config :static opts)]
+          (log/debug ::set-network!)
+          (clojure.pprint/pprint cfg)
+          (activate-iface-config cfg))))))
 
 (defn check-network-status [cmd]
-  (let [cmds (str/split cmd #"\s")
-        {:keys [exit out err]} (apply sh cmds)]
+  (let [{:keys [exit out err]} (sh "bash" "-c" cmd)]
     (when-not (zero? exit)
       (log/error "Checking network status failed" {:exit exit
                                                    :err err}))
     (cond
       (= out "UP") :up
+      (= out "UNKNOWN") :up
       (= out "DOWN") :down
       (= out "") :down
-      (not (str/blank? out)) :up
+      #_#_(not (str/blank? out)) :up ;; this seemed to be causing trouble, but that was before I trimmed newlined from cut output
       :else :down)))
 
 (defn- run-checker [options]
@@ -35,13 +55,13 @@
         sleep-timer (get-in options [:network :sleep-timer])
         webserver-settings (get-in options [:network :webserver])
         server (atom nil)]
-
     (future
       (while @run-checker?
         (if (nil? @server)
           (let [status (check-network-status cmd)]
             (when (= status :down)
-              (set-network! network-options)
+              (log/debug ::run-checker "Setting default static IPv4")
+              (activate-iface-config (gen-iface-config :default-static network-options))
               (component/start (webserver/webserver {:config webserver-settings
                                                      :set-network! set-network!
                                                      :server server})))))
@@ -54,8 +74,9 @@
       this
       (let [network-up? (atom true)]
         (log/info "Starting Network detection")
+        (reset! run-checker? true)
         (assoc this
-               :data (atom {})
+               :data (atom {:future (run-checker config)})
                :network-up? network-up?
                :started? true))))
   (stop [this]
@@ -63,6 +84,8 @@
       this
       (do (log/info "Stopping Network detection")
           (reset! network-up? false)
+          (reset! run-checker? false)
+          (future-cancel (:future @(:data this))) ;; Not working, perhaps not important?
           (assoc this
                  :started? false)))))
 
@@ -72,7 +95,12 @@
 
 (comment
 
+  ;; Mac
   (check-network-status "ipconfig getifaddr en0")
+
+  ;; Zedboard
+  (check-network-status "ip -o link show eth1 | cut -d ' ' -f 9 | tr -d '\n'")
+  
   (set-network! {})
 
   (def server (atom nil))
@@ -85,4 +113,21 @@
                                                    :set-network! set-network!
                                                    :server server}))))
   (component/stop @webserver)
+
+  
+  (def network-manager (atom nil))
+  (reset! network-manager (component/start (network config)))
+  (component/stop network-manager)
+
+  (future-cancelled? (:future @(:data @network-manager)))
+  (:future @(:data @network-manager))
+  (-> network-manager)
+
   )
+
+
+
+
+
+
+
