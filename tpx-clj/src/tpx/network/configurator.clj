@@ -24,14 +24,14 @@
 (defn- load-user-config []
   (let [data-dir (get-in config [:os :data-dir])]
     (try
-      (reset! netcfg (read-string (slurp (str data-dir "/netcfg.edn"))))
+      (reset! netcfg (read-string (slurp (str data-dir "netcfg.edn"))))
       (catch Exception e
         (log/warn "Could not read user network config file " (ex-data e))))))
 
 (defn- save-user-config []
   (let [data-dir (get-in config [:os :data-dir])]
     (try
-      (spit (str data-dir "/netcfg.edn") @netcfg)
+      (spit (str data-dir "netcfg.edn") @netcfg)
       (catch Exception e
         (log/warn "Could not write config to file " (ex-data e))))))
 
