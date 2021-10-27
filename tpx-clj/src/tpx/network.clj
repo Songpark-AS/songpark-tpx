@@ -74,7 +74,8 @@
   (start [this]
     (if started?
       this
-      (let [network-up? (atom true)]
+      (let [server (atom nil)
+            network-up? (atom true)]
         (log/info "Starting Network detection")
         (reset! run-checker? true)
         (assoc this
@@ -86,8 +87,8 @@
       this
       (do (log/info "Stopping Network detection")
           (reset! network-up? false)
-          (reset! run-checker? false)
-          (future-cancel (:future @(:data this))) ;; Not working, perhaps not important?
+          (reset! run-checker? false)          
+          (future-cancel (:future @(:data this)))          
           (assoc this
                  :started? false)))))
 
@@ -118,14 +119,12 @@
 
   
   (def network-manager (atom nil))
-  (reset! network-manager (component/start (network config)))
-  (component/stop network-manager)
-
-  (future-cancelled? (:future @(:data @network-manager)))
-  (:future @(:data @network-manager))
-  (-> network-manager)
-
+  (reset! network-manager (component/start (network (get-in config [:network]))))
+  (component/stop @network-manager)
+  
   )
+
+
 
 
 
