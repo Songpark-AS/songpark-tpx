@@ -11,30 +11,32 @@
 
 (defonce run-checker? (atom false))
 
-;; Currently not actually taking down/up eth1, due to completely
-;; different system on dev machine
 (defn activate-iface-config [iface-config]
-  (let [current-config (if (.exists (clojure.java.io/file "/tmp/net-eth1")) (slurp "/tmp/net-eth1"))]    
-    (do (log/debug ::activate-iface-config "Updating interface configuration")
-        #_(sh "bash" "-c" "ip link set eth1 down")
-        (spit "/tmp/net-eth1" iface-config) ;; TODO: Change to /etc/network/interfaces.d/eth1
-        #_(sh "bash" "-c" "ip link set eth1 up"))))
+  (let [fake-reset? (get-in config [:network :fake-reset?])
+        network-config-dir (get-in config [:network :config-dir])
+        iface (get-in config [:network :iface])
+        network-config-filepath (str network-config-dir iface)
+        current-iface-config (if (.exists (clojure.java.io/file network-config-filepath))
+                               (slurp network-config-filepath))]    
+    (if fake-reset?
+      (do (log/debug ::activate-iface-config "Updating interface configuration")
+          (spit "/tmp/net-eth1" iface-config))
+      (do (log/debug ::activate-iface-config "Updating interface configuration")
+          (sh "bash" "-c" (str "ifdown " iface))
+          (spit network-config-filepath iface-config) 
+          (sh "bash" "-c" (str "ifup " iface))))))
 
 (defn set-network! [{:keys [ip netmask gateway dhcp?] :as opts}]
   (let [fake-reset? (get-in config [:network :fake-reset?])]
     (log/info "Set network" opts)
     (if fake-reset?
-      #_(log/debug "I AM FAKE RESETTING THE NETWORK" opts)
+      (do (log/debug "I AM FAKE RESETTING THE NETWORK" opts)
+          (if dhcp?
+            (activate-iface-config (gen-iface-config :dhcp opts))
+            (activate-iface-config (gen-iface-config :static opts))))
       (if dhcp?
-        (let [cfg (gen-iface-config :dhcp opts)]
-          (log/debug ::set-network!)
-          (clojure.pprint/pprint cfg)
-          (activate-iface-config cfg))
-        ;; run ifdown, generate static ip config and spir to /etc/network/interfaces.d/eth1, run ifup
-        (let [cfg (gen-iface-config :static opts)]
-          (log/debug ::set-network!)
-          (clojure.pprint/pprint cfg)
-          (activate-iface-config cfg))))))
+        (activate-iface-config (gen-iface-config :dhcp opts))
+        (activate-iface-config (gen-iface-config :static opts))))))
 
 (defn check-network-status [cmd]
   (let [{:keys [exit out err]} (sh "bash" "-c" cmd)]
