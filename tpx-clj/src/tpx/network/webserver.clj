@@ -41,8 +41,34 @@ tr:not(:first-of-type) td {
   padding: 2rem;
   border: 2px solid #0000000f;
 }
-"]])
 
+@keyframes spinner {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+    }
+
+.loader {
+  display: inline-block;
+  width: 23px;
+  height: 23px;
+  visibility: hidden;
+}
+.loader:after {
+  content: ' ';
+  display: block;
+  width: 16px;
+  height: 16px;
+  margin: 8px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  border-color: #000000 transparent #000000 transparent;
+  animation: spinner 1.2s linear infinite;
+}
+"]])
 
 (defn confirm []
   (html5 [:div {:style "text-align:center;"}
@@ -98,6 +124,10 @@ tr:not(:first-of-type) td {
       (form request))]
    [:script {:type "text/javascript"}
     "document.addEventListener('DOMContentLoaded', (e) => {
+         document.querySelector('input[type=submit]').addEventListener('click', () => {
+           document.getElementsByClassName('loader')[0].style.visibility = 'visible';
+         });
+
          function add_validation(field) {
            field.addEventListener('input', () => { 
              field.setCustomValidity(''); 
