@@ -5,7 +5,8 @@
             [tpx.logger :as logger]
             [tpx.ipc :as ipc]
             [tpx.mqtt :as mqtt]
-            [tpx.message :as message]))
+            [tpx.message :as message]
+            [tpx.network :as network]))
 
 
 (defn- system-map [extra-components]
@@ -19,6 +20,7 @@
            (into [:logger logger
                   :config core-config
                   :message-service (message/message-service (:message config))
+                  :network (network/network (:network config))
                   :mqtt-manager (component/using (mqtt/mqtt-manager (merge (:mqtt config)
                                                                            {:injection-ks [:message-service]}))
                                                  [:message-service])
