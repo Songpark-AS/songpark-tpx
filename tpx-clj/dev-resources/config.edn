@@ -1,14 +1,15 @@
-{:os {:data-dir "/var/local/songpark"}
+{:os {:data-dir "/var/local/songpark/"}
  
  :logger {:sentry-settings {:log? false
                             :dsn ""}}
  
- :network {:check-network-status-cmd "ip -o l show eth1 | cut -d ' ' -f 9 | tr -d '\n'"
+ :network {:config-dir "/etc/network/interfaces.d/"
+           :check-network-status-cmd "ip -o l show eth1 | cut -d ' ' -f 9 | tr -d '\n'"
            :sleep-timer 5000
            :iface "eth1"
            :hwaddr "02:01:02:03:04:11" ;; zb5 (.15)
            ;; no router exists for direct connection between laptop and tp on 192.168.0.0/24 subnet
-           :default-network {:ip "192.168.0.168"
+           :default-network {:ip "192.168.168.168" ;; not a good idea to use .0.168, way too common.
                              :netmask "255.255.255.0"}
            :webserver {:ip "0.0.0.0"
                        :port 8080
