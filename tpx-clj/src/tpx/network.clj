@@ -17,13 +17,13 @@
         iface (get-in config [:network :iface])
         network-config-filepath (str network-config-dir iface)
         current-iface-config (if (.exists (clojure.java.io/file network-config-filepath))
-                               (slurp network-config-filepath))]    
+                               (slurp network-config-filepath))]
     (if fake-reset?
       (do (log/debug ::activate-iface-config "Updating interface configuration")
           (spit "/tmp/net-eth1" iface-config))
       (do (log/debug ::activate-iface-config "Updating interface configuration")
           (sh "bash" "-c" (str "ifdown " iface))
-          (spit network-config-filepath iface-config) 
+          (spit network-config-filepath iface-config)
           (sh "bash" "-c" (str "ifup " iface))))))
 
 (defn set-network! [{:keys [ip netmask gateway dhcp?] :as opts}]
@@ -56,17 +56,25 @@
         network-options (get-in options [:network :default-network])
         sleep-timer (get-in options [:network :sleep-timer])
         webserver-settings (get-in options [:network :webserver])
-        server (atom nil)]
+        server (atom nil)
+        webserver (atom nil)]
     (future
       (while @run-checker?
-        (if (nil? @server)
           (let [status (check-network-status cmd)]
-            (when (= status :down)
-              (log/debug ::run-checker "Setting default static IPv4")
-              (activate-iface-config (gen-iface-config :default-static network-options))
-              (component/start (webserver/webserver {:config webserver-settings
-                                                     :set-network! set-network!
-                                                     :server server})))))
+            (if (nil? @webserver)
+              (when (= status :down)
+                (log/debug ::run-checker "Network is down, lets start the webserver")
+                (log/debug ::run-checker "Setting default static IPv4")
+                (activate-iface-config (gen-iface-config :default-static network-options))
+                (reset! webserver
+                      (component/start (webserver/webserver {:config webserver-settings
+                                                             :set-network! set-network!
+                                                             :server server}))))
+              (when (= status :up)
+                (log/debug ::run-checker "Network is up again, lets shutdown the webserver")
+                (component/stop @webserver)
+                (reset! webserver nil))))
+
         (Thread/sleep sleep-timer)))))
 
 (defrecord Network [started? network-up? data]
@@ -87,8 +95,8 @@
       this
       (do (log/info "Stopping Network detection")
           (reset! network-up? false)
-          (reset! run-checker? false)          
-          (future-cancel (:future @(:data this)))          
+          (reset! run-checker? false)
+          (future-cancel (:future @(:data this)))
           (assoc this
                  :started? false)))))
 
@@ -103,7 +111,7 @@
 
   ;; Zedboard
   (check-network-status "ip -o link show eth1 | cut -d ' ' -f 9 | tr -d '\n'")
-  
+
   (set-network! {})
 
   (def server (atom nil))
@@ -117,11 +125,11 @@
                                                    :server server}))))
   (component/stop @webserver)
 
-  
+
   (def network-manager (atom nil))
   (reset! network-manager (component/start (network (get-in config [:network]))))
   (component/stop @network-manager)
-  
+
   )
 
 
