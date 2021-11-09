@@ -43,13 +43,14 @@
 
 (defn gen-iface-config
   "Generate config file content for use in /etc/network/interfaces.d"
-  [template-k {:keys [ip netmask gateway] :as config}]
+  [template-k {:keys [ip netmask gateway] :as netconfig}]
   (let [iface (get-in config [:network :iface])
         hwaddr (get-in config [:network :hwaddr])
+        new-netconfig (dissoc netconfig :dhcp?)
         replacements (reduce-kv (fn [m k v]
                                   (assoc m (str "$" (str/upper-case (name k))) v))
                                 {} (merge {:iface (or iface "eth1")
-                                           :hwaddr (or hwaddr "02:01:02:03:04:11")} config))]
+                                           :hwaddr (or hwaddr "02:01:02:03:04:11")} new-netconfig))]
     (reduce-kv str/replace (template-k template) replacements)))
 
 

@@ -1,5 +1,6 @@
 (ns tpx.message.dispatch.teleporter
   (:require [tpx.message.dispatch.interface :as message]
+            [tpx.network :refer [set-network!]]
             [taoensso.timbre :as log]))
 
 
@@ -26,13 +27,14 @@
 
 
 (defmethod message/dispatch :teleporter.msg/ipv4 [{:message/keys [values]}]
-  (log/debug "Got new IPv4 config" values))
+  (log/debug "Got new IPv4 config" values)
+  (set-network! (clojure.set/rename-keys values {:ip/address :ip :ip/gateway :gateway :ip/subnet :netmask :ip/dhcp? :dhcp?})))
 
 
 (comment
   ;; MESSAGE FORMAT
   {:message/type :some/key
-
+   (set-network! {:ip "1.1.1.1", :gateway "3.3.3.3", :netmask "4.4.4.4", :dhcp? false})
    :message/body {} ;; from mqtt payload
    ;; example body
 
