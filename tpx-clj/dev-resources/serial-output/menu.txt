@@ -1,0 +1,36 @@
+>>>>
+Account list:
+  [ 0] <sip:193.69.145.66:5060>: does not register
+       Online status: Online
+ *[ 1] sip:9114@voip1.inonit.no: 200/OK (expires=99)
+       Online status: Online
+Buddy list:
+ [ 1] <?>  sip:9110@voip1.inonit.no
+ [ 2] <?>  sip:9112@voip1.inonit.no
+ [ 3] <?>  sip:9113@voip1.inonit.no
+ [ 4] <?>  sip:9114@voip1.inonit.no
+ [ 5] <?>  sip:9115@voip1.inonit.no
+ [ 6] <?>  sip:1003@voip1.inonit.no
+
++=============================================================================+
+|       Call Commands:         |   Buddy, IM & Presence:  |     Account:      |
+|                              |                          |                   |
+|  m  Make new call            | +b  Add new buddy       .| +a  Add new accnt |
+|  M  Make multiple calls      | -b  Delete buddy         | -a  Delete accnt. |
+|  a  Answer call              |  i  Send IM              | !a  Modify accnt. |
+|  h  Hangup call  (ha=all)    |  s  Subscribe presence   | rr  (Re-)register |
+|  H  Hold call                |  u  Unsubscribe presence | ru  Unregister    |
+|  v  re-inVite (release hold) |  t  ToGgle Online status |  >  Cycle next ac.|
+|  U  send UPDATE              |  T  Set online status    |  <  Cycle prev ac.|
+| ],[ Select next/prev call    +--------------------------+-------------------+
+|  x  Xfer call                |      Media Commands:     |  Status & Config: |
+|  X  Xfer with Replaces       |                          |                   |
+|  #  Send RFC 2833 DTMF       | cl  List ports           |  d  Dump status   |
+|  *  Send DTMF with INFO      | cc  Connect port         | dd  Dump detailed |
+| dq  Dump curr. call quality  | cd  Disconnect port      | dc  Dump config   |
+|                              |  V  Adjust audio Volume  |  f  Save config   |
+|  S  Send arbitrary REQUEST   | Cp  Codec priorities     |                   |
++-----------------------------------------------------------------------------+
+|  q  QUIT   L  ReLoad   sleep MS   echo [0|1|txt]     n: detect NAT type     |
++=============================================================================+
+You have 0 active call

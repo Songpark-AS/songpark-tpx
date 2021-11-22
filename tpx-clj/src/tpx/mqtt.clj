@@ -9,6 +9,7 @@
 
 
 (defonce ^:private store (atom nil))
+(defonce ^:private counter (atom 0))
 
 ;; transit reader/writer from/to string, since
 ;; mosquitto does not know anything about transit
@@ -28,7 +29,8 @@
         injections (-> mqtt-manager
                        (select-keys (:injection-ks mqtt-manager))
                        (assoc :mqtt-manager mqtt-manager))]
-    (->> (merge {:message/meta {:origin :mqtt :topic topic}}  
+    (->> (merge {:message/meta {:origin :mqtt :topic topic}
+                 :message/topic topic}
                 (<-transit payload)
                 (merge injections))
          (.send-message! (:message-service injections)))))
@@ -40,7 +42,7 @@
   (.unsubscribe client topics))
 
 (defn- publish* [{:keys [client] :as mqtt-manager} topic msg]
-  (.publish client topic (->transit msg)))
+  (.publish client topic (->transit (assoc msg :message/id (swap! counter inc)))))
 
 (defrecord MQTTManager [injection-ks started? config message-service]
   component/Lifecycle
@@ -48,7 +50,7 @@
     (if started?
       this      
       (do
-        (log/info "Starting MQTTManager")          
+        (log/info "Starting MQTTManager")
         (let [new-this (assoc this
                               :started? true
                               :client (mqtt.client/create (assoc config :on-message on-message)))]

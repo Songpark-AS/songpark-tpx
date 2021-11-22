@@ -3,7 +3,8 @@
             [me.raynes.fs :as fs]
             [taoensso.timbre :as log]
             [taoensso.timbre.appenders.3rd-party.rotor :refer [rotor-appender]]
-            [taoensso.timbre.appenders.3rd-party.sentry :refer [sentry-appender]]))
+            [taoensso.timbre.appenders.3rd-party.sentry :refer [sentry-appender]]
+            [tpx.config :refer [config]]))
 
 
 (defrecord Logger [started? sentry-settings]
@@ -12,6 +13,9 @@
     (if started?
       this
       (do (fs/mkdir "logs")
+          (let [level (get-in config [:logger :level] :info)]
+            (log/set-level! level)
+            (log/info "Set level of logging to" level))
           (log/merge-config! {:appenders (merge
                                           {:rotor (rotor-appender {:path "logs/tpx.log"
                                                                    :backlog 100})}

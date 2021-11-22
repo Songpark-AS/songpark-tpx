@@ -23,12 +23,18 @@
                  ;; mqtt implementation
                  [clojurewerkz/machine_head "1.0.0"]
                  [com.cognitect/transit-clj "1.0.324"]
+                 ;; json
+                 [cheshire "5.10.0"]
                  ;; songpark's common (will also contain an mqtt implementation later)
                  [songpark/common "0.1.1-SNAPSHOT"]
                  [clojure-interop/java.net "1.0.5"]]
   :main ^:skip-aot tpx.core
   :target-path "target/%s"
   :test-paths ["test"]
+  ;; The REPL on the zedboard starts really slow. 2 minutes was too little, so we added 10 minutes
+  ;; which seems to do the trick. It's somewhere around the 3 minute mark from what I can see, but
+  ;; 10 minutes to be on the safe side. Just be patient, and the REPL will show up
+  :repl-options {:timeout 600000}
   :profiles {:dev {:source-paths ["src" "dev"]
                    :resource-paths ["dev-resources" "resources"]
                    :dependencies [[midje "1.9.9"]

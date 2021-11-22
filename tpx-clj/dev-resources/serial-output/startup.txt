@@ -1,0 +1,150 @@
++ set -e
++ ifup wg0
++ typeset output
+++ ip link show wg0 up
++ output='6: wg0: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1420 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/none '
++ [[ -n 6: wg0: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1420 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/none  ]]
++ echo Online
+Online
++ connect --config-file 9114.cfg
+Initializing Cantavi Teleporter HW layer!!!
+Trying to open device::/dev/uio0!!!
+Maping device::/dev/uio0!!!
+Mapped device to Address::0xB6F26000!!!
+Trying to open device::/dev/uio1!!!
+Maping device::/dev/uio1!!!
+Mapped device to Address::0xB6F25000!!!
+Trying to open device::/dev/uio2!!!
+Maping device::/dev/uio2!!!
+Mapped device to Address::0xB6F24000!!!
+Trying to open device::/dev/uio3!!!
+Maping device::/dev/uio3!!!
+Mapped device to Address::0xB6F23000!!!
+Trying to open device::/dev/uio4!!!
+Maping device::/dev/uio4!!!
+Mapped device to Address::0xB6F22000!!!
+Trying to open device::/dev/uio5!!!
+Maping device::/dev/uio5!!!
+Mapped device to Address::0xB6F21000!!!
+Trying to open device::/dev/uio6!!!
+Maping device::/dev/uio6!!!
+Mapped device to Address::0xB6F20000!!!
+Trying to open device::/dev/uio7!!!
+Maping device::/dev/uio7!!!
+Mapped device to Address::0xB6F1F000!!!
+Trying to open device::/dev/uio8!!!
+Maping device::/dev/uio8!!!
+Mapped device to Address::0xB6F1E000!!!
+Trying to open device::/dev/uio9!!!
+Maping device::/dev/uio9!!!
+Mapped device to Address::0xB6F1D000!!!
+Trying to open device::/dev/uio10!!!
+Maping device::/dev/uio10!!!
+Mapped device to Address::0xB6F1C000!!!
+Trying to open device::/dev/uio11!!!
+Maping device::/dev/uio11!!!
+Mapped device to Address::0xB6F1B000!!!
+Trying to open device::/dev/uio12!!!
+Maping device::/dev/uio12!!!
+Mapped device to Address::0xB6F1A000!!!
+Initializing reset_adau1761
+write adau1761
+Adau1761 Device address is::0xB6F1B000!!!
+read adau1761
+Initializing init_adau1761
+init_adau1761()::Wait for PLL to lock
+Audio on adau1761 ready
+Initializing Cantavi Teleporter GPIOs!!!
+GPIO exported successfully
+GPIO direction set as output successfully
+192.168.11.1
+Got gateway address:: 192.168.11.1
+Got MAC Address:: 02. 01. 02. 03. 04. 10
+Netmask::255.255.255.0
+Got address mask:: 255.255.255.0
+LOCAL_IP::192.168.11.161
+Got local ip address:: 192.168.11.161
+
+Mac Address: 02. 01. 02. 03. 04. 10
+
+Local Ip Address: 192. 168. 011. 161
+
+Dest Ip Address: 000. 000. 000. 000
+
+Mask Ip Address: 255. 255. 255. 000
+
+Gateway Ip Address: 192. 168. 011. 001
+We are setting pkt len to ::48 RL samples
+Setting filter 0 coefficients..
+Setting filter 0 coefficients..
+Setting default Chan 0 L volume to 30..
+Setting default Chan 0 R volume to 30..
+Setting default Chan 1 L volume to 30..
+Setting default Chan 1 R volume to 30..
+Updating params ...
+Disable time sync...
+Reg6: 00000000 00000000 00000000 00000000
+Disable tx ...
+10:00:05.833 os_core_unix.c !pjlib 2.11 for POSIX initialized
+10:00:05.837 sip_endpoint.c  .Creating endpoint instance...
+10:00:05.838          pjlib  .select() I/O Queue created (0x2b6f68)
+10:00:05.838 sip_endpoint.c  .Module "mod-msg-print" registered
+10:00:05.838 sip_transport.  .Transport manager created.
+10:00:05.838   pjsua_core.c  .PJSUA state changed: NULL --> CREATED
+10:00:05.839 sip_endpoint.c  .Module "mod-pjsua-log" registered
+10:00:05.839 sip_endpoint.c  .Module "mod-tsx-layer" registered
+10:00:05.839 sip_endpoint.c  .Module "mod-stateful-util" registered
+10:00:05.839 sip_endpoint.c  .Module "mod-ua" registered
+10:00:05.840 sip_endpoint.c  .Module "mod-100rel" registered
+10:00:05.840 sip_endpoint.c  .Module "mod-pjsua" registered
+10:00:05.840 sip_endpoint.c  .Module "mod-invite" registered
+10:00:05.840   pjsua_core.c  .Trying STUN server 18.198.222.104:3478 IPv4 (1 of 1)..
+10:00:05.841          pjlib  ..select() I/O Queue created (0x2c0c8c)
+10:00:05.859 sip_endpoint.c  .Module "mod-evsub" registered
+10:00:05.859 sip_endpoint.c  .Module "mod-presence" registered
+10:00:05.859 sip_endpoint.c  .Module "mod-mwi" registered
+10:00:05.859 sip_endpoint.c  .Module "mod-refer" registered
+10:00:05.860 sip_endpoint.c  .Module "mod-pjsua-pres" registered
+10:00:05.860 sip_endpoint.c  .Module "mod-pjsua-im" registered
+10:00:05.860 sip_endpoint.c  .Module "mod-pjsua-options" registered
+10:00:05.860   pjsua_core.c  .1 SIP worker threads created
+10:00:05.860   pjsua_core.c  .pjsua version 2.11 for Linux-4.14/armv7l/glibc-2.26 initialized
+10:00:05.860   pjsua_core.c  .PJSUA state changed: CREATED --> INIT
+10:00:05.860 sip_endpoint.c  Module "mod-default-handler" registered
+10:00:05.869    stunresolve  .STUN mapped address found/changed: 193.69.145.66:33739
+10:00:05.871   pjsua_core.c  .STUN resolution success, using 18.198.222.104:3478, address is 18.198.222.104:3478
+10:00:05.903   pjsua_core.c  SIP UDP socket reachable at 193.69.145.66:5060
+10:00:05.904    udp0x2d2f90  SIP UDP transport started, published address is 193.69.145.66:5060
+10:00:05.904    pjsua_acc.c  Adding account: id=<sip:193.69.145.66:5060>
+10:00:05.904    pjsua_acc.c  .Account <sip:193.69.145.66:5060> added with id 0
+10:00:05.904    pjsua_acc.c !Modifying account 0
+10:00:05.904    pjsua_acc.c !Acc 0: setting online status to 1..
+10:00:05.904    pjsua_acc.c  Adding account: id=sip:9114@voip1.inonit.no
+10:00:05.904    pjsua_acc.c  .Account sip:9114@voip1.inonit.no added with id 1
+10:00:05.904    pjsua_acc.c  .Acc 1: setting registration..
+10:00:05.905   pjsua_core.c  ...TX 588 bytes Request msg REGISTER/cseq=47549 (tdta0x2d7894) to UDP 18.198.222.104:5060:
+REGISTER sip:voip1.inonit.no SIP/2.0
+Via: SIP/2.0/UDP 193.69.145.66:5060;rport;branch=z9hG4bKPjSt.jVI1HjIFRGewpo.ou8-jHAHR6NBJE
+Route: <sip:18.198.222.104;lr>
+Max-Forwards: 70
+From: <sip:9114@voip1.inonit.no>;tag=zknCw0a-1MIUL0VUSmo1goLXU5uikxyH
+To: <sip:9114@voip1.inonit.no>
+Call-ID: LCfJ1MYaQxaalVpJWck.heahO77dDTOv
+CSeq: 47549 REGISTER
+User-Agent: PJSUA v2.11 Linux-4.14/armv7l/glibc-2.26
+Contact: <sip:9114@193.69.145.66:5060;ob>;+sip.ice
+Expires: 300
+Allow: PRACK, INVITE, ACK, BYE, CANCEL, UPDATE, INFO, SUBSCRIBE, NOTIFY, REFER, MESSAGE, OPTIONS
+Content-Length:  0
+--end msg--
+10:00:05.954    pjsua_acc.c  ....SIP outbound status for acc 1 is not active
+10:00:05.954    pjsua_acc.c  ....sip:9114@voip1.inonit.no: registration success, status=200 (OK), will re-register in 300 seconds
+10:00:05.954    pjsua_acc.c  ....Keep-alive timer started for acc 1, destination:18.198.222.104:5060, interval:15s
+10:00:06.907    pjsua_aud.c  Closing sound device after idle for 1 second(s)
+10:00:06.907    pjsua_app.c  .Turning sound device -99 -99 OFF
+10:00:06.908    pjsua_aud.c  .Closing null sound device..
+10:00:13.825 utsx0xb5303004  STUN timeout waiting for response
+10:00:13.873 utsx0xb530655c  STUN timeout waiting for response
+10:00:13.873    pjsua_app.c  .NAT detected as Port Restricted

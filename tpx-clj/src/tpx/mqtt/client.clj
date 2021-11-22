@@ -34,7 +34,7 @@
   protocol.mqtt.client/IMqttClient
   (connect [this]
     ;; only used for when/if client was disconnected after initial creation
-    (log/info "Connecting to broker")
+    (log/info (str "Connecting to broker" (select-keys config [:schema :host :port])))
     (.connect (:client this)))
 
   (connected? [this]
@@ -59,14 +59,14 @@
 
   (unsubscribe [this topics]
     (when (.connected? this)
-      (doseq [k (keys topics)]
+      (doseq [k topics]
         (swap! (:topics this) dissoc k))
       (mh/unsubscribe (:client this) topics))))
 
 (defn create [config]
   (log/info "Connecting to broker")
   (let [c (map->MqttClient {:config config
-                            :topics (atom {})                            
+                            :topics (atom {})
                             :client (mh/connect (gen-uri-string config)
                                                 (gen-paho-options config))})]
     (reset! store c)
