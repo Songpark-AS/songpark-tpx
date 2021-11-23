@@ -1,4 +1,0 @@
-{:http {:server-settings {:port 3000
-                          :join? true
-                          :http/cookies {:http-only true}}}
- :mqtt {:server-settings {:port 1883}}}
