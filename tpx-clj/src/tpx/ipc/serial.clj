@@ -33,7 +33,8 @@
             (try
               (handle-output context fns line)
               (catch Exception e
-                (log/warn (ex-message e))))
+                (log/warn {:msg (ex-message e)
+                           :data (ex-data e)})))
             (log/debug ::unable-to-read-line)))))))
 
 (defn connect-to-port
