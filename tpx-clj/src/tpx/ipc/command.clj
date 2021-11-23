@@ -57,7 +57,7 @@
 (defn jam-start [join-order sips]
   (log/debug :jam-start {:join-order join-order
                          :sips sips})
-  (hangup-all)
+  ;; (hangup-all)
   ;; Sleep for 200ms to make sure the calls are all ended
   (Thread/sleep 200)
   (let [tp-id (data/get-tp-id)
@@ -78,12 +78,29 @@
       (hangup-via-sip sip))))
 
 (comment
-  (call-via-sip "sip:9115@voip1.inonit.no")
-  (hangup-via-sip "sip:9115@voip1.inonit.no")
+  ;; Beatles
+  (call-via-sip "sip:9100@voip1.inonit.no")
+  (hangup-via-sip "sip:9100@voip1.inonit.no")
+
+  ;; Elvis Presely
+  (call-via-sip "sip:9102@voip1.inonit.no")
+  (hangup-via-sip "sip:9102@voip1.inonit.no")
+
+  ;; Jimi Hendrix
+  (call-via-sip "sip:9104@voip1.inonit.no")
+  (hangup-via-sip "sip:9104@voip1.inonit.no")
+
+  ;; Adele
+  (call-via-sip "sip:9106@voip1.inonit.no")
+  (hangup-via-sip "sip:9106@voip1.inonit.no")
+
+  ;; Madonna
+  (call-via-sip "sip:9108@voip1.inonit.no")
+  (hangup-via-sip "sip:9108@voip1.inonit.no")
 
   (send-command "" "")
   (send-command "ha" "")
-  (set-playout-delay 20)
+  (set-playout-delay 30)
 
   ;; check active calls
   (do (send-command "m" "")
