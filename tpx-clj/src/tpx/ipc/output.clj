@@ -26,7 +26,12 @@
 
               ;; sip-call-stopped
               :sip-call-hangup #".*\!Call \d+ hanging up: code=\d+.*"
-              :sip-call-status #"  \[(\w+)\] To: (sip:.*);.*"})
+              :sip-call-status #"  \[(\w+)\] To: (sip:.*);.*"
+
+              ;; network-config
+              :local-ip #"Local Ip Address:.*"
+              :gateway-ip #"Gateway Ip Address:.*"
+              :netmask-ip #"Mask Ip Address:.*"})
 
 
 (def controller-steps ^{:doc "Last step in the regex steps above"}
@@ -71,6 +76,9 @@
 
           (set/subset? #{:log} current-set)
           [:log (into {} lines)]
+
+          (set/subset? #{:local-ip} current-set)
+          [:local-ip (into {} lines)]
 
           (set/subset? #{:sip-connect
                          :sip-stream-established} current-set)
@@ -121,6 +129,8 @@
     :log (let [[_ level _ data] (:log data)]
            {:log/level (-> level str/lower-case keyword)
             :log/data data})
+    :local-ip (let [ip (:local-ip data)]
+                {:ip (last (clojure.string/split ip #":"))})
     nil))
 
 (defn handle-output [context fns line]

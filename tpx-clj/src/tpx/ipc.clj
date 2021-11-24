@@ -42,7 +42,10 @@
                                :log #'ipc.handler/handle-log
                                :gain-input-global-gain #'ipc.handler/handle-gain-input-global-gain
                                :gain-input-left-gain #'ipc.handler/handle-gain-input-left-gain
-                               :gain-input-right-gain #'ipc.handler/handle-gain-input-right-gain}))
+                               :gain-input-right-gain #'ipc.handler/handle-gain-input-right-gain
+                               :local-ip #'ipc.handler/handle-local-ip
+                               :gateway-ip #'ipc.handler/handle-gateway-ip
+                               :netmask-ip #'ipc.handler/handle-netmask-ip}))
 
 (defn- set-hw-defaults! []
   ;; set 

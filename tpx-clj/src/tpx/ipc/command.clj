@@ -42,6 +42,14 @@
   ;; hangup all calls
   (send-command "ha" ""))
 
+(defn get-local-ip []
+  (send-command "getlip" ""))
+
+(defn get-gateway-ip []
+  (send-command "getgip" ""))
+
+(defn get-netmask-ip []
+  (send-command "getmask" ""))
 
 (defn- get-call-order [tp-id join-order sips]
   (let [indexed-join-order (map vector join-order (range))
