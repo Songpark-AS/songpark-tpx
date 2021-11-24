@@ -12,7 +12,7 @@
 ;; even if it might not pose a problem on the
 ;; zedboards, given no other services appear
 ;; to be using /dev/ptmx
-(defonce config (atom {:pts "/home/mathias/ttyTPX"}))
+(defonce config (atom {:pts "/tmp/ttyTPX"}))
 
 
 ;; TODO: examine possibility to have open-handler? inside the handler function
