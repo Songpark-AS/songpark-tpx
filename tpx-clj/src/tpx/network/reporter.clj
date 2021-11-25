@@ -25,11 +25,14 @@
   (when (not @has-reported?)
     (log/debug ::send-network-report "I should send a network report")
     (let [mqtt-manager (:mqtt-manager @tpx.init/system)
-          topic "replace-me-topic"]
+          topic (data/get-tp-report-net-config-topic)]
       (.publish mqtt-manager topic {:message/type :teleporter/net-config-report
                                     :message/body {:teleporter/id (data/get-tp-id)
                                                    :teleporter/network-config network-config}}))
     (reset! has-reported? true)))
+
+(defn send-current-network-report []
+  (send-network-report @current-network-config))
 
 (defn get-local-ip [strip-cidr?]
   (let [iface (get-in config [:network :iface])

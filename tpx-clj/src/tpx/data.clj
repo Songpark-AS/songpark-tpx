@@ -40,6 +40,9 @@
 (defn get-tp-log-topic []
   (str @tp-id* "/log"))
 
+(defn get-tp-report-net-config-topic []
+  (str @tp-id* "/net-config-report"))
+
 
 (defn same-tp? [tp-id]
   (and (some? @tp-id*)
