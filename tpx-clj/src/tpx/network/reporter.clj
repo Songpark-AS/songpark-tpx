@@ -15,7 +15,6 @@
 
 ;; TODO: send mock mqtt message
 ;; TODO: handle mock mqtt message in the app
-;; TODO: Check if it is using DHCP or not
 ;; TODO: test for realsies
 ;; TODO: make into system-component
 
@@ -33,13 +32,18 @@
     (reset! has-reported? true)))
 
 (defn get-local-ip [strip-cidr?]
-  (let [{:keys [exit out err]} (sh "bash" "-c" "nmcli -t -f IP4.ADDRESS dev show eth1 | sed 's/IP4\\.ADDRESS\\[1\\]\\://g'")]
+  (let [iface (get-in config [:network :iface])
+        {:keys [exit out err]} (sh "bash" "-c" (str "nmcli -t -f IP4.ADDRESS dev show " iface " | sed 's/IP4\\.ADDRESS\\[1\\]\\://g'"))]
     (when-not (zero? exit)
       (log/error "get-local-ip error" {:exit exit
                                        :err err}))
     (if strip-cidr?
       (first (clojure.string/split (clojure.string/trim-newline out) #"/"))
       (clojure.string/trim-newline out))))
+
+
+(defn get-netmaskrange [netmask]
+  (map #(bit-and %1 %2) (concat (repeat netmask 1) (repeat (- 32 netmask) 0)) (repeat 32 1)))
 
 (defn get-netmask-ip []
   (let [ip-subrange [128 64 32 16 8 4 2 1]
@@ -54,7 +58,8 @@
          (clojure.string/join "."))))
 
 (defn get-gateway-ip []
-  (let [{:keys [exit out err]} (sh "bash" "-c" "nmcli -t -f IP4.GATEWAY dev show eth1 | sed 's/IP4\\.GATEWAY\\://g'")]
+  (let [iface (get-in config [:network :iface])
+        {:keys [exit out err]} (sh "bash" "-c" (str "nmcli -t -f IP4.GATEWAY dev show " iface " | sed 's/IP4\\.GATEWAY\\://g'"))]
     (when-not (zero? exit)
       (log/error "get-gateway-ip error" {:exit exit
                                        :err err}))
@@ -69,25 +74,26 @@
                                (slurp network-config-filepath))]
     ;; if config file exists, strip comments, check for "inet static"
 
-    ;; current-iface-config is nil => true
-    ;; "inet static" not found => true
     ;; "inet static" found => false
+    ;; "inet static" not found => true
+    ;; current-iface-config is nil => true
     (if (not (nil? current-iface-config))
-      (re-matches #"^#.*$" (clojure.string/trim current-iface-config))
-      true))
-  )
+      (let [stripped-config (clojure.string/trim (clojure.string/replace current-iface-config #"(?m)^#.*$" ""))]
+        (if (clojure.string/includes? stripped-config "inet static")
+          false
+          true))
+      true)))
 
 (defn fetch-current-network-config []
   (let [local-ip (get-local-ip true)
         gateway-ip (get-gateway-ip)
-        netmask-ip (get-netmask-ip)]
+        netmask-ip (get-netmask-ip)
+        dhcp? (get-dhcp?)]
     (reset! current-network-config {:teleporter/local-ip local-ip
                                     :teleporter/gateway-ip gateway-ip
-                                    :teleporter/netmask-ip netmask-ip})
+                                    :teleporter/netmask-ip netmask-ip
+                                    :teleporter/DHCP? dhcp?})
     (reset! has-reported? false)))
-
-(defn get-netmaskrange [netmask]
-  (map #(bit-and %1 %2) (concat (repeat netmask 1) (repeat (- 32 netmask) 0)) (repeat 32 1)))
 
 (comment
   (get-dhcp?)
@@ -95,27 +101,5 @@
   (get-gateway-ip)
   (get-netmask-ip)
   (fetch-current-network-config)
-  (send-network-report {:teleporter/local-ip "192.168.11.123"
-                        :teleporter/gateway-ip "192.168.11.1"
-                        :teleporter/mask-ip "255.255.255.0"
-                        :teleporter/DHCP? true})
-
-
-  (let [
-        network-config-dir (get-in config [:network :config-dir])
-        iface (get-in config [:network :iface])
-        network-config-filepath (str network-config-dir iface)
-        current-iface-config (if (.exists (clojure.java.io/file network-config-filepath))
-                               (slurp network-config-filepath))]
-    ;; if config file exists, strip comments, check for "inet static"
-
-    ;; current-iface-config is nil => true
-    ;; "inet static" not found => true
-    ;; "inet static" found => false
-    (if (not (nil? current-iface-config))
-      (log/debug
-       (clojure.string/replace (clojure.string/trim current-iface-config) #"^#.*$" ""))
-      ))
-
-
+  (send-network-report @current-network-config)
   )
