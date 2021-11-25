@@ -25,18 +25,14 @@
 (defn broadcast-presence [config]
   (let [data {:teleporter/nickname (get-in config [:teleporter :nickname])
               :teleporter/mac (get-device-mac)
-              :tpx/version (:tpx/version config)
-              :bp/version (:bp/version config)
-              :fpga/version (:fpga/version config)}]
+              :teleporter/tpx-version (:tpx/version config)
+              :teleporter/bp-version (:bp/version config)
+              :teleporter/fpga-version (:fpga/version config)}]
     (log/debug "Broadcasting to URL"
                (str (get-in config [:platform]) "/api/teleporter")
                data)
     (PUT (str (get-in config [:platform]) "/api/teleporter")
-         {:teleporter/nickname (get-in config [:teleporter :nickname])
-          :teleporter/mac (get-device-mac)
-          :tpx/version (:tpx/version config)
-          :bp/version (:bp/version config)
-          :fpga/version (:fpga/version config)}
+         data
          (fn [{:teleporter/keys [uuid] :as response}]
            (data/set-tp-id! uuid)
            (send-message! {:message/type :teleporter.cmd/subscribe
