@@ -46,4 +46,5 @@
                    :plugins [[lein-midje "3.1.3"]
                              [lein-plantuml "0.1.22"]]}
              :uberjar {:aot :all
+                       :uberjar-name "tpx.jar"
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
