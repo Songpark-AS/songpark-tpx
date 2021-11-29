@@ -3,6 +3,7 @@
             [tpx.network :refer [set-network!]]
             [tpx.ipc.command :as ipc.command]
             [tpx.data :as data]
+            [tpx.network.reporter :as reporter]
             [taoensso.timbre :as log]))
 
 
@@ -58,6 +59,11 @@
       (log/debug ::set-playout-delay playout-delay)
       (ipc.command/set-playout-delay playout-delay))
     (log/debug ::set-playout-delay-wrong-teleporter {:id id})))
+
+
+(defmethod message/dispatch :teleporter.cmd/report-network-config [{:keys [mqtt-manager]}]
+  (reporter/fetch-and-send-current-network-config mqtt-manager))
+
 
 ;; send an informational message to teleporter topics
 (defmethod message/dispatch :teleporter.msg/info [{:message/keys [body]

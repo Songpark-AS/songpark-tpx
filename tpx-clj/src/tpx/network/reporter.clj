@@ -6,8 +6,7 @@
             [tpx.config :refer [config]]
             [tpx.ipc.serial :refer [send-command]]
             [tpx.ipc.command :as command]
-            [clojure.java.shell :refer [sh]]
-            [tpx.init]))
+            [clojure.java.shell :refer [sh]]))
 
 ;; keep track of if we have reported the last netconfig, reset to false when config changes
 ;; on network + mqtt up, if we have not reported the netconfig we do so
@@ -21,18 +20,17 @@
 (defonce has-reported? (atom false))
 (defonce current-network-config (atom {}))
 
-(defn send-network-report [network-config]
+(defn send-network-report [network-config mqtt-manager]
   (when (not @has-reported?)
     (log/debug ::send-network-report "I should send a network report")
-    (let [mqtt-manager (:mqtt-manager @tpx.init/system)
-          topic (data/get-tp-report-net-config-topic)]
+    (let [topic (data/get-tp-report-net-config-topic)]
       (.publish mqtt-manager topic {:message/type :teleporter/net-config-report
                                     :message/body {:teleporter/id (data/get-tp-id)
                                                    :teleporter/network-config network-config}}))
     (reset! has-reported? true)))
 
-(defn send-current-network-report []
-  (send-network-report @current-network-config))
+(defn send-current-network-report [mqtt-manager]
+  (send-network-report @current-network-config mqtt-manager))
 
 (defn get-local-ip [strip-cidr?]
   (let [iface (get-in config [:network :iface])
@@ -97,6 +95,10 @@
                                     :teleporter/netmask-ip netmask-ip
                                     :teleporter/DHCP? dhcp?})
     (reset! has-reported? false)))
+
+(defn fetch-and-send-current-network-config [mqtt-manager]
+  (fetch-current-network-config)
+  (send-current-network-report mqtt-manager))
 
 (comment
   (get-dhcp?)
