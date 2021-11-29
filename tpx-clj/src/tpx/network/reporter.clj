@@ -90,10 +90,10 @@
         gateway-ip (get-gateway-ip)
         netmask-ip (get-netmask-ip)
         dhcp? (get-dhcp?)]
-    (reset! current-network-config {:teleporter/local-ip local-ip
-                                    :teleporter/gateway-ip gateway-ip
-                                    :teleporter/netmask-ip netmask-ip
-                                    :teleporter/DHCP? dhcp?})
+    (reset! current-network-config {:ip/address local-ip
+                                    :ip/gateway gateway-ip
+                                    :ip/subnet netmask-ip
+                                    :ip/dhcp? dhcp?})
     (reset! has-reported? false)))
 
 (defn fetch-and-send-current-network-config [mqtt-manager]
