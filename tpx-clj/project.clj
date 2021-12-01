@@ -5,7 +5,7 @@
             :url ""}
   :dependencies [[org.clojure/clojure "1.10.1"]
                  ;; configuration
-                 [cprop "0.1.11"]
+                 [cprop "0.1.19"]
                  ;; file system
                  [me.raynes/fs "1.4.6"]
                  ;; logging
