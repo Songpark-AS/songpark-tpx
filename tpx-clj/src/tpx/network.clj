@@ -51,8 +51,15 @@
       #_#_(not (str/blank? out)) :up ;; this seemed to be causing trouble, but that was before I trimmed newlined from cut output
       :else :down)))
 
+(defn check-network-status-ping [cmd]
+  (let [{:keys [exit]} (sh "bash" "-c" cmd)]
+    (cond
+      (zero? exit) :up
+      :else :down)))
+
 (defn- run-checker [options]
   (let [cmd (get-in options [:network :check-network-status-cmd])
+        ping-cmd (get-in options [:network :check-network-status-ping-cmd])
         network-options (get-in options [:network :default-network])
         sleep-timer (get-in options [:network :sleep-timer])
         webserver-settings (get-in options [:network :webserver])
@@ -60,20 +67,21 @@
         webserver (atom nil)]
     (future
       (while @run-checker?
-          (let [status (check-network-status cmd)]
-            (if (nil? @webserver)
-              (when (= status :down)
-                (log/debug ::run-checker "Network is down, lets start the webserver")
-                (log/debug ::run-checker "Setting default static IPv4")
-                (activate-iface-config (gen-iface-config :default-static network-options))
-                (reset! webserver
+        (let [status (check-network-status-ping ping-cmd)]
+          (log/debug ::run-checker "Checking network status")
+          (if (nil? @webserver)
+            (when (= status :down)
+              (log/debug ::run-checker "Network is down, lets start the webserver")
+              (log/debug ::run-checker "Setting default static IPv4")
+              (activate-iface-config (gen-iface-config :default-static network-options))
+              (reset! webserver
                       (component/start (webserver/webserver {:config webserver-settings
                                                              :set-network! set-network!
                                                              :server server}))))
-              (when (= status :up)
-                (log/debug ::run-checker "Network is up again, lets shutdown the webserver")
-                (component/stop @webserver)
-                (reset! webserver nil))))
+            (when (= status :up)
+              (log/debug ::run-checker "Network is up again, lets shutdown the webserver")
+              (component/stop @webserver)
+              (reset! webserver nil))))
 
         (Thread/sleep sleep-timer)))))
 
@@ -124,19 +132,10 @@
                                                    :set-network! set-network!
                                                    :server server}))))
   (component/stop @webserver)
-
+  (get-in config [:network :check-network-status-ping-cmd])
 
   (def network-manager (atom nil))
   (reset! network-manager (component/start (network (get-in config [:network]))))
   (component/stop @network-manager)
-
+  (check-network-status-ping "ping -c 3 google.com")
   )
-
-
-
-
-
-
-
-
-

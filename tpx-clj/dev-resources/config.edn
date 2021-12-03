@@ -6,6 +6,7 @@
 
  :network {:config-dir "/etc/network/interfaces.d/"
            :check-network-status-cmd "ip -o l show eth1 | cut -d ' ' -f 9 | tr -d '\n'"
+           :check-network-status-ping-cmd "ping -c 3 google.com" ;; TODO: change what host we are pinging.
            :sleep-timer 5000
            :iface "eth1"
            :hwaddr "02:01:02:03:04:11" ;; zb5 (.15)
