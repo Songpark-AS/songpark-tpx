@@ -51,6 +51,13 @@
       (ipc.command/hangup-all))
     (log/debug ::hangup-all-wrong-teleporter {:id id})))
 
+(defmethod message/dispatch :teleporter.cmd/path-reset [{{:teleporter/keys [id]} :message/body}]
+  (if (data/same-tp? id)
+    (do
+      (log/debug ::path-reset)
+      (ipc.command/path-reset))
+    (log/debug ::path-reset-wrong-teleporter {:id id})))
+
 (defmethod message/dispatch :teleporter.cmd/set-playout-delay [{{:teleporter/keys [id playout-delay]} :message/body}]
   (if (data/same-tp? id)
     (do

@@ -42,6 +42,9 @@
   ;; hangup all calls
   (send-command "ha" ""))
 
+(defn path-reset []
+  (send-command "pr" ""))
+
 
 (defn- get-call-order [tp-id join-order sips]
   (let [indexed-join-order (map vector join-order (range))
