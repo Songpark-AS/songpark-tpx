@@ -61,6 +61,7 @@
       :else :down)))
 
 (defn check-network-status-ping [cmd]
+(defn check-network-status-return-code [cmd]
   (let [{:keys [exit]} (sh "bash" "-c" cmd)]
     (cond
       (zero? exit) :up
@@ -69,6 +70,7 @@
 (defn- run-checker [options]
   (let [cmd (get-in options [:network :check-network-status-cmd])
         ping-cmd (get-in options [:network :check-network-status-ping-cmd])
+        curl-cmd (get-in options [:network :check-network-status-curl-cmd])
         network-options (get-in options [:network :default-network])
         sleep-timer (get-in options [:network :sleep-timer])
         webserver-settings (get-in options [:network :webserver])
@@ -76,7 +78,7 @@
         webserver (atom nil)]
     (future
       (while @run-checker?
-        (let [status (check-network-status cmd)]
+        (let [status (check-network-status-return-code curl-cmd)]
           (log/debug ::run-checker "Checking network status")
           (if (nil? @webserver)
             (when (= status :down)
@@ -129,6 +131,7 @@
   ;; Zedboard
   (check-network-status "ip -o link show eth1 | cut -d ' ' -f 9 | tr -d '\n'")
 
+  (check-network-status-return-code "curl http://127.0.0.1:3000/health")
   (set-network! {})
 
   (def server (atom nil))
