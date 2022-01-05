@@ -77,6 +77,10 @@
 (defmethod message/dispatch :teleporter.msg/ipv4 [{:message/keys [values]}]
   (log/debug "Got new IPv4 config" values))
 
+(defmethod message/dispatch :teleporter.cmd/send-heartbeat [{:keys [mqtt-manager]}]
+  (.publish mqtt-manager (str (data/get-tp-id) "/heartbeat") {:message/type :teleporter/heartbeat
+                                           :message/body {:teleporter/id (data/get-tp-id)}}))
+
 
 (comment
   ;; MESSAGE FORMAT

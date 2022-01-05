@@ -5,6 +5,7 @@
             [tpx.logger :as logger]
             [tpx.ipc :as ipc]
             [tpx.mqtt :as mqtt]
+            [tpx.heartbeat :as heartbeat]
             [tpx.message :as message]))
 
 
@@ -24,7 +25,10 @@
                                                  [:message-service])
                   :ipc-service (component/using (ipc/ipc-service {:injection-ks [:message-service :mqtt-manager]
                                                                   :config (:ipc config)})
-                                                [:message-service :mqtt-manager])]
+                                                [:message-service :mqtt-manager])
+                  :heartbeat (component/using (heartbeat/heartbeat-service {:injection-ks [:message-service :mqtt-manager]
+                                                                            :config (:heartbeat config)})
+                                              [:message-service :mqtt-manager])]
                  extra-components))))
 
 
