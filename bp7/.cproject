@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="xilinx.gnu.armv7.linux.toolchain.1680872291">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="xilinx.gnu.armv7.linux.toolchain.1680872291" moduleId="org.eclipse.cdt.core.settings" name="Default">
+				<externalSettings/>
+				<extensions>
+					<extension id="com.xilinx.sdk.managedbuilder.XELF.arm.a53.x32.linux" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration buildProperties="" description="" id="xilinx.gnu.armv7.linux.toolchain.1680872291" name="Default" parent="org.eclipse.cdt.build.core.emptycfg">
+					<folderInfo id="xilinx.gnu.armv7.linux.toolchain.1680872291.1461763907" name="/" resourcePath="">
+						<toolChain id="xilinx.gnu.armv7.linux.toolchain.1857004078" name="Xilinx ARM v7 GNU/Linux Toolchain" superClass="xilinx.gnu.armv7.linux.toolchain">
+							<targetPlatform binaryParser="com.xilinx.sdk.managedbuilder.XELF.arm.a53.x32.linux" id="xilinx.armv7.linux.target.gnu.base.991504837" isAbstract="false" name="Debug Platform" superClass="xilinx.armv7.linux.target.gnu.base"/>
+							<builder id="xilinx.gnu.armv7.linux.toolchain.builder.1562799227" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="GNU make" superClass="xilinx.gnu.armv7.linux.toolchain.builder"/>
+							<tool id="xilinx.gnu.armv7.linux.c.toolchain.assembler.104261443" name="ARM v7 Linux gcc assembler" superClass="xilinx.gnu.armv7.linux.c.toolchain.assembler">
+								<inputType id="xilinx.gnu.assembler.input.280765435" superClass="xilinx.gnu.assembler.input"/>
+							</tool>
+							<tool id="xilinx.gnu.armv7.linux.c.toolchain.compiler.66471845" name="ARM v7 Linux gcc compiler" superClass="xilinx.gnu.armv7.linux.c.toolchain.compiler"/>
+							<tool id="xilinx.gnu.armv7.linux.cxx.toolchain.compiler.331676608" name="ARM v7 Linux g++ compiler" superClass="xilinx.gnu.armv7.linux.cxx.toolchain.compiler">
+								<inputType id="xilinx.gnu.armv7.linux.cxx.compiler.input.1312814868" name="C++ source files" superClass="xilinx.gnu.armv7.linux.cxx.compiler.input"/>
+							</tool>
+							<tool id="xilinx.gnu.armv7.linux.toolchain.archiver.230348476" name="ARM v7 Linux archiver" superClass="xilinx.gnu.armv7.linux.toolchain.archiver"/>
+							<tool id="xilinx.gnu.armv7.linux.c.toolchain.linker.1635639248" name="ARM v7 Linux gcc linker" superClass="xilinx.gnu.armv7.linux.c.toolchain.linker"/>
+							<tool id="xilinx.gnu.armv7.linux.cxx.toolchain.linker.216602331" name="ARM v7 Linux g++ linker" superClass="xilinx.gnu.armv7.linux.cxx.toolchain.linker">
+								<inputType id="xilinx.gnu.linker.input.429939826" superClass="xilinx.gnu.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+								<inputType id="xilinx.gnu.linker.input.lscript.1797145058" name="Linker Script" superClass="xilinx.gnu.linker.input.lscript"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="CantaviStreamerApp5.null.1098239728" name="CantaviStreamerApp5"/>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
+		<buildTargets>
+			<target name="all" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+				<buildCommand>make</buildCommand>
+				<buildArguments/>
+				<buildTarget>all</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>true</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name="install" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+				<buildCommand>make</buildCommand>
+				<buildArguments/>
+				<buildTarget>install</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>true</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name="clean" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+				<buildCommand>make</buildCommand>
+				<buildArguments/>
+				<buildTarget>clean</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>true</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+		</buildTargets>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+</cproject>

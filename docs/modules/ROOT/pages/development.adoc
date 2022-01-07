@@ -1,3 +1,25 @@
-== Development
+= Development
 
-Nothing yet.
+When developing for the TPX, it is a requirement that it is done on the physical device (the teleporter). This has to do with the integration with the layers below.
+
+== Steps
+
+. Git copy a copy of the repo onto the device
+. Boot up a REPL inside the device at the actual repo
+. On your local development machine, open up the songpark-tpx project
+. Connect to the REPL via your editor
+. Hack away
+
+== Important considerations
+
+When working this way, you can edit what is in memory on the running process for the teleporter. It also means that any changes you make to the program while running it, has to be sent to the program via the REPL. In addition, it also means that if you have to quit the REPL, any progress will be lost and re-evaluated, since the REPL running on the physical device will be using the source code that it is running on locally (i.e., the physical device).
+
+Syncing every now and then will limit the problem.
+
+== Serial ports
+
+Serial ports will show up under `/tmp/ttyTPX` and `/tmp/ttyBP`. `ttyTPX` is written the output from `Bridge`, to be read by `TPX`, while `ttyBP` is written the output from `TPX`, to be read by `Bridge`.
+
+It's possible to read these via `cat` or `tail -f` and send input manually via piping output from `echo`.
+
+IMPORTANT: Serial ports are blocking I/O with a limited amount of space, meaning that a serial port that is not read from, will eventually block the program reading from it from doing anything.

@@ -1,8 +1,6 @@
 = ADR
 
-. xref:adr/0001-database.adoc[Database]
-. xref:adr/0002-programming-language.adoc[Programming language]
-. xref:adr/0003-libraries.adoc[Libraries]
+. xref:adr/0001-serial-ports.adoc[Serial ports]
 
 == What is an ADR?
 

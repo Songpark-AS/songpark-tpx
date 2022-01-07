@@ -1,0 +1,17 @@
+= ADR 1: Serial ports for communication between TPX and Bridge Program
+
+== Context
+
+We need to manipulate the FPGA from TPX, and this is done via the Bridge Program (the binary is called `connect`). The Bridge Program also handles the SIP parts, as well as interacts with the FPGA parts of the solution. In order to compile the program, you need access to the setup of the FPGA development environment, making it difficult to compile and more difficult to have it linked in directly in to TPX via JNA (Java Native Access). We also have access to a Command Line Interface (CLI), where commands can be run against the binary `connect`.
+
+== Decision
+
+We will interface with `connect` and drive the program as if though TPX was a human.
+
+== Status
+
+Accepted
+
+== Consequences
+
+We will need to both read and write from the `connect` program. `connect` typically routes to `stdout`, and so will need to write to something that TPX can read and write to. Serial ports have support for both reading and writing from both C and Java. We will set up virtual serial ports, through which communication can happen.

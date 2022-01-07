@@ -1,0 +1,87 @@
+14:15:32.752   pjsua_call.c !Call 0 hanging up: code=0..
+14:15:32.752  pjsua_media.c  .Call 0: deinitializing media..
+14:15:32.753 pjsua_app_comm  ...
+  [CONFIRMED] To: sip:9115@voip1.inonit.no;tag=GhWEdeR.fpzB2IuwnLsyJOWYQuzHBCYQ
+    Call time: 00h:01m:15s, 1st res in 169 ms, conn in 172ms
+    #0 audio speex @16kHz, sendrecv, peer=192.168.11.162:7816
+       SRTP status: Not active Crypto-suite:
+       ICE role: Controlling, state: Negotiation Failed, comp_cnt: 2
+       RX pt=96, last update:00h:00m:00.000s ago
+          total 80pkt 800B (4.0KB +IP hdr) @avg=84bps/422bps
+          pkt loss=0 (0.0%), discrd=0 (0.0%), dup=0 (0.0%), reord=0 (0.0%)
+                (msec)    min     avg     max     last    dev
+          loss period:   0.000   0.000   0.000   0.000   0.000
+          jitter     :   0.000   0.055   0.062   0.062   0.019
+       TX pt=96, ptime=20, last update:00h:00m:03.482s ago
+          total 210pkt 3.9KB (12.3KB +IP hdr) @avg=418bps/1.3Kbps
+          pkt loss=0 (0.0%), dup=0 (0.0%), reorder=0 (0.0%)
+                (msec)    min     avg     max     last    dev
+          loss period:   0.000   0.000   0.000   0.000   0.000
+          jitter     :   0.000   0.000   0.000   0.000   0.000
+       RTT msec      :   0.000   0.000   0.000   0.000   0.000
+14:15:32.753  pjsua_media.c  ...Media stream call00:0 is destroyed
+14:15:32.753        icetp00  ..Stopping ICE, reason=media stop requested
+14:15:32.753        icetp00  ..Destroying ICE session 0xb5404484
+14:15:32.753        icetp00  ..ICE stream transport 0x2d008c destroyed
+14:15:32.753  ice_session.c  ..ICE session 0xb5404484 destroyed
+
+
+
+
+-----------------on_call_state(pjsua_call_id call_id, pjsip_event *e)------------------
+
+
+
+Disable UDP payload generation
+A2EReg0 B4: 00000000 00000000 00001001 00000000
+A2EReg0 AF: 00000000 00000000 00001001 00000000
+ADC audio FIFOs Reset
+Disable time sync...
+Reg0F-Ctrl: 01111111 11111111 11111111 11100000
+Reset time sync...
+14:15:33.754    pjsua_aud.c !Closing sound device after idle for 1 second(s)
+14:15:33.754    pjsua_app.c  .Turning sound device -99 -99 OFF
+14:15:33.754    pjsua_aud.c  .Closing null sound device..
+Sync Reg0 Rst: 00000000 00000000 00000000 00000000
+Sync Reg0 Clr: 00000000 00000000 00000000 00000000
+Stream core reset status was:0x7FFFFFE0
+>Stream core reset status now:0x7FFFFFE0
+>Switch parameter ID not found!!
+Switch core reset status was:0x7FFFFFE1
+>Switch parameter ID not found!!
+Switch core reset status now:0x7FFFFFE1
+>stop_hw_streaming():Stream tx stopped status was:0x7FFFFFE0
+>
+
+
+
+------------------------------------------------------------------------------------------
+
+
+
+14:15:34.897    pjsua_app.c !.Call 0 is DISCONNECTED [reason=200 (OK)]
+14:15:34.897   pjsua_core.c  ....TX 517 bytes Request msg BYE/cseq=28317 (tdta0x2e6614) to UDP 18.198.222.104:5060:
+BYE sip:9115@193.69.145.66:5060;ob SIP/2.0
+Via: SIP/2.0/UDP 192.168.11.161:5060;rport;branch=z9hG4bKPj6L3Bh0wrlC3zbbw9pJiC1H0cI66NGWSU
+Max-Forwards: 70
+From: sip:9114@voip1.inonit.no;tag=nrKmz4r005E2a4E.G1eFpw2hQaKAz8pT
+To: sip:9115@voip1.inonit.no;tag=GhWEdeR.fpzB2IuwnLsyJOWYQuzHBCYQ
+Call-ID: 4EsJsGWREgLtVFc0ymNNkIc72EUfkhg6
+CSeq: 28317 BYE
+Route: <sip:18.198.222.104;lr;ftag=nrKmz4r005E2a4E.G1eFpw2hQaKAz8pT;did=434.166;nat=yes>
+User-Agent: PJSUA v2.11 Linux-4.14/armv7l/glibc-2.26
+Content-Length:  0
+
+
+--end msg--
+>>> 14:15:34.945   pjsua_core.c  .RX 360 bytes Response msg 200/BYE/cseq=28317 (rdata0xb54004e4) from UDP 18.198.222.104:5060:
+SIP/2.0 200 OK
+Via: SIP/2.0/UDP 192.168.11.161:5060;rport=5060;received=192.168.11.161;branch=z9hG4bKPj6L3Bh0wrlC3zbbw9pJiC1H0cI66NGWSU
+Call-ID: 4EsJsGWREgLtVFc0ymNNkIc72EUfkhg6
+From: <sip:9114@voip1.inonit.no>;tag=nrKmz4r005E2a4E.G1eFpw2hQaKAz8pT
+To: <sip:9115@voip1.inonit.no>;tag=GhWEdeR.fpzB2IuwnLsyJOWYQuzHBCYQ
+CSeq: 28317 BYE
+Content-Length:  0
+
+
+--end msg--

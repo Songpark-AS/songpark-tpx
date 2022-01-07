@@ -1,0 +1,15 @@
+[Unit]
+Description=Run TPX after TP after serial and bp
+Requires=sp-bridgeprogram.service
+After=sp-bridgeprogram.service network-online.target
+
+[Service]
+PIDFile=/var/run/sp_tpx.pid
+WorkingDirectory=/usr/local/tpx
+ExecStart=/usr/local/tpx/run.sh
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s QUIT $MAINPID
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

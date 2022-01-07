@@ -1,0 +1,26 @@
+tpx-clj/target
+tpx-clj/classes
+tpx-clj/checkouts
+profiles.clj
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+/.lein-*
+/.nrepl-port
+/.prepl-port
+.hgignore
+.hg/
+
+# Editor specific settings
+**/.calva
+**/.idea
+**/.vscode
+
+# Clojure LSP
+**/.lsp
+**/.clj-kondo/cache/
+**/.clj-kondo/.cache/
+
+VERSION.git
+tpx-clj/resources
