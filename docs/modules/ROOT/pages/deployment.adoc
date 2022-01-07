@@ -1,3 +1,10 @@
-== Deployment
+= Deployment
 
-Nothing yet.
+NOTE: Deployment is currently limited to development.
+
+
+When deploying you run the following command from the root of the project `make TARGET=<name> deploy`, where `<name>` is an address that can be used by the `scp` program.
+
+In practice, what this means is that you will need an address with which you can reach the Teleporter via SSH. For the smoothest deployment experience, it is adviced to add a public SSH key to the known_hosts file under `.ssh` of the root account for the Teleporter.
+
+
