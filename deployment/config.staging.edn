@@ -1,0 +1,34 @@
+{:logger {;; for sentry.io
+          :sentry-settings {;; turn on/off logging to sentry
+                            :log? false
+                            ;; DSN to log to
+                            :dsn ""}
+          ;; level of debugging. anything below this will not be logged
+          :level :debug}
+ :defaults {;; in ms
+            :playout-delay 20}
+ ;; mac address. this is currently fake
+ :mac "00:00:00:00:00:01"
+ ;; mqtt settings
+ :mqtt {:config {;; which schema to use
+                 :scheme "tcp"
+                 ;; host
+                 :host "spmqtt.inonit.no"
+                 ;; port
+                 :port 1883
+                 ;; connect options
+                 :connect-options {;; do we reconnect automatically when losing a connection?
+                                   :auto-reconnect true
+                                   ;; keep-alive in seconds
+                                   :keep-alive-interval 60
+                                   ;; how many messages do we keep in memory on the client when queuing against the network
+                                   :max-inflight 100
+                                   ;; username
+                                   :username "tpx"
+                                   ;; password
+                                   :password "SecretPass"}}}
+ ;; settings for the component IPC
+ :ipc {;; which address is the platform running on
+       :platform "https://spp.inonit.no"
+       :teleporter {;; what do we tell the platform we are called?
+                    :nickname "Change me"}}}

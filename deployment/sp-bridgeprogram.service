@@ -1,0 +1,15 @@
+[Unit]
+Description=Songpark Bridge Program
+Requires=sp-virtual-serial.service
+After=sp-virtual-serial.service
+After=network-online.target
+
+[Service]
+PIDFile=/var/run/sp_bp.pid
+ExecStart=/usr/local/bin/connect --config-file=/usr/local/etc/sip.cfg
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s QUIT $MAINPID
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
