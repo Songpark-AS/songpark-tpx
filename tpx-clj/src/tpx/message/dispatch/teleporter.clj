@@ -81,8 +81,8 @@
 
 (comment
   ;; MESSAGE FORMAT
+  (set-network! {:ip "1.1.1.1", :gateway "3.3.3.3", :netmask "4.4.4.4", :dhcp? false})
   {:message/type :some/key
-   (set-network! {:ip "1.1.1.1", :gateway "3.3.3.3", :netmask "4.4.4.4", :dhcp? false})
    :message/body {} ;; from mqtt payload
    ;; example body
 
