@@ -1,0 +1,11 @@
+[Unit]
+Description=Run virtual ports for TPX and BP
+
+[Service]
+User=root
+WorkingDirectory=/root
+ExecStart=/usr/bin/socat -d -d pty,raw,echo=0,link=/tmp/ttyTPX pty,raw,echo=0,link=/tmp/ttyBP
+PartOf=sp-bridgeprogram.service
+
+[Install]
+WantedBy=multi-user.target

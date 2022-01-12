@@ -1,0 +1,35 @@
+= Linux
+
+The teleporter has one FPGA part, and one ARM part. The ARM port is run by a small Linux distribution.
+
+
+== 3rd party software required for the Teleporter
+
+* socat
+* java v11
+
+== services
+
+Bridge, virtual ports and TPX are all run as services on the Teleporter. They are installed under `/etc/system/systemd/` and are located in the git repo under `deployment/`.
+
+The services are dependant on each other, with `virtual ports -> bridge -> TPX` as the dependancy chain.
+
+== File structure
+
+All files, minux tpx.jar (which is always generated), should be available in the `deployment/` folder in the git repo.
+
+[source]
+----
+# systemd files
+/etc/system/systemd/sp-bridgeprogram.service
+/etc/system/systemd/sp-tpx.service
+/etc/system/systemd/sp-virtual-serial.service
+
+# sip configuration file
+/usr/local/etc/sip.cfg
+
+# TPX has its own directory
+/usr/local/tpx/config.edn
+/usr/local/tpx/run.sh
+/usr/local/tpx/tpx.jar
+----

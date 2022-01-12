@@ -1,15 +1,11 @@
 = Tests
 
-No Automated test are implemented at the moment.
 
-== Testing procedures
+== Unit tests
 
-Nothing yet.
+No automated unit tests are implemented at the moment. Due to the hard dependancy on other pieces of the entire solution stack, any automated unit tests would come with a high cost to implement as well as maintain, while giving little benefit as TPX is mainly an integration piece of software, meaning integration tests are much more important.
 
-== General testing
 
-Nothing yet.
+== Integration tests
 
-== Automatic testing
-
-Nothing yet.
+Integration tests are handled by the test suite.

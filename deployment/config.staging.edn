@@ -1,9 +1,3 @@
-= Configuration
-
-When building a TPX application, a config.edn is stored in resources. TPX picks up what it needs from there. It is also possible to override the settings via `environment variables`.
-
-[source,clojure]
-----
 {:logger {;; for sentry.io
           :sentry-settings {;; turn on/off logging to sentry
                             :log? false
@@ -19,7 +13,7 @@ When building a TPX application, a config.edn is stored in resources. TPX picks 
  :mqtt {:config {;; which schema to use
                  :scheme "tcp"
                  ;; host
-                 :host "127.0.0.1"
+                 :host "spmqtt.inonit.no"
                  ;; port
                  :port 1883
                  ;; connect options
@@ -35,7 +29,6 @@ When building a TPX application, a config.edn is stored in resources. TPX picks 
                                    :password "SecretPass"}}}
  ;; settings for the component IPC
  :ipc {;; which address is the platform running on
-       :platform "http://127.0.0.1:3000"
+       :platform "https://spp.inonit.no"
        :teleporter {;; what do we tell the platform we are called?
-                    :nickname "zedboard-01"}}}
-----
+                    :nickname "Change me"}}}

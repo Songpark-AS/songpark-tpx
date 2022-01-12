@@ -1,3 +1,45 @@
 = Architecture
 
-Nothing yet
+.Zoom in on the teleporter of the architecture from the Songpark Architecture documentation
+image::songpark-architecture-teleporter.png[Teleporter]
+
+The teleporter is a physical box, with associated hardware and software.
+
+The hardware is meant to be used by professional musical instruments, for plug and play over the internet. The teleporter is comprised broadly speaking of three parts: The physical hardwire required for the musical instruments, the FPGA that handles the streaming and an ARM processor running Linux that is used to communicate with the rest of the system.
+
+The gray background area is the ARM processor with Linux. The lower white background area is FPGA.
+
+
+== TPX
+The program that is used to communicate with the rest of the world and control the box. TPX handles communication with Platform as well as the App. It communicates downwards to the FPGA via a program called Bridge.
+
+=== TPX MQTT
+MQTT Client. Responsible for handling topics, publishing and subscribing.
+
+=== TPX IPC
+Interactive Process Communication (IPC) is responsible for talking with the Bridge. This is done via virtual serial ports.
+
+=== TPX Network
+Network is responsible setting the network via the app as well as detecting loss of IP address (not being able to communicate outwards). In the event of loss of IP address, a default IP configuration is set and a webserver is booted up that you can access on that particular IP.
+
+== Serial port
+
+Input and Output (I/O) is piped into virtual serial ports, which can then be read by/written to, respectively, by Bridge and TPX. The serial port supports transportation of data, one bit at a time, and is in this case streaming the output of one program as input to the other program. For the Teleporter, the serial ports are virtual, and set up via the program `socat`. Read the documentation on Linux for more details.
+
+== Updates
+Updates is responsible for updating all the programs running on the Teleporter. This includes TPX, Bridge, FPGA as well as Updates itself.
+
+== Bridge
+The Bridge program bridges the FPGA with the TPX and allows for communicating with the FPGA layer. Bridge is currently implemented in two parts, and combined into one program (currently called connect).
+
+=== Bridge communucations
+
+* Bridge communicates with TPX via virtual serial ports.
+* Bridge communicates with FPGA via direct memory access.
+
+=== Bridge SIP
+
+The Bridge is also responsible for setting up calls between two Teleporters. This is done via SIP, a protocol from IP telephony. The server used for SIP is called Kamailio.
+
+== FPGA
+The FPGA layer handles the streaming between different teleporters. As a result, it also handles all network traffic. This is transparent for the ARM based layer with Linux.

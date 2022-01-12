@@ -9,5 +9,6 @@ Linux environment of Teleporters in the Songpark audio collaboration system.
 - xref:architecture.adoc[Architecture]
 - xref:adr.adoc[ADR]
 - xref:system-landscape.adoc[System landscape]
+- xref:linux.adoc[Linux]
 - xref:logging.adoc[Logging]
 - xref:configuration.adoc[Configuration]

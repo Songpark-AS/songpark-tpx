@@ -2,7 +2,6 @@
 
 export VERSION ?=$(shell git rev-parse HEAD)
 
-#TARGET=$1
 DEPLOYMENT_DIR=deployment
 PROJECT_DIR=tpx-clj
 
@@ -13,6 +12,7 @@ $(shell mkdir -p $(PROJECT_DIR)/resources)
 
 default:
 	@echo "Check commands"
+	@echo "When deploying or uploading, use the syntax 'make TARGET=<adsf> deploy|upload'"
 
 
 build:
