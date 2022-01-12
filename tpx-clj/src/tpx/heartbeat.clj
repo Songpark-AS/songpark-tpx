@@ -2,7 +2,6 @@
   "Heartbeat sender, send a hearbeat periodically on mqtt"
   (:require [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
-            [tpx.config :refer [config]]
             [tpx.data :as data]))
 
 (defonce ^:private store (atom nil))
@@ -28,7 +27,7 @@
       (do (log/info "Starting HeartbeatService")
           (let [new-this (assoc this
                                 :started? true
-                                :job (set-interval #(send-heartbeat) 5000))]
+                                :job (set-interval #(send-heartbeat) (get config :timer (* 60 1000))))]
             (reset! store new-this)
             new-this))))
   (stop [this]

@@ -14,7 +14,8 @@
                                    ;;:password "SecretPass"
                                    }}}
  :ipc {:platform "http://127.0.0.1:3000"
-       :teleporter {:nickname "zedboard-01"}}}
+       :teleporter {:nickname "zedboard-01"}}
+ :heartbeat {:timer (* 60 1000)}}
 
 
 
