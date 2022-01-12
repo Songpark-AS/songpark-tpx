@@ -1,12 +1,12 @@
 (ns tpx.network.reporter
-  (:require [com.stuartsierra.component :as component]
+  (:require [clojure.java.shell :refer [sh]]
+            [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
             [tpx.ipc.serial :as serial]
             [tpx.data :as data]
             [tpx.config :refer [config]]
             [tpx.ipc.serial :refer [send-command]]
-            [tpx.ipc.command :as command]
-            [clojure.java.shell :refer [sh]]))
+            [tpx.ipc.command :as command]))
 
 ;; keep track of if we have reported the last netconfig, reset to false when config changes
 ;; on network + mqtt up, if we have not reported the netconfig we do so

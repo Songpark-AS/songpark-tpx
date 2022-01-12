@@ -47,20 +47,6 @@
         (activate-iface-config (gen-iface-config :dhcp opts))
         (activate-iface-config (gen-iface-config :static opts))))))
 
-(defn check-network-status [cmd]
-  (let [{:keys [exit out err]} (sh "bash" "-c" cmd)]
-    (when-not (zero? exit)
-      (log/error "Checking network status failed" {:exit exit
-                                                   :err err}))
-    (cond
-      (= out "UP") :up
-      (= out "UNKNOWN") :up
-      (= out "DOWN") :down
-      (= out "") :down
-      #_#_(not (str/blank? out)) :up ;; this seemed to be causing trouble, but that was before I trimmed newlined from cut output
-      :else :down)))
-
-(defn check-network-status-ping [cmd]
 (defn check-network-status-return-code [cmd]
   (let [{:keys [exit]} (sh "bash" "-c" cmd)]
     (cond
@@ -68,9 +54,7 @@
       :else :down)))
 
 (defn- run-checker [options]
-  (let [cmd (get-in options [:network :check-network-status-cmd])
-        ping-cmd (get-in options [:network :check-network-status-ping-cmd])
-        curl-cmd (get-in options [:network :check-network-status-curl-cmd])
+  (let [curl-cmd (get-in options [:network :check-network-status-curl-cmd])
         network-options (get-in options [:network :default-network])
         sleep-timer (get-in options [:network :sleep-timer])
         webserver-settings (get-in options [:network :webserver])
@@ -124,12 +108,6 @@
 
 
 (comment
-
-  ;; Mac
-  (check-network-status "ipconfig getifaddr en0")
-
-  ;; Zedboard
-  (check-network-status "ip -o link show eth1 | cut -d ' ' -f 9 | tr -d '\n'")
 
   (check-network-status-return-code "curl http://127.0.0.1:3000/health")
   (set-network! {})

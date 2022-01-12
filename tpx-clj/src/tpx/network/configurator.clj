@@ -2,8 +2,8 @@
   (:require [clojure.string :as str]
             [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]]
-            [tpx.config :refer [config]]
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log]
+            [tpx.config :refer [config]]))
 
 (def ^:private template
   {:dhcp "auto $IFACE\niface $IFACE inet dhcp\n\thwaddress ether $HWADDR\n"
