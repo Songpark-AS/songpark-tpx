@@ -45,6 +45,17 @@
 (defn path-reset []
   (send-command "pr" ""))
 
+(defn get-local-ip []
+  (send-command "pc" "")
+  (send-command "getlip" ""))
+
+(defn get-gateway-ip []
+  (send-command "pc" "")
+  (send-command "getgip" ""))
+
+(defn get-netmask-ip []
+  (send-command "pc" "")
+  (send-command "getmask" ""))
 
 (defn- get-call-order [tp-id join-order sips]
   (let [indexed-join-order (map vector join-order (range))
