@@ -33,7 +33,10 @@
       (do (log/debug ::activate-iface-config "Updating interface configuration")
           (sh "bash" "-c" (str "ifdown " iface))
           (spit network-config-filepath iface-config)
+          ;; Give it some time to write the file
+          (Thread/sleep 200)
           (sh "bash" "-c" (str "ifup " iface))))))
+
 
 (defn set-network! [{:keys [ip netmask gateway dhcp?] :as opts}]
   (let [fake-reset? (get-in config [:network :fake-reset?])]
