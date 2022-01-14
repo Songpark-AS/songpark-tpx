@@ -1,7 +1,9 @@
 (ns tpx.message.dispatch.teleporter
   (:require [tpx.message.dispatch.interface :as message]
+            [tpx.network :refer [set-network!]]
             [tpx.ipc.command :as ipc.command]
             [tpx.data :as data]
+            [tpx.network.reporter :as reporter]
             [taoensso.timbre :as log]))
 
 
@@ -65,6 +67,11 @@
       (ipc.command/set-playout-delay playout-delay))
     (log/debug ::set-playout-delay-wrong-teleporter {:id id})))
 
+
+(defmethod message/dispatch :teleporter.cmd/report-network-config [{:keys [mqtt-manager]}]
+  (reporter/fetch-and-send-current-network-config mqtt-manager))
+
+
 ;; send an informational message to teleporter topics
 (defmethod message/dispatch :teleporter.msg/info [{:message/keys [body]
                                                    :keys [mqtt-manager]}]
@@ -75,13 +82,18 @@
 
 
 (defmethod message/dispatch :teleporter.msg/ipv4 [{:message/keys [values]}]
-  (log/debug "Got new IPv4 config" values))
+  (log/debug "Got new IPv4 config" values)
+  (set-network! (clojure.set/rename-keys values {:ip/address :ip :ip/gateway :gateway :ip/subnet :netmask :ip/dhcp? :dhcp?})))
+
+(defmethod message/dispatch :teleporter.cmd/send-heartbeat [{:keys [mqtt-manager]}]
+  (.publish mqtt-manager (str (data/get-tp-id) "/heartbeat") {:message/type :teleporter/heartbeat
+                                           :message/body {:teleporter/id (data/get-tp-id)}}))
 
 
 (comment
   ;; MESSAGE FORMAT
+  (set-network! {:ip "1.1.1.1", :gateway "3.3.3.3", :netmask "4.4.4.4", :dhcp? false})
   {:message/type :some/key
-
    :message/body {} ;; from mqtt payload
    ;; example body
 
