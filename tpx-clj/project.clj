@@ -28,7 +28,7 @@
                  ;; songpark's common (will also contain an mqtt implementation later)
                  [songpark/common "0.1.1-SNAPSHOT"]
                  [clojure-interop/java.net "1.0.5"]]
-  :main ^:skip-aot tpx.core
+  :main tpx.core
   :target-path "target/%s"
   :test-paths ["test"]
   ;; The REPL on the zedboard starts really slow. 2 minutes was too little, so we added 10 minutes
