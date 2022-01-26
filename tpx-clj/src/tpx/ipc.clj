@@ -41,8 +41,12 @@
 (defn- setup-serial-ports! [mqtt-manager]
   (log/info "Setting up serial ports")
   (ipc.serial/connect-to-port {:mqtt-manager mqtt-manager}
-                              {:sip-call-started #'ipc.handler/handle-sip-call-started
-                               :sip-call-stopped #'ipc.handler/handle-sip-call-stopped
+                              {:sip-call-started (fn [data context]
+                                                   (ipc.handler/handle-sip-call-started data context)
+                                                   (ipc.command/start-coredump))
+                               :sip-call-stopped (fn [data context]
+                                                   (ipc.handler/handle-sip-call-stopped data context)
+                                                   (ipc.command/stop-coredump))
                                :sip-registered #'ipc.handler/handle-sip-registered
                                :sip-call #'ipc.handler/handle-sip-call
                                :coredump #'ipc.handler/handle-coredump
