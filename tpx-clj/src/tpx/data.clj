@@ -40,6 +40,8 @@
 (defn get-tp-log-topic []
   (str @tp-id* "/log"))
 
+(defn get-tp-coredump-topic []
+  (str @tp-id* "/coredump"))
 
 (defn same-tp? [tp-id]
   (and (some? @tp-id*)

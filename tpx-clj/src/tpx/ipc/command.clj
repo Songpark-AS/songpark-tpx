@@ -46,6 +46,17 @@
   (send-command "pr" ""))
 
 
+(defn start-coredump []
+  (send-command "pc" "")
+  (Thread/sleep 200)
+  (send-command "monitor" ""))
+
+(defn stop-coredump []
+  ;; is this a packet command? (pc?)
+  ;; (send-command "pc" "")
+  ;; (Thread/sleep 200)
+  (send-command "halt" ""))
+
 (defn- get-call-order [tp-id join-order sips]
   (let [indexed-join-order (map vector join-order (range))
         starting-position (reduce (fn [_ [id idx]]
