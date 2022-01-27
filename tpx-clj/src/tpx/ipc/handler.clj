@@ -36,14 +36,16 @@
                                          :message/body {:teleporter/id (data/get-tp-id)
                                                         :teleporter/local-volume network}}))
 
-(defn handle-sip-call-started [data {:keys [mqtt-manager] :as _context}]
+(defn handle-sip-call-started [data {:keys [mqtt-manager] start-coredump :start-coredump :as _context}]
   (log/debug :handle-sip-call-started data)
+  (start-coredump)
   (.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/call-started
                                          :message/body {:teleporter/id (data/get-tp-id)
                                                         :sip/data data}}))
 
-(defn handle-sip-call-stopped [data {:keys [mqtt-manager] :as _context}]
+(defn handle-sip-call-stopped [data {:keys [mqtt-manager] stop-coredump :stop-coredump :as _context}]
   (log/debug :handle-sip-call-stopped data)
+  (stop-coredump)
   (.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/call-stopped
                                          :message/body {:teleporter/id (data/get-tp-id)
                                                         :sip/data data}}))

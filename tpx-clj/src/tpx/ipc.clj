@@ -38,15 +38,12 @@
            (send-message! {:message/type :teleporter.cmd/subscribe
                            :message/meta {:mqtt/topics {(str uuid) 0}}})))))
 
-(defn- setup-serial-ports! [mqtt-manager]
+(defn- setup-serial-ports! [mqtt-manager context-data]
   (log/info "Setting up serial ports")
-  (ipc.serial/connect-to-port {:mqtt-manager mqtt-manager}
-                              {:sip-call-started (fn [data context]
-                                                   (ipc.handler/handle-sip-call-started data context)
-                                                   (ipc.command/start-coredump))
-                               :sip-call-stopped (fn [data context]
-                                                   (ipc.handler/handle-sip-call-stopped data context)
-                                                   (ipc.command/stop-coredump))
+  (ipc.serial/connect-to-port (merge {:mqtt-manager mqtt-manager}
+                                     context-data)
+                              {:sip-call-started #'ipc.handler/handle-sip-call-started
+                               :sip-call-stopped #'ipc.handler/handle-sip-call-stopped
                                :sip-registered #'ipc.handler/handle-sip-registered
                                :sip-call #'ipc.handler/handle-sip-call
                                :coredump #'ipc.handler/handle-coredump
@@ -69,7 +66,8 @@
                                 :started? true)]
             (reset! store new-this)
             (broadcast-presence config)
-            (setup-serial-ports! mqtt-manager)
+            (setup-serial-ports! mqtt-manager {:start-coredump #'ipc.command/start-coredump
+                                               :stop-coredump #'ipc.command/stop-coredump})
             (set-hw-defaults!)
             new-this))))
   
