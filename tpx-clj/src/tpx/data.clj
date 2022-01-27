@@ -43,6 +43,10 @@
 (defn get-tp-coredump-topic []
   (str @tp-id* "/coredump"))
 
+(defn get-tp-report-net-config-topic []
+  (str @tp-id* "/net-config-report"))
+
+
 (defn same-tp? [tp-id]
   (and (some? @tp-id*)
        (= (str @tp-id*) (str tp-id))))

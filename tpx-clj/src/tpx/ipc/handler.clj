@@ -74,3 +74,12 @@
   (log/debug :handle-log data)
   (.publish mqtt-manager (data/get-tp-log-topic) {:message/type :teleporter/log
                                                   :message/body (assoc data :teleporter/id (data/get-tp-id))}))
+
+(defn handle-local-ip [data _context]
+  (log/debug :handle-local-ip data))
+
+(defn handle-gateway-ip [data _context]
+  (log/debug :handle-gateway-ip data))
+
+(defn handle-netmask-ip [data _context]
+  (log/debug :handle-netmask-ip data))

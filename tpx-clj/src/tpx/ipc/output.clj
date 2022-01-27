@@ -22,6 +22,7 @@
               :gain-input-left-gain #"Entered left gain"
               :gain-input-right-gain #"Entered right gain"
 
+              :log #".*(INFO|DEBUG|WARN|ERROR)(::)?(.*)"
 
               ;; sip-call-started
 
@@ -31,7 +32,11 @@
               ;; sip-call-stopped
               :sip-call-hangup #".*\!Call \d+ hanging up: code=\d+.*"
               :sip-call-status #"  \[(\w+)\] To: (sip:.*);.*"
-              :log #".*(INFO|DEBUG|WARN|ERROR)(::)?(.*)"})
+
+              ;; network-config
+              :local-ip #"Local Ip Address:.*"
+              :gateway-ip #"Gateway Ip Address:.*"
+              :netmask-ip #"Mask Ip Address:.*"})
 
 
 (def controller-steps ^{:doc "Last step in the regex steps above"}
@@ -78,6 +83,12 @@
                          :sip-call-enter} current-set)
           [:sip-call (into {} lines)]
 
+          (set/subset? #{:log} current-set)
+          [:log (into {} lines)]
+
+          (set/subset? #{:local-ip} current-set)
+          [:local-ip (into {} lines)]
+
           (set/subset? #{:sip-connect
                          :sip-stream-established} current-set)
           [:sip-call-started (into {} lines)]
@@ -104,9 +115,6 @@
                        current-set)
           [:gain-input-right-gain (into {} lines)]
 
-          (set/subset? #{:log} current-set)
-          [:log (into {} lines)]
-
           :else
           nil)))
 
@@ -131,6 +139,8 @@
     :log (let [[_ level _ data] (:log data)]
            {:log/level (-> level str/lower-case keyword)
             :log/data data})
+    :local-ip (let [ip (:local-ip data)]
+                {:ip (last (clojure.string/split ip #":"))})
     nil))
 
 (defn handle-output [context fns line]
