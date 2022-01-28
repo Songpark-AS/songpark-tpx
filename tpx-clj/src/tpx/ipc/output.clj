@@ -22,7 +22,7 @@
               :gain-input-left-gain #"Entered left gain"
               :gain-input-right-gain #"Entered right gain"
 
-              :log #".*(INFO|DEBUG|WARN|ERROR)(::)?(.*)"
+              ;; :log #".*(INFO|DEBUG|WARN|ERROR)(::)?(.*)"
 
               ;; sip-call-started
 
