@@ -98,6 +98,7 @@
         other-sips (dissoc sips tp-id)
         sips-hangup-order (get-call-order tp-id join-order sips)]
     (log/debug :sips-hangup-order (mapv identity sips-hangup-order))
+    (stop-coredump)
     (doseq [sip sips-hangup-order]
       (hangup-via-sip sip))))
 

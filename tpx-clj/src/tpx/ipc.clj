@@ -69,8 +69,7 @@
                                 :started? true)]
             (reset! store new-this)
             (broadcast-presence config)
-            (setup-serial-ports! mqtt-manager {:start-coredump #'ipc.command/start-coredump
-                                               :stop-coredump #'ipc.command/stop-coredump})
+            (setup-serial-ports! mqtt-manager {:start-coredump #'ipc.command/start-coredump})
             (set-hw-defaults!)
             new-this))))
   

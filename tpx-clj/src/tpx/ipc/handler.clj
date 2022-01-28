@@ -43,9 +43,8 @@
                                          :message/body {:teleporter/id (data/get-tp-id)
                                                         :sip/data data}}))
 
-(defn handle-sip-call-stopped [data {:keys [mqtt-manager] stop-coredump :stop-coredump :as _context}]
+(defn handle-sip-call-stopped [data {:keys [mqtt-manager] :as _context}]
   (log/debug :handle-sip-call-stopped data)
-  (stop-coredump)
   (.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/call-stopped
                                          :message/body {:teleporter/id (data/get-tp-id)
                                                         :sip/data data}}))
