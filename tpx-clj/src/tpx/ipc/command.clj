@@ -59,12 +59,12 @@
 
 (defn start-coredump []
   (send-command "pc" "")
-  (Thread/sleep 200)
+  (Thread/sleep 50)
   (send-command "monitor" ""))
 
 (defn stop-coredump []
   (send-command "pc" "")
-  (Thread/sleep 200)
+  (Thread/sleep 50)
   (send-command "halt" ""))
 
 (defn- get-call-order [tp-id join-order sips]
