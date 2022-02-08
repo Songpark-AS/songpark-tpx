@@ -71,3 +71,4 @@
        :teleporter {;; what do we tell the platform we are called?
                     :nickname "zedboard-01"}}
  :heartbeat {:timer (* 60 1000)}}
+ :heartbeat {:timer 60000}}
