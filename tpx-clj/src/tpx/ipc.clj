@@ -27,7 +27,8 @@
               :teleporter/mac (get-device-mac)
               :teleporter/tpx-version (:tpx/version config)
               :teleporter/bp-version (:bp/version config)
-              :teleporter/fpga-version (:fpga/version config)}]
+              :teleporter/fpga-version (:fpga/version config)
+              :teleporter/apt-version (data/get-apt-version)}]
     (log/debug "Broadcasting to URL"
                (str (get-in config [:platform]) "/api/teleporter")
                data)
