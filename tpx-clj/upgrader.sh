@@ -11,7 +11,7 @@ echo "upgrading" > "$output_dir"/upgrading_flag
 
 # perform the upgrade
 echo "upgrading"
-apt-get install -y --only-upgrade teleporter-fw-fake
+apt-get install -y --only-upgrade teleporter-fw
 
 echo "rebooting"
 reboot
