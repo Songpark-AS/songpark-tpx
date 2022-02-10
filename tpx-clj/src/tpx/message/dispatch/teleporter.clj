@@ -3,6 +3,7 @@
             [tpx.network :refer [set-network!]]
             [tpx.ipc.command :as ipc.command]
             [tpx.data :as data]
+            [tpx.utils :as utils]
             [tpx.network.reporter :as reporter]
             [taoensso.timbre :as log]))
 
@@ -94,6 +95,18 @@
   (.publish mqtt-manager (str (data/get-tp-id) "/heartbeat") {:message/type :teleporter/heartbeat
                                            :message/body {:teleporter/id (data/get-tp-id)}}))
 
+
+(defmethod message/dispatch :teleporter.cmd/send-upgrade-complete [{:keys [mqtt-manager]}]
+  (.publish mqtt-manager (str (data/get-tp-id) "/upgrade-status") {:message/type :teleporter/upgrade-status
+                                                                   :message/body {:teleporter/id (data/get-tp-id)
+                                                                                  :teleporter/upgrade-status "complete"}}))
+
+(defmethod message/dispatch :teleporter.cmd/upgrade [{{:teleporter/keys [id]} :message/body}]
+  (if (data/same-tp? id)
+    (do
+      (log/debug ::upgrade)
+      (utils/upgrade))
+    (log/debug ::upgrade-wrong-teleporter {:id id})))
 
 (comment
   ;; MESSAGE FORMAT

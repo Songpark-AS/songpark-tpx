@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]
             [clojure.java.shell :refer [sh]]
             [taoensso.timbre :as log]
+            [tpx.config :refer [config]]
             [clojure.java.io :as io]))
 
 (defn scale-value
@@ -40,8 +41,15 @@
 (defn upgrading-flag?
   "Checks for the upgrading_flag file"
   []
-  (.exists (io/file "upgrading_flag")))
+  (let [data-dir (get-in config [:os :data-dir])]
+    (.exists (io/file (str data-dir "upgrading_flag")))))
 
 (defn delete-upgrading-flag []
   (log/debug ::delete-upgrading-flag "deleting flag")
-  (io/delete-file "upgrading_flag"))
+  (let [data-dir (get-in config [:os :data-dir])]
+    (io/delete-file (str data-dir "upgrading_flag"))))
+
+(defn upgrade []
+  (log/debug ::upgrade "Upgrading teleporter firmware")
+  (let [data-dir (get-in config [:os :data-dir])]
+    (sh "bash" "-c" (str "./upgrader.sh " data-dir))))

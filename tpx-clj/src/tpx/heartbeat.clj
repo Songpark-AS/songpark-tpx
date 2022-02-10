@@ -2,11 +2,17 @@
   "Heartbeat sender, send a hearbeat periodically on mqtt"
   (:require [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
+            [tpx.utils :refer [upgrading-flag? delete-upgrading-flag]]
             [tpx.data :as data]
             [chime.core :as chime])
   (:import (java.time Instant Duration)))
 
 (defonce ^:private store (atom nil))
+
+;; We only want to check the upgrade flag once at start
+;; not accidentally right after the upgrade process has begun
+(defonce ^:private checked-upgrade (atom false))
+
 (defn send-message! [msg]
   (let [mqtt-manager (:mqtt-manager @store)
         injections (-> mqtt-manager
@@ -18,7 +24,19 @@
   (chime/chime-at (chime/periodic-seq (Instant/now) (Duration/ofMillis ms)) (fn[time] (callback time)))
   #_(future (while true (do (Thread/sleep ms) (callback)))))
 
+(defn upgrade-complete []
+  (log/debug ::upgrade-complete "Sending upgrade-complete message on MQTT")
+  (send-message! {:message/type :teleporter.cmd/send-upgrade-complete})
+  (delete-upgrading-flag))
+
+(defn check-upgrade []
+  (log/debug ::check-upgrade "Checking if upgrading-flag is set")
+    (when (upgrading-flag?)
+      (upgrade-complete))
+  (reset! checked-upgrade true))
+
 (defn send-heartbeat []
+  (when-not @checked-upgrade (check-upgrade))
   (log/debug ::send-heartbeat "sending heartbeat")
   (send-message! {:message/type :teleporter.cmd/send-heartbeat}))
 
