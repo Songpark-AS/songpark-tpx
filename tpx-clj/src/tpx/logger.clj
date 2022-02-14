@@ -14,8 +14,8 @@
       this
       (do (fs/mkdir "logs")
           (let [level (get-in config [:logger :level] :info)]
-            #_(log/set-level! level)
-            #_(log/info "Set level of logging to" level))
+            (log/set-level! level)
+            (log/info "Set level of logging to" level))
           (log/merge-config! {:appenders (merge
                                           {:rotor (rotor-appender {:path "logs/tpx.log"
                                                                    :backlog 100})}
