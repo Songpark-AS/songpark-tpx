@@ -3,6 +3,8 @@
             [tpx.ipc.serial :refer [send-command]]
             [taoensso.timbre :as log]))
 
+(defonce allow-start-coredump (atom true))
+
 (defn global-volume [value]
   (do (send-command "pc" "")
       (send-command "vol" value)))
@@ -57,6 +59,21 @@
   (send-command "pc" "")
   (send-command "getmask" ""))
 
+(defn start-coredump []
+  (let [allowed? @allow-start-coredump]
+    (if allowed?
+      (do 
+        (reset! allow-start-coredump false)
+        (send-command "pc" "")
+        (Thread/sleep 200)
+        (send-command "monitor" "")))))
+
+(defn stop-coredump []
+  (reset! allow-start-coredump true)
+  (send-command "pc" "")
+  (Thread/sleep 50)
+  (send-command "halt" ""))
+
 (defn- get-call-order [tp-id join-order sips]
   (let [indexed-join-order (map vector join-order (range))
         starting-position (reduce (fn [_ [id idx]]
@@ -88,6 +105,7 @@
         other-sips (dissoc sips tp-id)
         sips-hangup-order (get-call-order tp-id join-order sips)]
     (log/debug :sips-hangup-order (mapv identity sips-hangup-order))
+    (stop-coredump)
     (doseq [sip sips-hangup-order]
       (hangup-via-sip sip))))
 

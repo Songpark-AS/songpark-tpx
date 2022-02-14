@@ -3,7 +3,12 @@
             [clojure.string :as str]
             [taoensso.timbre :as log]))
 
-(def regexes {:sip-registered #".*pjsua_acc.c  ....sip:[^:]+: registration success, status=200 \(OK\).*"
+;; When a regex is found matching a line it will not test the same line on the rest of the regexes that have not yet been tested.
+;; TODO: Make it test/process all regexes regardless if it has found one regex to match the line
+
+;; This map will be sorted by keyword alphabetically before being processed
+(def regexes {:coredump #"INFO::COREDUMP - (.*)"
+              :sip-registered #".*pjsua_acc.c  ....sip:[^:]+: registration success, status=200 \(OK\).*"
               ;; sip call
               :sip-call-buddy-list #"Buddy list:"
               :sip-call-choices #"Choices:"
@@ -17,7 +22,7 @@
               :gain-input-left-gain #"Entered left gain"
               :gain-input-right-gain #"Entered right gain"
 
-              :log #".*(INFO|DEBUG|WARN|ERROR)(::)?(.*)"
+              ;; :log #".*(INFO|DEBUG|WARN|ERROR)(::)?(.*)"
 
               ;; sip-call-started
 
@@ -35,7 +40,8 @@
 
 
 (def controller-steps ^{:doc "Last step in the regex steps above"}
-  #{:sip-registered
+  #{:coredump
+    :sip-registered
     :sip-call-enter
     :gain-input-global-gain
     :gain-input-left-gain
@@ -66,7 +72,10 @@
         current-set (->> lines
                          (map first)
                          (into #{}))]
-    (cond (set/subset? #{:sip-registered} current-set)
+    (cond (set/subset? #{:coredump} current-set)
+          [:coredump (into {} lines)]
+
+          (set/subset? #{:sip-registered} current-set)
           [:sip-registered (into {} lines)]
 
           (set/subset? #{:sip-call-buddy-list
@@ -111,6 +120,7 @@
 
 (defn pre-process [happening data]
   (case happening
+    :coredump (let [[_ data] (:coredump data)] data)
     :gain-input-global-gain (let [[_ loopback network] (:gain-input-volume-g data)]
                               {:loopback loopback
                                :network network})
@@ -139,7 +149,7 @@
                                      (if-let [match (process-line k line)]
                                        (reduced [k match])
                                        nil))
-                                   nil regexes)]
+                                   nil (into (sorted-map) regexes))]
     (swap! lines conj [found match])
     ;; (log/debug {:found found
     ;;             :match match})
