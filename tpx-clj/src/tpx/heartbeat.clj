@@ -35,10 +35,16 @@
       (upgrade-complete))
   (reset! checked-upgrade true))
 
+(defn send-apt-version []
+  (log/debug ::send-apt-version "Sending apt-version")
+  (send-message! {:message/type :teleporter.cmd/send-apt-version}))
+
 (defn send-heartbeat []
-  (when-not @checked-upgrade (check-upgrade))
-  (log/debug ::send-heartbeat "sending heartbeat")
+  (when-not @checked-upgrade (do (check-upgrade)
+                                 (send-apt-version)))
+  (log/debug ::send-heartbeat "Sending heartbeat")
   (send-message! {:message/type :teleporter.cmd/send-heartbeat}))
+
 
 (defrecord HeartbeatService [injection-ks started? config message-service mqtt-manager]
   component/Lifecycle

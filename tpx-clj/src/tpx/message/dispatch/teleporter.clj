@@ -86,10 +86,12 @@
   (log/debug "Got new IPv4 config" values)
   (set-network! (clojure.set/rename-keys values {:ip/address :ip :ip/gateway :gateway :ip/subnet :netmask :ip/dhcp? :dhcp?})))
 
-(defmethod message/dispatch :teleporter.cmd/send-apt-version [{:message/keys [mqtt-manager]}]
+(defmethod message/dispatch :teleporter.cmd/send-apt-version [{:keys [mqtt-manager]}]
+
+
   (.publish mqtt-manager (str (data/get-tp-id) "/apt-version") {:message/type :teleporter/apt-version
                                                                 :message/body {:teleporter/id (data/get-tp-id)
-                                                                               :version (data/get-apt-version)}}))
+                                                                               :teleporter/apt-version (data/get-apt-version)}}))
 
 (defmethod message/dispatch :teleporter.cmd/send-heartbeat [{:keys [mqtt-manager]}]
   (.publish mqtt-manager (str (data/get-tp-id) "/heartbeat") {:message/type :teleporter/heartbeat
