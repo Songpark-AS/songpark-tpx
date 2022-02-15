@@ -2,32 +2,61 @@
   "Heartbeat sender, send a hearbeat periodically on mqtt"
   (:require [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
-            [tpx.data :as data]))
+            [tpx.utils :refer [upgrading-flag? delete-upgrading-flag]]
+            [tpx.data :as data]
+            [chime.core :as chime])
+  (:import (java.time Instant Duration)))
 
 (defonce ^:private store (atom nil))
+
+;; We only want to check the upgrade flag once at start
+;; not accidentally right after the upgrade process has begun
+(defonce ^:private checked-upgrade (atom false))
+
 (defn send-message! [msg]
-  (let [heartbeat @store
-        injections (-> heartbeat
-                       (select-keys (:injection-ks heartbeat))
-                       (assoc :heartbeat heartbeat))]
+  (let [mqtt-manager (:mqtt-manager @store)
+        injections (-> mqtt-manager
+                       (select-keys (:injection-ks mqtt-manager))
+                       (assoc :mqtt-manager mqtt-manager))]
     (.send-message! (:message-service injections) (merge msg injections))))
 
 (defn set-interval [callback ms]
-  (future (while true (do (Thread/sleep ms) (callback)))))
+  (chime/chime-at (chime/periodic-seq (Instant/now) (Duration/ofMillis ms)) (fn[time] (callback time)))
+  #_(future (while true (do (Thread/sleep ms) (callback)))))
+
+(defn upgrade-complete []
+  (log/debug ::upgrade-complete "Sending upgrade-complete message on MQTT")
+  (send-message! {:message/type :teleporter.cmd/send-upgrade-complete})
+  (delete-upgrading-flag))
+
+(defn check-upgrade []
+  (log/debug ::check-upgrade "Checking if upgrading-flag is set")
+    (when (upgrading-flag?)
+      (upgrade-complete))
+  (reset! checked-upgrade true))
+
+(defn send-apt-version []
+  (log/debug ::send-apt-version "Sending apt-version")
+  (send-message! {:message/type :teleporter.cmd/send-apt-version}))
 
 (defn send-heartbeat []
-  (log/debug ::send-heartbeat "sending heartbeat")
+  (when-not @checked-upgrade (do (check-upgrade)
+                                 (send-apt-version)))
+  (log/debug ::send-heartbeat "Sending heartbeat")
   (send-message! {:message/type :teleporter.cmd/send-heartbeat}))
 
-(defrecord HeartbeatService [injection-ks started? config message-service]
+
+(defrecord HeartbeatService [injection-ks started? config message-service mqtt-manager]
   component/Lifecycle
   (start [this]
     (if started?
       this
       (do (log/info "Starting HeartbeatService")
-          (let [new-this (assoc this
+          (let [timer (get config :timer (* 60 1000))
+                new-this (assoc this
+                                :mqtt-manager mqtt-manager
                                 :started? true
-                                :job (set-interval #(send-heartbeat) (get config :timer (* 60 1000))))]
+                                :job (set-interval (fn[_] (send-heartbeat)) timer))]
             (reset! store new-this)
             new-this))))
   (stop [this]
@@ -36,7 +65,7 @@
       (do (log/info "Stopping HeartbeatService")
           (let [new-this (assoc this
                                 :started? false)]
-            (future-cancel (:job this))
+            (.close (:job this))
             (reset! store nil)
             new-this)))))
 
