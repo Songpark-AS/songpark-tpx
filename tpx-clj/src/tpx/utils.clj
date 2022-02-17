@@ -32,7 +32,7 @@
   (let [apt-show-command (str "apt-cache policy " package-name)
         apt-string (:out (sh "bash" "-c" apt-show-command))
         version-line (first (filter (fn [line] (re-matches #"  Installed.*" line))
-                                    (str/split apt-string #"\r\n")))
+                                    (str/split apt-string #"\n")))
         version (last (str/split version-line #": "))]
     (if-not (= version "(none)")
       version
