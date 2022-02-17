@@ -9,6 +9,8 @@ systemctl stop sp-tpx sp-bridgeprogram
 echo "Setting upgrading_flag"
 echo "upgrading" > "$output_dir"/upgrading_flag
 
+apt-get update
+
 # perform the upgrade
 echo "upgrading"
 apt-get install -y --only-upgrade teleporter-fw
