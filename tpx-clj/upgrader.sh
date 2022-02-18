@@ -14,6 +14,7 @@ status=$?
 if $(exit $status); then
     # set upgrading flag that'll be picked up by TPX on next boot
     echo "Setting upgrading_flag"
+    mkdir -p $output_dir
     echo "upgrading" > "$output_dir"/upgrading_flag
 
     echo "rebooting"
