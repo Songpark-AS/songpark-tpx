@@ -1,6 +1,7 @@
 (ns tpx.ipc.handler
   (:require [taoensso.timbre :as log]
-            [tpx.data :as data]))
+            [tpx.data :as data]
+            [clojure.string :as str]))
 
 
 (defn handle-sip-registered [data {:keys [mqtt-manager] :as _context}]
@@ -35,8 +36,9 @@
                                          :message/body {:teleporter/id (data/get-tp-id)
                                                         :teleporter/local-volume network}}))
 
-(defn handle-sip-call-started [data {:keys [mqtt-manager] :as _context}]
+(defn handle-sip-call-started [data {:keys [mqtt-manager] start-coredump :start-coredump :as _context}]
   (log/debug :handle-sip-call-started data)
+  (start-coredump)
   (.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/call-started
                                          :message/body {:teleporter/id (data/get-tp-id)
                                                         :sip/data data}}))
@@ -46,6 +48,26 @@
   (.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/call-stopped
                                          :message/body {:teleporter/id (data/get-tp-id)
                                                         :sip/data data}}))
+
+(defn handle-coredump [data {:keys [mqtt-manager] :as _context}]
+  (log/debug :handle-coredump data)
+
+  ;; Split the string on " | "
+  ;; Replace " " with "=_=_" since we cannot have keywords with spaces
+  ;; Split on ":=_=_" to get the key and value pairs
+  ;; Keywordize the key with _ instead of spaces
+  ;; replace "=_=_" back to " " on the values
+  ;; reduce into a single map
+  (let [coredump-data (reduce into {}
+                              (map (fn [v] {(keyword (str/replace (first v) #"=_=_" "_")) (str/replace (last v) #"=_=_" " ")})
+                                   (map #(str/split % #":=_=_")
+                                        (map #(-> %
+                                                  (str/replace #" " "=_=_"))
+                                             (str/split data #" \| ")))))]
+    ;; (log/debug :handle-coredump coredump-data)
+    (.publish mqtt-manager (data/get-tp-coredump-topic) {:message/type :teleporter/coredump
+                                                         :message/body {:teleporter/id (data/get-tp-id)
+                                                                        :teleporter/coredump-data coredump-data}})))
 
 (defn handle-log [data {:keys [mqtt-manager] :as _context}]
   (log/debug :handle-log data)

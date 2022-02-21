@@ -27,7 +27,8 @@
               :teleporter/mac (get-device-mac)
               :teleporter/tpx-version (:tpx/version config)
               :teleporter/bp-version (:bp/version config)
-              :teleporter/fpga-version (:fpga/version config)}]
+              :teleporter/fpga-version (:fpga/version config)
+              :teleporter/apt-version (data/get-apt-version)}]
     (log/debug "Broadcasting to URL"
                (str (get-in config [:platform]) "/api/teleporter")
                data)
@@ -38,13 +39,15 @@
            (send-message! {:message/type :teleporter.cmd/subscribe
                            :message/meta {:mqtt/topics {(str uuid) 0}}})))))
 
-(defn- setup-serial-ports! [mqtt-manager]
+(defn- setup-serial-ports! [mqtt-manager context-data]
   (log/info "Setting up serial ports")
-  (ipc.serial/connect-to-port {:mqtt-manager mqtt-manager}
+  (ipc.serial/connect-to-port (merge {:mqtt-manager mqtt-manager}
+                                     context-data)
                               {:sip-call-started #'ipc.handler/handle-sip-call-started
                                :sip-call-stopped #'ipc.handler/handle-sip-call-stopped
                                :sip-registered #'ipc.handler/handle-sip-registered
                                :sip-call #'ipc.handler/handle-sip-call
+                               :coredump #'ipc.handler/handle-coredump
                                :log #'ipc.handler/handle-log
                                :gain-input-global-gain #'ipc.handler/handle-gain-input-global-gain
                                :gain-input-left-gain #'ipc.handler/handle-gain-input-left-gain
@@ -67,7 +70,7 @@
                                 :started? true)]
             (reset! store new-this)
             (broadcast-presence config)
-            (setup-serial-ports! mqtt-manager)
+            (setup-serial-ports! mqtt-manager {:start-coredump #'ipc.command/start-coredump})
             (set-hw-defaults!)
             new-this))))
   

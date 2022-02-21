@@ -1,8 +1,10 @@
-(ns tpx.data)
+(ns tpx.data
+  (:require [tpx.utils :refer [get-apt-package-installed-version]]))
 
 (defonce ^:private jam-id* (atom nil))
 (defonce ^:private jam-session* (atom nil))
 (defonce ^:private tp-id* (atom nil))
+(defonce ^:private apt-version* (atom (get-apt-package-installed-version "teleporter-fw")))
 
 ;; Jam ID (UUID)
 (defn set-jam-id! [jam-id]
@@ -37,8 +39,14 @@
 (defn get-tp-id []
   (str @tp-id*))
 
+(defn get-apt-version []
+  (str @apt-version*))
+
 (defn get-tp-log-topic []
   (str @tp-id* "/log"))
+
+(defn get-tp-coredump-topic []
+  (str @tp-id* "/coredump"))
 
 (defn get-tp-report-net-config-topic []
   (str @tp-id* "/net-config-report"))
