@@ -26,7 +26,7 @@
 
                  ;; jam
                  [songpark/jam "0.1.0-SNAPSHOT"]
-                 [songpark/mqtt "1.0.0-alpha5"]
+                 [songpark/mqtt "1.0.0-alpha6"]
                  
                  ;; json
                  [cheshire "5.10.0"]

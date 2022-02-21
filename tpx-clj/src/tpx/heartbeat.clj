@@ -1,73 +1,80 @@
 (ns tpx.heartbeat
   "Heartbeat sender, send a hearbeat periodically on mqtt"
-  (:require [com.stuartsierra.component :as component]
+  (:require [chime.core :as chime]
+            [com.stuartsierra.component :as component]
+            [songpark.mqtt :as mqtt]
+            [songpark.mqtt.util :as mqtt.util]
             [taoensso.timbre :as log]
             [tpx.utils :refer [upgrading-flag? delete-upgrading-flag]]
-            [tpx.data :as data]
-            [chime.core :as chime])
-  (:import (java.time Instant Duration)))
-
-(defonce ^:private store (atom nil))
+            [tpx.data :as data])
+  (:import [java.time Instant Duration]))
 
 ;; We only want to check the upgrade flag once at start
 ;; not accidentally right after the upgrade process has begun
 (defonce ^:private checked-upgrade (atom false))
 
-(defn send-message! [msg]
-  (let [mqtt-manager (:mqtt-manager @store)
-        injections (-> mqtt-manager
-                       (select-keys (:injection-ks mqtt-manager))
-                       (assoc :mqtt-manager mqtt-manager))]
-    (.send-message! (:message-service injections) (merge msg injections))))
 
 (defn set-interval [callback ms]
-  (chime/chime-at (chime/periodic-seq (Instant/now) (Duration/ofMillis ms)) (fn[time] (callback time)))
-  #_(future (while true (do (Thread/sleep ms) (callback)))))
+  (chime/chime-at
+   (chime/periodic-seq (Instant/now)
+                       (Duration/ofMillis ms))
+   (fn [time]
+     (callback time))))
 
-(defn upgrade-complete []
+(defn upgrade-complete [mqtt-client]
   (log/debug ::upgrade-complete "Sending upgrade-complete message on MQTT")
-  (send-message! {:message/type :teleporter.cmd/send-upgrade-complete})
+  (let [topic (mqtt.util/teleporter-topic (data/get-tp-id))]
+    (mqtt/publish mqtt-client
+                  topic
+                  {:message/type :teleporter/upgrade-status
+                   :teleporter/id (data/get-tp-id)
+                   :teleporter/upgrade-status "complete"}))
   (delete-upgrading-flag))
 
-(defn check-upgrade []
+(defn check-upgrade [mqtt-client]
   (log/debug ::check-upgrade "Checking if upgrading-flag is set")
     (when (upgrading-flag?)
-      (upgrade-complete))
+      (upgrade-complete mqtt-client))
   (reset! checked-upgrade true))
 
-(defn send-apt-version []
+(defn send-apt-version [mqtt-client]
   (log/debug ::send-apt-version "Sending apt-version")
-  (send-message! {:message/type :teleporter.cmd/send-apt-version}))
+  (let [topic (mqtt.util/teleporter-topic (data/get-tp-id))]
+    (mqtt/publish mqtt-client
+                  topic
+                  {:message/type :teleporter/apt-version
+                   :teleporter/id (data/get-tp-id)
+                   :teleporter/apt-version (data/get-apt-version)})))
 
-(defn send-heartbeat []
-  (when-not @checked-upgrade (do (check-upgrade)
-                                 (send-apt-version)))
+(defn send-heartbeat [mqtt-client]
+  (when-not @checked-upgrade (do (check-upgrade mqtt-client)
+                                 (send-apt-version mqtt-client)))
   (log/debug ::send-heartbeat "Sending heartbeat")
-  (send-message! {:message/type :teleporter.cmd/send-heartbeat}))
+  (let [topic (mqtt.util/heartbeat-topic (data/get-tp-id))]
+    (mqtt/publish mqtt-client topic
+                  {:message/type :teleporter/heartbeat
+                   :teleporter/id (data/get-tp-id)})))
 
 
-(defrecord HeartbeatService [injection-ks started? config message-service mqtt-manager]
+(defrecord HeartbeatService [started? config job mqtt-client]
   component/Lifecycle
   (start [this]
     (if started?
       this
       (do (log/info "Starting HeartbeatService")
-          (let [timer (get config :timer (* 60 1000))
-                new-this (assoc this
-                                :mqtt-manager mqtt-manager
-                                :started? true
-                                :job (set-interval (fn[_] (send-heartbeat)) timer))]
-            (reset! store new-this)
-            new-this))))
+          (let [timer (get config :timer (* 60 1000))]
+            (assoc this
+                   :started? true
+                   :job (set-interval (fn [_]
+                                        (send-heartbeat mqtt-client))
+                                      timer))))))
   (stop [this]
     (if-not started?
       this
       (do (log/info "Stopping HeartbeatService")
-          (let [new-this (assoc this
-                                :started? false)]
-            (.close (:job this))
-            (reset! store nil)
-            new-this)))))
+          (.close job)
+          (assoc this
+                 :started? false)))))
 
 (defn heartbeat-service [settings]
   (map->HeartbeatService settings))

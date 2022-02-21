@@ -37,7 +37,7 @@
   (reset! tp-id* nil))
 
 (defn get-tp-id []
-  (str @tp-id*))
+  @tp-id*)
 
 (defn get-apt-version []
   (str @apt-version*))
@@ -50,6 +50,12 @@
 
 (defn get-tp-report-net-config-topic []
   (str @tp-id* "/net-config-report"))
+
+(defn get-teleporter-topic []
+  (str @tp-id* "/teleporter"))
+
+(defn get-app-topic []
+  (str @tp-id* "/app"))
 
 
 (defn same-tp? [tp-id]

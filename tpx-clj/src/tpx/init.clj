@@ -1,12 +1,13 @@
 (ns tpx.init
   (:require [com.stuartsierra.component :as component]
+            [songpark.mqtt :as mqtt]
             [taoensso.timbre :as log]   
             [tpx.config :refer [config]]
             [tpx.logger :as logger]
-            [tpx.ipc :as ipc]
-            [tpx.mqtt :as mqtt]
+            ;;[tpx.ipc :as ipc]
+            ;;[tpx.mqtt :as mqtt]
             [tpx.heartbeat :as heartbeat]
-            [tpx.message :as message]
+            ;;[tpx.message :as message]
             [tpx.network :as network]))
 
 
@@ -19,18 +20,18 @@
         mqtt-config (:mqtt config)]
     (apply component/system-map
            (into [:logger logger
+                  :mqtt-client (mqtt/mqtt-client mqtt-config)
                   :config core-config
-                  :message-service (message/message-service (:message config))
+                  ;;:message-service (message/message-service (:message config))
                   :network (network/network (:network config))
-                  :mqtt-manager (component/using (mqtt/mqtt-manager (merge (:mqtt config)
-                                                                           {:injection-ks [:message-service]}))
-                                                 [:message-service])
-                  :ipc-service (component/using (ipc/ipc-service {:injection-ks [:message-service :mqtt-manager]
-                                                                  :config (:ipc config)})
-                                                [:message-service :mqtt-manager])
-                  :heartbeat (component/using (heartbeat/heartbeat-service {:injection-ks [:message-service :mqtt-manager]
-                                                                            :config (:heartbeat config)})
-                                              [:message-service :mqtt-manager])]
+                  ;; :mqtt-manager (component/using (mqtt/mqtt-manager (merge (:mqtt config)
+                  ;;                                                          {:injection-ks [:message-service]}))
+                  ;;                                [:message-service])
+                  ;; :ipc-service (component/using (ipc/ipc-service {:injection-ks [:message-service :mqtt-manager]
+                  ;;                                                 :config (:ipc config)})
+                  ;;                               [:message-service :mqtt-manager])
+                  :heartbeat (component/using (heartbeat/heartbeat-service {:config (:heartbeat config)})
+                                              [:mqtt-client])]
                  extra-components))))
 
 
