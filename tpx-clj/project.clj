@@ -24,8 +24,9 @@
                  [clojurewerkz/machine_head "1.0.0"]
                  [com.cognitect/transit-clj "1.0.324"]
 
-                 ;; jam (and from there mqtt)
+                 ;; jam
                  [songpark/jam "0.1.0-SNAPSHOT"]
+                 [songpark/mqtt "1.0.0-alpha5"]
                  
                  ;; json
                  [cheshire "5.10.0"]
