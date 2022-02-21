@@ -23,6 +23,10 @@
                  ;; mqtt implementation
                  [clojurewerkz/machine_head "1.0.0"]
                  [com.cognitect/transit-clj "1.0.324"]
+
+                 ;; jam (and from there mqtt)
+                 [songpark/jam "0.1.0-SNAPSHOT"]
+                 
                  ;; json
                  [cheshire "5.10.0"]
                  ;; scheduler
