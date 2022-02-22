@@ -11,6 +11,7 @@
             [tpx.heartbeat :as heartbeat]
             [tpx.network :as network]))
 
+(defonce system (atom nil))
 
 (defn- get-device-mac []
   (:mac config))
@@ -25,7 +26,6 @@
         platform-url (str (get-in config [:ipc :platform]) "/api/teleporter")]
     (log/debug "Broadcasting to URL" platform-url data)
     (PUT platform-url data success-cb error-cb)))
-
 
 (defn- system-map [extra-components]
   (let [;; logger and config are started this way so that we can ensure
@@ -59,10 +59,6 @@
        ;; add flashing leds to indicate a restart is required
        (log/error error)))))
 
-
-(defonce system (atom nil))
-
-
 (defn stop []
   (when-not (nil? @system)
     (log/info "Shutting down Songpark Teleporter")
@@ -94,12 +90,6 @@
        (proxy [Thread] []
          (run []
            (stop)))))))
-
-
-
-
-
-
 
 
 (comment 
