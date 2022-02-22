@@ -1,14 +1,30 @@
 (ns tpx.init
   (:require [com.stuartsierra.component :as component]
+            [songpark.common.communication :refer [PUT]]
+            [songpark.jam.tpx :as jam.tpx]
             [songpark.mqtt :as mqtt]
             [taoensso.timbre :as log]   
             [tpx.config :refer [config]]
+            [tpx.data :as data]
             [tpx.logger :as logger]
-            ;;[tpx.ipc :as ipc]
-            ;;[tpx.mqtt :as mqtt]
+            [tpx.ipc :as ipc]
             [tpx.heartbeat :as heartbeat]
-            ;;[tpx.message :as message]
             [tpx.network :as network]))
+
+
+(defn- get-device-mac []
+  (:mac config))
+
+(defn broadcast-presence [success-cb error-cb]
+  (let [data {:teleporter/nickname (get-in config [:ipc :teleporter :nickname])
+              :teleporter/mac (get-device-mac)
+              :teleporter/tpx-version (:tpx/version config)
+              :teleporter/bp-version (:bp/version config)
+              :teleporter/fpga-version (:fpga/version config)
+              :teleporter/apt-version (data/get-apt-version)}
+        platform-url (str (get-in config [:ipc :platform]) "/api/teleporter")]
+    (log/debug "Broadcasting to URL" platform-url data)
+    (PUT platform-url data success-cb error-cb)))
 
 
 (defn- system-map [extra-components]
@@ -16,23 +32,32 @@
         ;; things are logged as we want and that the config is loaded
         ;; for all the other modules
         core-config (component/start (tpx.config/config-manager {}))
-        logger (component/start (logger/logger (:logger config)))
-        mqtt-config (:mqtt config)]
-    (apply component/system-map
-           (into [:logger logger
-                  :mqtt-client (mqtt/mqtt-client mqtt-config)
-                  :config core-config
-                  ;;:message-service (message/message-service (:message config))
-                  :network (network/network (:network config))
-                  ;; :mqtt-manager (component/using (mqtt/mqtt-manager (merge (:mqtt config)
-                  ;;                                                          {:injection-ks [:message-service]}))
-                  ;;                                [:message-service])
-                  ;; :ipc-service (component/using (ipc/ipc-service {:injection-ks [:message-service :mqtt-manager]
-                  ;;                                                 :config (:ipc config)})
-                  ;;                               [:message-service :mqtt-manager])
-                  :heartbeat (component/using (heartbeat/heartbeat-service {:config (:heartbeat config)})
-                                              [:mqtt-client])]
-                 extra-components))))
+        logger (component/start (logger/logger (:logger config)))]
+    (broadcast-presence
+     (fn [{:teleporter/keys [id] :as _result}]
+       ;; set teleporter-id for data
+       (data/set-tp-id! id)
+       ;; start the rest of system
+       (reset! system (component/start
+                       (apply component/system-map
+                              (into [:logger logger
+                                     :mqtt-client (mqtt/mqtt-client (assoc-in (:mqtt config) [:config :id] id))
+                                     :config core-config
+                                     ;;:message-service (message/message-service (:message config))
+                                     :network (network/network (:network config))
+                                     ;; :mqtt-manager (component/using (mqtt/mqtt-manager (merge (:mqtt config)
+                                     ;;                                                          {:injection-ks [:message-service]}))
+                                     ;;                                [:message-service])
+                                     :ipc (component/using (ipc/ipc-service {:config (:ipc config)})
+                                                           [:mqtt-client])
+                                     ;; :jam (component/using (jam.tpx/get-jam (:jam config))
+                                     ;;                       [:ipc :mqtt-client])
+                                     :heartbeat (component/using (heartbeat/heartbeat-service {:config (:heartbeat config)})
+                                                                 [:mqtt-client])]
+                                    extra-components)))))
+     (fn [error]
+       ;; add flashing leds to indicate a restart is required
+       (log/error error)))))
 
 
 (defonce system (atom nil))
@@ -53,7 +78,7 @@
     (do
       (log/info "Starting Songpark Teleporter")
       ;; start the system
-      (reset! system (component/start (system-map extra-components)))
+      (system-map extra-components)
 
       ;; log uncaught exceptions in threads
       (Thread/setDefaultUncaughtExceptionHandler

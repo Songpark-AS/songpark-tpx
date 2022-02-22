@@ -28,14 +28,14 @@
   (send-command "" value))
 
 
-(defn- call-via-sip [sip]
+(defn call-via-sip [sip]
   (log/debug ::m)
   (send-command "m" "")
   (Thread/sleep 500)
   (log/debug ::sip)
   (send-command sip ""))
 
-(defn- hangup-via-sip [sip]
+(defn hangup-via-sip [sip]
   ;; this should take the sip as a command
   ;; but the h command for SIP/BP does not appear to take it
   (send-command "h" ""))

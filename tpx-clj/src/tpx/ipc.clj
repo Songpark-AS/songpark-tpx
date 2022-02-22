@@ -1,7 +1,10 @@
 (ns tpx.ipc
   "Interactive Process Communication"
-  (:require [clojure.java.shell :refer [sh]]
+  (:require [clojure.core.async :as async]
+            [clojure.java.shell :refer [sh]]
             [com.stuartsierra.component :as component]
+            [songpark.jam.tpx.ipc :as tpx.ipc]
+            [songpark.mqtt :as mqtt]
             [taoensso.timbre :as log]
             [tpx.config :refer [config]]
             [tpx.data :as data]
@@ -10,91 +13,75 @@
             [tpx.ipc.serial :as ipc.serial]
             [songpark.common.communication :refer [PUT]]))
 
-(defonce ^:private store (atom nil))
 
-(defn- get-device-mac []
-  (:mac config))
 
-(defn send-message! [msg]
-  (let [ipc @store
-        injections (-> ipc
-                       (select-keys (:injection-ks ipc))
-                       (assoc :ipc ipc))]
-    (.send-message! (:message-service injections) (merge msg injections))))
 
-(defn broadcast-presence [config]
-  (let [data {:teleporter/nickname (get-in config [:teleporter :nickname])
-              :teleporter/mac (get-device-mac)
-              :teleporter/tpx-version (:tpx/version config)
-              :teleporter/bp-version (:bp/version config)
-              :teleporter/fpga-version (:fpga/version config)
-              :teleporter/apt-version (data/get-apt-version)}]
-    (log/debug "Broadcasting to URL"
-               (str (get-in config [:platform]) "/api/teleporter")
-               data)
-    (PUT (str (get-in config [:platform]) "/api/teleporter")
-         data
-         (fn [{:teleporter/keys [uuid] :as response}]
-           (data/set-tp-id! uuid)
-           (send-message! {:message/type :teleporter.cmd/subscribe
-                           :message/meta {:mqtt/topics {(str uuid) 0}}})))))
-
-(defn- setup-serial-ports! [mqtt-manager context-data]
+(defn- setup-serial-ports! [ipc mqtt-client context-data]
   (log/info "Setting up serial ports")
-  (ipc.serial/connect-to-port (merge {:mqtt-manager mqtt-manager}
+  (ipc.serial/connect-to-port (merge {:mqtt-client mqtt-client
+                                      :ipc ipc}
                                      context-data)
                               {:sip-call-started #'ipc.handler/handle-sip-call-started
                                :sip-call-stopped #'ipc.handler/handle-sip-call-stopped
                                :sip-registered #'ipc.handler/handle-sip-registered
                                :sip-call #'ipc.handler/handle-sip-call
                                :coredump #'ipc.handler/handle-coredump
-                               :log #'ipc.handler/handle-log
                                :gain-input-global-gain #'ipc.handler/handle-gain-input-global-gain
                                :gain-input-left-gain #'ipc.handler/handle-gain-input-left-gain
-                               :gain-input-right-gain #'ipc.handler/handle-gain-input-right-gain
-                               :local-ip #'ipc.handler/handle-local-ip
-                               :gateway-ip #'ipc.handler/handle-gateway-ip
-                               :netmask-ip #'ipc.handler/handle-netmask-ip}))
+                               :gain-input-right-gain #'ipc.handler/handle-gain-input-right-gain}))
 
-(defn- set-hw-defaults! []
-  ;; set 
-  (ipc.command/set-playout-delay (get-in config [:defaults :playout-delay] 20)))
+(defn- command* [ipc what data]
+  (case what
+    :sip/call (ipc.command/call-via-sip data)
+    :sip/hangup (ipc.command/hangup-all)
+    :volume/global-volume (ipc.command/global-volume data)
+    :volume/network-volume (ipc.command/network-volume data)
+    :volume/local-volume (ipc.command/local-volume data)
+    :jam/path-reset (ipc.command/path-reset)
+    (log/error "Unknown command" {:what what
+                                  :data data})))
 
-(defrecord IpcService [injection-ks started? config message-service mqtt-manager]
+(defn- handler* [c what data]
+  ;; let TPX Jam handle the rest
+  (let [value {:event/type what
+               :event/value data}]
+    (log/debug value)
+    (async/put! c value)))
+
+(defrecord IpcService [started? config mqtt-client c]
   component/Lifecycle
   (start [this]
     (if started?
       this
-      (do (log/info "Starting IpcService")          
-          (let [new-this (assoc this
-                                :started? true)]
-            (reset! store new-this)
-            (broadcast-presence config)
-            (setup-serial-ports! mqtt-manager {:start-coredump #'ipc.command/start-coredump})
-            (set-hw-defaults!)
-            new-this))))
+      (do (log/info "Starting IpcService")
+          (let [this* (assoc this
+                             :started? true
+                             :c (async/chan (async/sliding-buffer 10)))]
+            (setup-serial-ports! this* mqtt-client {:start-coredump #'ipc.command/start-coredump})
+            this*))))
   
   (stop [this]
     (if-not started?
       this
       (do (log/info "Stopping IpcService")
-          (let [new-this (assoc this
-                                :started? false)]
-            (reset! store nil)
-            (ipc.serial/disconnect)
-            new-this)))))
+          (ipc.serial/disconnect)
+          (async/close! c)
+          (assoc this
+                 :started? false
+                 :c nil))))
+
+  tpx.ipc/IIPC
+  (command [this what data])
+  (handler [this what]
+    (throw (ex-info "Not implemented" {:what what})))
+  (handler [this what data]
+    (handler* c what data)))
 
 (defn ipc-service [settings]
   (map->IpcService settings))
 
 
 (comment
-  (pr-str (:teleporter (:config @store)))
-  @(broadcast-presence (:config @store))
-  
-  (get-device-mac)
-
-
 
   )
 

@@ -1,55 +1,65 @@
 (ns tpx.ipc.handler
-  (:require [taoensso.timbre :as log]
-            [tpx.data :as data]
-            [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [songpark.mqtt :as mqtt]
+            [songpark.jam.tpx.ipc :as tpx.ipc]
+            [taoensso.timbre :as log]
+            [tpx.data :as data]))
 
 
-(defn handle-sip-registered [data {:keys [mqtt-manager] :as _context}]
+(defn handle-sip-registered [data {:keys [ipc] :as _context}]
   (log/debug :handle-sip-registered data)
-  (.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/sip
+  (tpx.ipc/handler ipc :sip/register true)
+  #_(.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/sip
                                          :message/body {:teleporter/id (data/get-tp-id)
                                                         :teleporter/sip :registered}}))
 
-(defn handle-sip-call [data {:keys [mqtt-manager] :as _context}]
-  (log/debug :handle-sip-call data))
+(defn handle-sip-call [data {:keys [ipc] :as _context}]
+  (log/debug :handle-sip-call data)
+  (tpx.ipc/handler ipc :sip/call true))
 
 (defn handle-gain-input-global-gain [{:keys [loopback network] :as _data}
-                                     {:keys [mqtt-manager] :as _context}]
+                                     {:keys [ipc] :as _context}]
   (log/debug :gain-input-global-gain _data)
-  (.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/global-volume
+  (tpx.ipc/handler ipc :volume/global-volume "FIXME")
+  #_(.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/global-volume
                                          :message/body {:teleporter/id (data/get-tp-id)
                                                         :teleporter/loopback-volume loopback
                                                         :teleporter/network-volume network}}))
 
-(defn handle-gain-input-left-gain [data context]
+(defn handle-gain-input-left-gain [data {:keys [ipc] :as _context}]
   ;; we ignore left for now, the right is what matters as we set them to the same value,
   ;; but set the right value last
   (log/debug :gain-input-left-gain data))
 
 (defn handle-gain-input-right-gain [{:keys [loopback network] :as _data}
-                                    {:keys [mqtt-manager] :as _context}]
+                                    {:keys [ipc] :as _context}]
   (log/debug :gain-input-right-gain _data)
-  (.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/network-volume
-                                         :message/body {:teleporter/id (data/get-tp-id)
-                                                        :teleporter/network-volume network}})
-  (.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/local-volume
-                                         :message/body {:teleporter/id (data/get-tp-id)
-                                                        :teleporter/local-volume network}}))
+  ;; (.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/network-volume
+  ;;                                        :message/body {:teleporter/id (data/get-tp-id)
+  ;;                                                       :teleporter/network-volume network}})
+  ;; (.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/local-volume
+  ;;                                        :message/body {:teleporter/id (data/get-tp-id)
+  ;;                                                       :teleporter/local-volume network}})
+  (tpx.ipc/handler ipc :volume/network-volume "FIXME")
+  (tpx.ipc/handler ipc :volume/locale-volume "FIXME"))
 
-(defn handle-sip-call-started [data {:keys [mqtt-manager] start-coredump :start-coredump :as _context}]
+(defn handle-sip-call-started [data {:keys [ipc] start-coredump :start-coredump :as _context}]
   (log/debug :handle-sip-call-started data)
-  (start-coredump)
-  (.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/call-started
-                                         :message/body {:teleporter/id (data/get-tp-id)
-                                                        :sip/data data}}))
+  (tpx.ipc/handler ipc :sip/calling true)
+  ;; (start-coredump)
+  ;; (.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/call-started
+  ;;                                        :message/body {:teleporter/id (data/get-tp-id)
+  ;;                                                       :sip/data data}})
+  )
 
-(defn handle-sip-call-stopped [data {:keys [mqtt-manager] :as _context}]
+(defn handle-sip-call-stopped [data {:keys [ipc] :as _context}]
   (log/debug :handle-sip-call-stopped data)
-  (.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/call-stopped
+  (tpx.ipc/handler ipc :sip/stop true)
+  #_(.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/call-stopped
                                          :message/body {:teleporter/id (data/get-tp-id)
                                                         :sip/data data}}))
 
-(defn handle-coredump [data {:keys [mqtt-manager] :as _context}]
+(defn handle-coredump [data {:keys [ipc] :as _context}]
   (log/debug :handle-coredump data)
 
   ;; Split the string on " | "
@@ -65,13 +75,14 @@
                                                   (str/replace #" " "=_=_"))
                                              (str/split data #" \| ")))))]
     ;; (log/debug :handle-coredump coredump-data)
-    (.publish mqtt-manager (data/get-tp-coredump-topic) {:message/type :teleporter/coredump
+    (tpx.ipc/handler ipc :jam/coredump coredump-data)
+    #_(.publish mqtt-manager (data/get-tp-coredump-topic) {:message/type :teleporter/coredump
                                                          :message/body {:teleporter/id (data/get-tp-id)
                                                                         :teleporter/coredump-data coredump-data}})))
 
-(defn handle-log [data {:keys [mqtt-manager] :as _context}]
+(defn handle-log [data {:keys [ipc] :as _context}]
   (log/debug :handle-log data)
-  (.publish mqtt-manager (data/get-tp-log-topic) {:message/type :teleporter/log
+  #_(.publish mqtt-manager (data/get-tp-log-topic) {:message/type :teleporter/log
                                                   :message/body (assoc data :teleporter/id (data/get-tp-id))}))
 
 (defn handle-local-ip [data _context]
