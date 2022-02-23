@@ -27,6 +27,9 @@
                  ;; jam
                  [songpark/jam "0.1.0-SNAPSHOT"]
                  [songpark/mqtt "1.0.1-alpha1"]
+
+                 ;; database
+                 [codax "1.3.1"]
                  
                  ;; json
                  [cheshire "5.10.0"]

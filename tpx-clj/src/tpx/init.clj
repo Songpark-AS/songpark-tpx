@@ -3,7 +3,7 @@
             [songpark.common.communication :refer [PUT]]
             [songpark.jam.tpx :as jam.tpx]
             [songpark.mqtt :as mqtt]
-            [taoensso.timbre :as log]   
+            [taoensso.timbre :as log]
             [tpx.config :refer [config]]
             [tpx.data :as data]
             [tpx.logger :as logger]
@@ -30,7 +30,7 @@
 (defn- system-map [extra-components]
   (let [;; logger and config are started this way so that we can ensure
         ;; things are logged as we want and that the config is loaded
-        ;; for all the other modules
+        ;; before all the other modules
         core-config (component/start (tpx.config/config-manager {}))
         logger (component/start (logger/logger (:logger config)))]
     (broadcast-presence
@@ -43,18 +43,19 @@
                               (into [:logger logger
                                      :mqtt-client (mqtt/mqtt-client (assoc-in (:mqtt config) [:config :id] id))
                                      :config core-config
-                                     ;;:message-service (message/message-service (:message config))
                                      :network (network/network (:network config))
-                                     ;; :mqtt-manager (component/using (mqtt/mqtt-manager (merge (:mqtt config)
-                                     ;;                                                          {:injection-ks [:message-service]}))
-                                     ;;                                [:message-service])
                                      :ipc (component/using (ipc/ipc-service {:config (:ipc config)})
                                                            [:mqtt-client])
-                                     ;; :jam (component/using (jam.tpx/get-jam (:jam config))
-                                     ;;                       [:ipc :mqtt-client])
+                                     :jam (component/using (jam.tpx/get-jam (merge {:tpid id}
+                                                                                   (:jam config)))
+                                                           [:ipc :mqtt-client])
                                      :heartbeat (component/using (heartbeat/heartbeat-service {:config (:heartbeat config)})
                                                                  [:mqtt-client])]
-                                    extra-components)))))
+                                    extra-components))))
+       ;; add injections to mqtt-client
+       (let [{:keys [mqtt-client ipc jam]} @system]
+         (mqtt/add-injection mqtt-client :ipc ipc)
+         (mqtt/add-injection mqtt-client :jam jam)))
      (fn [error]
        ;; add flashing leds to indicate a restart is required
        (log/error error)))))
