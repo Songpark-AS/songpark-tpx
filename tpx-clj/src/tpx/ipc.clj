@@ -21,16 +21,29 @@
   (ipc.serial/connect-to-port (merge {:mqtt-client mqtt-client
                                       :ipc ipc}
                                      context-data)
-                              {:sip-call-started #'ipc.handler/handle-sip-call-started
-                               :sip-call-stopped #'ipc.handler/handle-sip-call-stopped
-                               :sip-registered #'ipc.handler/handle-sip-registered
-                               :sip-call #'ipc.handler/handle-sip-call
-                               :coredump #'ipc.handler/handle-coredump
+                              {:sip/making-call #'ipc.handler/handle-sip-making-call
+                               :sip/calling #'ipc.handler/handle-sip-calling
+                               :sip/incoming-call #'ipc.handler/handle-sip-incoming-call
+                               :sip/in-call #'ipc.handler/handle-sip-in-call
+                               :sip/hangup #'ipc.handler/handle-sip-hangup
+                               :sip/call-ended #'ipc.handler/handle-sip-call-ended
+                               :sip/register #'ipc.handler/handle-sip-register
+
+                               :stream/broken #'ipc.handler/handle-stream-broken
+                               :stream/syncing #'ipc.handler/handle-stream-syncing
+                               :stream/sync-failed #'ipc.handler/handle-stream-sync-failed
+                               :stream/streaming #'ipc.handler/handle-stream-streaming
+                               :stream/stopped #'ipc.handler/handle-stream-stopped
+                               
+                               :jam/coredump #'ipc.handler/handle-coredump
+                               
                                :gain-input-global-gain #'ipc.handler/handle-gain-input-global-gain
                                :gain-input-left-gain #'ipc.handler/handle-gain-input-left-gain
                                :gain-input-right-gain #'ipc.handler/handle-gain-input-right-gain}))
 
-(defn- command* [ipc what data]
+(defn- command* [_ipc what data]
+  (log/debug ::command* {:what what
+                         :data data})
   (case what
     :sip/call (ipc.command/call-via-sip data)
     :sip/hangup (ipc.command/hangup-all)
@@ -38,6 +51,7 @@
     :volume/network-volume (ipc.command/network-volume data)
     :volume/local-volume (ipc.command/local-volume data)
     :jam/path-reset (ipc.command/path-reset)
+    :jam/playout-delay (ipc.command/set-playout-delay data)
     (log/error "Unknown command" {:what what
                                   :data data})))
 
@@ -71,7 +85,8 @@
                  :c nil))))
 
   tpx.ipc/IIPC
-  (command [this what data])
+  (command [this what data]
+    (command* this what data))
   (handler [this what]
     (throw (ex-info "Not implemented" {:what what})))
   (handler [this what data]

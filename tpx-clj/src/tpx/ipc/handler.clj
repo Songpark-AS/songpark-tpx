@@ -6,16 +6,57 @@
             [tpx.data :as data]))
 
 
-(defn handle-sip-registered [data {:keys [ipc] :as _context}]
-  (log/debug :handle-sip-registered data)
+(defn handle-sip-register [data {:keys [ipc] :as _context}]
+  (log/debug :handle-sip-register data)
   (tpx.ipc/handler ipc :sip/register true)
   #_(.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/sip
                                          :message/body {:teleporter/id (data/get-tp-id)
                                                         :teleporter/sip :registered}}))
 
-(defn handle-sip-call [data {:keys [ipc] :as _context}]
-  (log/debug :handle-sip-call data)
-  (tpx.ipc/handler ipc :sip/call true))
+(defn handle-sip-making-call [data {:keys [ipc start-coredump] :as _context}]
+  (log/debug :handle-sip-making-call data)
+  (start-coredump)
+  (tpx.ipc/handler ipc :sip/making-call true))
+
+(defn handle-sip-calling [data {:keys [ipc] :as _context}]
+  (log/debug :handle-sip-calling data)
+  (tpx.ipc/handler ipc :sip/calling true))
+
+(defn handle-sip-incoming-call [data {:keys [ipc] :as _context}]
+  (log/debug :handle-sip-incoming-call data)
+  (tpx.ipc/handler ipc :sip/incoming-call true))
+
+(defn handle-sip-in-call [data {:keys [ipc] :as _context}]
+  (log/debug :handle-sip-inc-call data)
+  (tpx.ipc/handler ipc :sip/inc-call true))
+
+(defn handle-sip-hangup [data {:keys [ipc] :as _context}]
+  (log/debug :handle-sip-hangup data)
+  (tpx.ipc/handler ipc :sip/hangup true))
+
+(defn handle-sip-call-ended [data {:keys [ipc] :as _context}]
+  (log/debug :handle-sip-call-ended data)
+  (tpx.ipc/handler ipc :sip/call-ended true))
+
+(defn handle-stream-broken [data {:keys [ipc] :as _context}]
+  (log/debug :handle-stream-broken data)
+  (tpx.ipc/handler ipc :stream/broken true))
+
+(defn handle-stream-syncing [data {:keys [ipc] :as _context}]
+  (log/debug :handle-stream-syncing data)
+  (tpx.ipc/handler ipc :stream/syncing true))
+
+(defn handle-stream-sync-failed [data {:keys [ipc] :as _context}]
+  (log/debug :handle-stream-sync-failed data)
+  (tpx.ipc/handler ipc :stream/sync-failed true))
+
+(defn handle-stream-streaming [data {:keys [ipc] :as _context}]
+  (log/debug :handle-stream-streaming data)
+  (tpx.ipc/handler ipc :stream/streaming true))
+
+(defn handle-stream-stopped [data {:keys [ipc] :as _context}]
+  (log/debug :handle-stream-stopped data)
+  (tpx.ipc/handler ipc :stream/stopped true))
 
 (defn handle-gain-input-global-gain [{:keys [loopback network] :as _data}
                                      {:keys [ipc] :as _context}]
@@ -46,7 +87,7 @@
 (defn handle-sip-call-started [data {:keys [ipc] start-coredump :start-coredump :as _context}]
   (log/debug :handle-sip-call-started data)
   (tpx.ipc/handler ipc :sip/calling true)
-  ;; (start-coredump)
+  (start-coredump)
   ;; (.publish mqtt-manager (data/get-jam) {:message/type :teleporter.status/call-started
   ;;                                        :message/body {:teleporter/id (data/get-tp-id)
   ;;                                                       :sip/data data}})

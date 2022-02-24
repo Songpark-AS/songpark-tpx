@@ -3,12 +3,15 @@
             [songpark.common.communication :refer [PUT]]
             [songpark.jam.tpx :as jam.tpx]
             [songpark.mqtt :as mqtt]
+            [songpark.mqtt.util :refer [teleporter-topic]]
             [taoensso.timbre :as log]
             [tpx.config :refer [config]]
             [tpx.data :as data]
-            [tpx.logger :as logger]
-            [tpx.ipc :as ipc]
             [tpx.heartbeat :as heartbeat]
+            [tpx.ipc :as ipc]
+            [tpx.logger :as logger]
+            [tpx.mqtt.handler.jam]
+            [tpx.mqtt.handler.teleporter]
             [tpx.network :as network]))
 
 (defonce system (atom nil))
@@ -46,16 +49,19 @@
                                      :network (network/network (:network config))
                                      :ipc (component/using (ipc/ipc-service {:config (:ipc config)})
                                                            [:mqtt-client])
-                                     :jam (component/using (jam.tpx/get-jam (merge {:tpid id}
+                                     :jam (component/using (jam.tpx/get-jam (merge {:tp-id id}
                                                                                    (:jam config)))
                                                            [:ipc :mqtt-client])
                                      :heartbeat (component/using (heartbeat/heartbeat-service {:config (:heartbeat config)})
                                                                  [:mqtt-client])]
                                     extra-components))))
-       ;; add injections to mqtt-client
+       ;; setup mqtt client further with injections and topics
        (let [{:keys [mqtt-client ipc jam]} @system]
+         ;; injections of ipc and jam first
          (mqtt/add-injection mqtt-client :ipc ipc)
-         (mqtt/add-injection mqtt-client :jam jam)))
+         (mqtt/add-injection mqtt-client :jam jam)
+         ;; add topic of its own id
+         (mqtt/subscribe mqtt-client {(teleporter-topic id) 0})))
      (fn [error]
        ;; add flashing leds to indicate a restart is required
        (log/error error)))))

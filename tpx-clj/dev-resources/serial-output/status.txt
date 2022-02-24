@@ -1,0 +1,36 @@
+;; failed hw sync for calling device
+init_hw_sync():TSync: Failed: retried: 10
+
+
+;; start of hw sync for calling device
+Enable time sync udp tx
+
+;; start of hw sync for called device
+-----------Entering sync wait loop------------
+
+;; stream destroyed on calling device
+Media stream call00:0 is destroyed
+
+
+;; stream stopped on calling device
+stop_hw_streaming():Stream tx stopped status was:0x7FFFFFE0
+
+;; stream stopped on called device
+stop_hw_streaming():Stream tx stopped status was:0x7FFFFFE0
+
+;; failed hw sync for calling device
+Error initializing hardware sync: Unknown error -1 [status=-1]
+
+;; failed hw sync for called device
+-----------SYNC FAILED TIMEOUT waiting: counter = 40------------
+
+
+;; call ended on calling device
+09:42:22.699    pjsua_app.c  ..Call 0 is DISCONNECTED [reason=200 (OK)]
+
+;; call ended on called device
+......Call 0 is DISCONNECTED [reason=200 (Normal call clearing)
+
+
+;; dropped stream
+INFO::Media stream broken clear all calls!!!

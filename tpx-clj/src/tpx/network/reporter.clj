@@ -1,6 +1,8 @@
 (ns tpx.network.reporter
   (:require [clojure.java.shell :refer [sh]]
             [com.stuartsierra.component :as component]
+            [songpark.mqtt :as mqtt]
+            [songpark.mqtt.util :as mqtt.util]
             [taoensso.timbre :as log]
             [tpx.ipc.serial :as serial]
             [tpx.data :as data]
@@ -12,25 +14,20 @@
 ;; on network + mqtt up, if we have not reported the netconfig we do so
 
 
-;; TODO: send mock mqtt message
-;; TODO: handle mock mqtt message in the app
-;; TODO: test for realsies
-;; TODO: make into system-component
-
 (defonce has-reported? (atom false))
 (defonce current-network-config (atom {}))
 
-(defn send-network-report [network-config mqtt-manager]
+(defn send-network-report [network-config mqtt-client]
   (when (not @has-reported?)
     (log/debug ::send-network-report "I should send a network report")
-    (let [topic (data/get-tp-report-net-config-topic)]
-      (.publish mqtt-manager topic {:message/type :teleporter/net-config-report
-                                    :message/body {:teleporter/id (data/get-tp-id)
-                                                   :teleporter/network-config network-config}}))
+    (let [topic (mqtt.util/broadcast-topic (data/get-tp-id))]
+      (mqtt/publish mqtt-client topic {:message/type :teleporter/net-config-report
+                                       :teleporter/id (data/get-tp-id)
+                                       :teleporter/network-config network-config}))
     (reset! has-reported? true)))
 
-(defn send-current-network-report [mqtt-manager]
-  (send-network-report @current-network-config mqtt-manager))
+(defn send-current-network-report [mqtt-client]
+  (send-network-report @current-network-config mqtt-client))
 
 (defn get-local-ip [strip-cidr?]
   (let [iface (get-in config [:network :iface])
@@ -96,9 +93,9 @@
                                     :ip/dhcp? dhcp?})
     (reset! has-reported? false)))
 
-(defn fetch-and-send-current-network-config [mqtt-manager]
+(defn fetch-and-send-current-network-config [mqtt-client]
   (fetch-current-network-config)
-  (send-current-network-report mqtt-manager))
+  (send-current-network-report mqtt-client))
 
 (comment
   (get-dhcp?)
