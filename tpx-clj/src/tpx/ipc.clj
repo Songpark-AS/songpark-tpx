@@ -52,6 +52,7 @@
     :volume/local-volume (ipc.command/local-volume data)
     :jam/path-reset (ipc.command/path-reset)
     :jam/playout-delay (ipc.command/set-playout-delay data)
+    :jam/stop-coredump (ipc.command/stop-coredump)
     (log/error "Unknown command" {:what what
                                   :data data})))
 

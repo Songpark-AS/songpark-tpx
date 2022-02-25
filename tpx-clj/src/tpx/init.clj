@@ -38,23 +38,28 @@
         logger (component/start (logger/logger (:logger config)))]
     (broadcast-presence
      (fn [{:teleporter/keys [id] :as _result}]
-       ;; set teleporter-id for data
-       (data/set-tp-id! id)
-       ;; start the rest of system
-       (reset! system (component/start
-                       (apply component/system-map
-                              (into [:logger logger
-                                     :mqtt-client (mqtt/mqtt-client (assoc-in (:mqtt config) [:config :id] id))
-                                     :config core-config
-                                     :network (network/network (:network config))
-                                     :ipc (component/using (ipc/ipc-service {:config (:ipc config)})
-                                                           [:mqtt-client])
-                                     :jam (component/using (jam.tpx/get-jam (merge {:tp-id id}
-                                                                                   (:jam config)))
-                                                           [:ipc :mqtt-client])
-                                     :heartbeat (component/using (heartbeat/heartbeat-service {:config (:heartbeat config)})
-                                                                 [:mqtt-client])]
-                                    extra-components))))
+       (let [;; start mqtt-client third before anything else, so that any messaged that might be needing sending
+             ;; can be done so, as mqtt-client has finished connecting
+             mqtt-client (component/start (mqtt/mqtt-client (assoc-in (:mqtt config) [:config :id] id)))]
+        ;; set teleporter-id for data
+         (data/set-tp-id! id)
+         ;; 100ms sleep to help mqtt-client
+         (Thread/sleep 100)
+         ;; start the rest of system
+         (reset! system (component/start
+                         (apply component/system-map
+                                (into [:logger logger
+                                       :mqtt-client mqtt-client
+                                       :config core-config
+                                       :network (network/network (:network config))
+                                       :ipc (component/using (ipc/ipc-service {:config (:ipc config)})
+                                                             [:mqtt-client])
+                                       :jam (component/using (jam.tpx/get-jam (merge {:tp-id id}
+                                                                                     (:jam config)))
+                                                             [:ipc :mqtt-client])
+                                       :heartbeat (component/using (heartbeat/heartbeat-service {:config (:heartbeat config)})
+                                                                   [:mqtt-client])]
+                                      extra-components)))))
        ;; setup mqtt client further with injections and topics
        (let [{:keys [mqtt-client ipc jam]} @system]
          ;; injections of ipc and jam first

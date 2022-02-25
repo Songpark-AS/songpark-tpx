@@ -23,7 +23,7 @@
 
 (defn upgrade-complete [mqtt-client]
   (log/debug ::upgrade-complete "Sending upgrade-complete message on MQTT")
-  (let [topic (mqtt.util/teleporter-topic (data/get-tp-id))]
+  (let [topic (mqtt.util/broadcast-topic (data/get-tp-id))]
     (mqtt/publish mqtt-client
                   topic
                   {:message/type :teleporter/upgrade-status
@@ -39,7 +39,7 @@
 
 (defn send-apt-version [mqtt-client]
   (log/debug ::send-apt-version "Sending apt-version")
-  (let [topic (mqtt.util/teleporter-topic (data/get-tp-id))]
+  (let [topic (mqtt.util/broadcast-topic (data/get-tp-id))]
     (mqtt/publish mqtt-client
                   topic
                   {:message/type :teleporter/apt-version

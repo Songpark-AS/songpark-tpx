@@ -20,7 +20,7 @@
                              #uuid "c700abce-c109-58fc-a3e7-86bff412a872" "sip:9108@voip1.inonit.no"}}
         jam-stop {:message/type :jam.cmd/stop
                   :jam/id #uuid "c8bd2fd6-3146-475e-9f23-b47ca434a89c"}]
-    (mqtt/publish mqtt-client topic jam-start))
+    (mqtt/publish mqtt-client topic jam-stop))
 
   (let [jam (:jam @tpx.init/system)]
     ;;(jam.tpx/get-state jam)
