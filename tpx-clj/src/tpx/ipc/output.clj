@@ -13,15 +13,7 @@
               :sip/menu-buddy-list #"Buddy list:"
               :sip/menu-choices #"Choices:"
               :sip/menu-enter #"  <Enter>    Empty input \(or 'q'\) to cancel"
-              ;; volume
-              :gain-input-titles #"\| Parameters \+  Loopback  \+   Network  \|"
-              :gain-input-volume-g #"\|  Volume_G\s+\+\s+(\d+)\s+\+\s+(\d+)\s+\|"
-              :gain-input-volume-l #"\|  Volume_L\s+\+\s+(\d+)\s+\+\s+(\d+)\s+\|"
-              :gain-input-volume-r #"\|  Volume_R\s+\+\s+(\d+)\s+\+\s+(\d+)\s+\|"
-              :gain-input-global-gain #"Entered global gain"
-              :gain-input-left-gain #"Entered left gain"
-              :gain-input-right-gain #"Entered right gain"
-
+              
               :sip/making-call #".*pjsua_call\.c \!Making call with acc.*"
               :sip/calling #".*Call \d+ state changed to CALLING.*"
               :sip/incoming-call #".*INCOMING CALL NO SYNC.*"
@@ -37,13 +29,7 @@
               :stream/sync-failed-calling-device #".*Error initializing hardware sync.*"
               :stream/sync-failed-called-device #".*SYNC FAILED TIMEOUT waiting.*"
               ;;:stream/streaming #""
-              :stream/stopped #".*stop_hw_streaming\(\):Stream tx stopped status was.*"
-
-              ;; ;; network-config
-              ;; :local-ip #"Local Ip Address:.*"
-              ;; :gateway-ip #"Gateway Ip Address:.*"
-              ;; :netmask-ip #"Mask Ip Address:.*"
-              ))
+              :stream/stopped #".*stop_hw_streaming\(\):Stream tx stopped status was.*"))
 
 
 (def controller-steps ^{:doc "Last step in the regex steps above"}
@@ -66,11 +52,7 @@
     :stream/sync-failed-calling-device
     :stream/sync-failed-called-device
     :stream/streaming
-    :stream/stopped
-
-    :gain-input-global-gain
-    :gain-input-left-gain
-    :gain-input-right-gain})
+    :stream/stopped})
 
 (defonce lines (atom []))
 
@@ -150,24 +132,6 @@
           (set/subset? #{:stream/stopped} current-set)
           [:stream/stopped (into {} lines)]
 
-          (set/subset? #{:gain-input-titles
-                         :gain-input-volume-g
-                         :gain-input-global-gain}
-                       current-set)
-          [:gain-input-global-gain (into {} lines)]
-          
-          (set/subset? #{:gain-input-titles
-                         :gain-input-volume-l
-                         :gain-input-left-gain}
-                       current-set)
-          [:gain-input-left-gain (into {} lines)]
-
-          (set/subset? #{:gain-input-titles
-                         :gain-input-volume-r
-                         :gain-input-right-gain}
-                       current-set)
-          [:gain-input-right-gain (into {} lines)]
-
           :else
           nil)))
 
@@ -195,21 +159,6 @@
     :stream/streaming true
     :stream/stopped true
     
-    :gain-input-global-gain (let [[_ loopback network] (:gain-input-volume-g data)]
-                              {:loopback loopback
-                               :network network})
-    :gain-input-left-gain (let [[_ loopback network] (:gain-input-volume-l data)]
-                            {:loopback loopback
-                             :network network})
-    :gain-input-right-gain (let [[_ loopback network] (:gain-input-volume-r data)]
-                             {:loopback loopback
-                              :network network})
-    
-    :log (let [[_ level _ data] (:log data)]
-           {:log/level (-> level str/lower-case keyword)
-            :log/data data})
-    :local-ip (let [ip (:local-ip data)]
-                {:ip (last (clojure.string/split ip #":"))})
     nil))
 
 (defn handle-output [context fns line]

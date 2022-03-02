@@ -7,6 +7,7 @@
             [taoensso.timbre :as log]
             [tpx.config :refer [config]]
             [tpx.data :as data]
+            [tpx.database :as database]
             [tpx.heartbeat :as heartbeat]
             [tpx.ipc :as ipc]
             [tpx.logger :as logger]
@@ -52,8 +53,9 @@
                                        :mqtt-client mqtt-client
                                        :config core-config
                                        :network (network/network (:network config))
+                                       :database (database/database (:database config))
                                        :ipc (component/using (ipc/ipc-service {:config (:ipc config)})
-                                                             [:mqtt-client])
+                                                             [:mqtt-client :database])
                                        :jam (component/using (jam.tpx/get-jam (merge {:tp-id id}
                                                                                      (:jam config)))
                                                              [:ipc :mqtt-client])
