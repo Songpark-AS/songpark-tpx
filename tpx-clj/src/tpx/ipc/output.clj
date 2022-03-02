@@ -24,16 +24,18 @@
 
               :sip/making-call #".*pjsua_call\.c \!Making call with acc.*"
               :sip/calling #".*Call \d+ state changed to CALLING.*"
-              :sip/incoming-call #".*pjsua_call\.c  Answering call \d+: code=\d+.*"
+              :sip/incoming-call #".*INCOMING CALL NO SYNC.*"
               :sip/in-call #".*pjsua_app\.c  ...Call \d+ state changed to CONFIRMED.*"
               :sip/hangup #".*\!Call \d+ hanging up: code=\d+.*"
               :sip/call-ended #".*Call \d+ is DISCONNECTED.*"
+              :sip/error-making-call #".*Error making call: Too many objects of the specified type \(([A-Z_]+)\) \[status=(\d+)\]"
+              :sip/error-dialog-mutex #".*Timed-out trying to acquire dialog mutex \(possibly system has deadlocked\) in pjsua_call_hangup.*"
 
               :stream/broken #".*Media stream broken clear all calls.*"
               :stream/syncing-calling-device #".*Enable time sync udp tx.*"
               :stream/syncing-called-device #".*-----------Entering sync wait loop------------.*"
               :stream/sync-failed-calling-device #".*Error initializing hardware sync.*"
-              :stream/sync-failed-called-device #".*init_hw_sync\(\):TSync: Failed: retried: \d+.*"
+              :stream/sync-failed-called-device #".*SYNC FAILED TIMEOUT waiting.*"
               ;;:stream/streaming #""
               :stream/stopped #".*stop_hw_streaming\(\):Stream tx stopped status was.*"
 
@@ -55,6 +57,8 @@
     :sip/in-call
     :sip/hangup
     :sip/call-ended
+    :sip/error-making-call
+    :sip/error-dialog-mutex
 
     :stream/broken
     :stream/syncing-calling-device
@@ -106,6 +110,12 @@
 
           (set/subset? #{:sip/calling} current-set)
           [:sip/calling (into {} lines)]
+
+          (set/subset? #{:sip/error-making-call} current-set)
+          [:sip/error-making-call (into {} lines)]
+
+          (set/subset? #{:sip/error-dialog-mutex} current-set)
+          [:sip/error-dialog-mutex (into {} lines)]
 
           (set/subset? #{:sip/incoming-call} current-set)
           [:sip/incoming-call (into {} lines)]
@@ -173,6 +183,11 @@
     :sip/in-call true
     :sip/hangup true
     :sip/call-ended true
+    :sip/error-making-call (let [[_ error-type error-code] (:sip/error-making-call data)]
+                             {:error/type error-type
+                              :error/code error-code})
+    :sip/error-dialog-mutex {:error/type "DIALOG_MUTEX"
+                             :error/code -1}
 
     :stream/broken true
     :stream/syncing true

@@ -146,7 +146,7 @@
       (send-command "pd" "")
       )
 
-  (playout-delay "11")
+  (set-playout-delay 20)
 
   (do (send-command "pc" "")
       (send-command "vll" "10")

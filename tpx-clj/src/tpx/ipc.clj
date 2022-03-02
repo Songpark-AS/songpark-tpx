@@ -28,6 +28,8 @@
                                :sip/hangup #'ipc.handler/handle-sip-hangup
                                :sip/call-ended #'ipc.handler/handle-sip-call-ended
                                :sip/register #'ipc.handler/handle-sip-register
+                               :sip/error-making-call #'ipc.handler/handle-sip-error-making-call
+                               :sip/error-dialog-mutex #'ipc.handler/handle-sip-error-dialog-mutex
 
                                :stream/broken #'ipc.handler/handle-stream-broken
                                :stream/syncing #'ipc.handler/handle-stream-syncing

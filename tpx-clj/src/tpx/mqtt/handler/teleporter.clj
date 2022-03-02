@@ -49,7 +49,7 @@
 (defmethod handle-message :teleporter.cmd/report-network-config [{:keys [mqtt-client]}]
   (reporter/fetch-and-send-current-network-config mqtt-client))
 
-(defmethod handle-message :teleporter.msg/ipv4 [{:message/keys [values]}]
+(defmethod handle-message :teleporter.cmd/set-ipv4 [{:message/keys [values]}]
   (log/debug "Got new IPv4 config" values)
   (set-network! (clojure.set/rename-keys values {:ip/address :ip :ip/gateway :gateway :ip/subnet :netmask :ip/dhcp? :dhcp?})))
 

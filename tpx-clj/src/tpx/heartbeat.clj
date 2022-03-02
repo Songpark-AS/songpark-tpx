@@ -33,8 +33,8 @@
 
 (defn check-upgrade [mqtt-client]
   (log/debug ::check-upgrade "Checking if upgrading-flag is set")
-    (when (upgrading-flag?)
-      (upgrade-complete mqtt-client))
+  (when (upgrading-flag?)
+    (upgrade-complete mqtt-client))
   (reset! checked-upgrade true))
 
 (defn send-apt-version [mqtt-client]
@@ -78,3 +78,13 @@
 
 (defn heartbeat-service [settings]
   (map->HeartbeatService settings))
+
+
+(comment
+
+  (let [mqtt-client (:mqtt-client @tpx.init/system)]
+    (mqtt/publish mqtt-client
+                  (mqtt.util/heartbeat-topic (data/get-tp-id))
+                  {:message/type :teleporter/heartbeat
+                   :teleporter/id (data/get-tp-id)}))
+  )

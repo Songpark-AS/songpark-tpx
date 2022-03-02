@@ -22,6 +22,15 @@
   (log/debug :handle-sip-calling data)
   (tpx.ipc/handler ipc :sip/calling true))
 
+(defn handle-sip-error-making-call [data {:keys [ipc] :as _context}]
+  (log/debug :handle-sip-error-making-call data)
+  (tpx.ipc/handler ipc :sip/error data))
+
+(defn handle-sip-error-dialog-mutex [data {:keys [ipc] :as _context}]
+  (log/debug :handle-sip-error-dialog-mutex data)
+  (tpx.ipc/handler ipc :sip/error data))
+
+
 (defn handle-sip-incoming-call [data {:keys [ipc] :as _context}]
   (log/debug :handle-sip-incoming-call data)
   (tpx.ipc/handler ipc :sip/incoming-call true))
