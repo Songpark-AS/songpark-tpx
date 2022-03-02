@@ -34,3 +34,6 @@ Error initializing hardware sync: Unknown error -1 [status=-1]
 
 ;; dropped stream
 INFO::Media stream broken clear all calls!!!
+
+;; error making a sip call, when something already is in a call?
+ERROR: 13:49:25.102   pjsua_call.c  .Error making call: Too many objects of the specified type (PJ_ETOOMANY) [status=70010]
