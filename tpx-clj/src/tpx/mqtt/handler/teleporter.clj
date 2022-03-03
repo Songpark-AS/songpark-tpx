@@ -1,9 +1,12 @@
 (ns tpx.mqtt.handler.teleporter
-  (:require [songpark.mqtt :as mqtt :refer [handle-message]]
+  (:require [codax.core :as codax]
+            [songpark.mqtt :as mqtt :refer [handle-message]]
             [songpark.mqtt.util :refer [broadcast-topic]]
             [songpark.jam.tpx.ipc :as tpx.ipc]
             [taoensso.timbre :as log]
+            [tpx.config :refer [config]]
             [tpx.data :as data]
+            [tpx.database :refer [get-hardware-values]]
             [tpx.network :refer [set-network!]]
             [tpx.network.reporter :as reporter]
             [tpx.utils :as utils]))
@@ -84,5 +87,14 @@
       (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/hangup-all
                                                       :teleporter/id id
                                                       :teleporter/hangup-all true}))
-    (log/debug ::hangup-all {:id id})))
+    (log/debug ::hangup-all-wrong-teleporter {:id id})))
 
+(defmethod handle-message :teleporter.cmd/values [{:keys [teleporter/id mqtt-client]}]
+  (if (data/same-tp? id)
+    (do
+      (log/debug ::values)
+      (let [values (get-hardware-values)]
+        (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/values
+                                                        :teleporter/id id
+                                                        :teleporter/values values})))
+    (log/debug ::values-wrong-teleporter {:id id})))

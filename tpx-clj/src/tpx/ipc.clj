@@ -9,14 +9,11 @@
             [taoensso.timbre :as log]
             [tpx.config :refer [config]]
             [tpx.data :as data]
-            [tpx.database :refer [db]]
+            [tpx.database :refer [db get-hardware-values]]
             [tpx.ipc.command :as ipc.command]
             [tpx.ipc.handler :as ipc.handler]
             [tpx.ipc.serial :as ipc.serial]
             [songpark.common.communication :refer [PUT]]))
-
-
-
 
 (defn- setup-serial-ports! [context]
   (log/info "Setting up serial ports")
@@ -68,20 +65,18 @@
 
 (defn- init-hw-values! []
   (log/info "Setting default values for hardware")
-  (doseq [[what default] (:hardware/default-values config)]
-    (let [value (or (codax/get-at! @db [what]) default)]
-      
-      (if value
-        (do
-          (log/info "Setting default value" {:what what
-                                             :value value})
-          (case what
-            :volume/global-volume (ipc.command/global-volume value)
-            :volume/network-volume (ipc.command/network-volume value)
-            :volume/local-volume (ipc.command/local-volume value)
-            :jam/playout-delay (ipc.command/set-playout-delay value)))
-        (log/warn "Missing HW value" {:what what
-                                      :value value})))))
+  (doseq [[what value] (get-hardware-values)]
+    (if value
+      (do
+        (log/info "Setting default value" {:what what
+                                           :value value})
+        (case what
+          :volume/global-volume (ipc.command/global-volume value)
+          :volume/network-volume (ipc.command/network-volume value)
+          :volume/local-volume (ipc.command/local-volume value)
+          :jam/playout-delay (ipc.command/set-playout-delay value)))
+      (log/warn "Missing HW value" {:what what
+                                    :value value}))))
 
 (defrecord IpcService [started? config mqtt-client c]
   component/Lifecycle

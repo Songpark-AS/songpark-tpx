@@ -6,6 +6,16 @@
 
 (defonce db (atom nil))
 
+(defn get-hardware-values []
+  (reduce (fn [out k]
+            (assoc out k (or (codax/get-at! @db [k])
+                             (get-in config [:hardware/default-values k]))))
+          {} [:volume/global-volume
+              :volume/network-volume
+              :volume/local-volume
+              :jam/playout-delay]))
+
+
 (defrecord Database [started?]
   component/Lifecycle
   (start [this]

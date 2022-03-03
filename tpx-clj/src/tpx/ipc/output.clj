@@ -28,7 +28,7 @@
               :stream/syncing-called-device #".*-----------Entering sync wait loop------------.*"
               :stream/sync-failed-calling-device #".*Error initializing hardware sync.*"
               :stream/sync-failed-called-device #".*SYNC FAILED TIMEOUT waiting.*"
-              ;;:stream/streaming #""
+              :stream/streaming #".*STREAM STARTED.*"
               :stream/stopped #".*stop_hw_streaming\(\):Stream tx stopped status was.*"))
 
 

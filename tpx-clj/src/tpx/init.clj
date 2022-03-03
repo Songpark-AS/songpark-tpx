@@ -7,7 +7,7 @@
             [taoensso.timbre :as log]
             [tpx.config :refer [config]]
             [tpx.data :as data]
-            [tpx.database :as database]
+            [tpx.database :as database :refer [get-hardware-values]]
             [tpx.heartbeat :as heartbeat]
             [tpx.ipc :as ipc]
             [tpx.logger :as logger]
@@ -21,12 +21,10 @@
   (:mac config))
 
 (defn broadcast-presence [success-cb error-cb]
-  (let [data {:teleporter/nickname (get-in config [:ipc :teleporter :nickname])
-              :teleporter/mac (get-device-mac)
-              :teleporter/tpx-version (:tpx/version config)
-              :teleporter/bp-version (:bp/version config)
-              :teleporter/fpga-version (:fpga/version config)
-              :teleporter/apt-version (data/get-apt-version)}
+  (let [data (merge {:teleporter/nickname (get-in config [:ipc :teleporter :nickname])
+                     :teleporter/mac (get-device-mac)
+                     :teleporter/apt-version (data/get-apt-version)}
+                    (get-hardware-values))
         platform-url (str (get-in config [:ipc :platform]) "/api/teleporter")]
     (log/debug "Broadcasting to URL" platform-url data)
     (PUT platform-url data success-cb error-cb)))
@@ -36,7 +34,8 @@
         ;; things are logged as we want and that the config is loaded
         ;; before all the other modules
         core-config (component/start (tpx.config/config-manager {}))
-        logger (component/start (logger/logger (:logger config)))]
+        logger (component/start (logger/logger (:logger config)))
+        db (component/start (database/database (:database config)))]
     (broadcast-presence
      (fn [{:teleporter/keys [id] :as _result}]
        (let [;; start mqtt-client third before anything else, so that any messaged that might be needing sending
@@ -53,7 +52,7 @@
                                        :mqtt-client mqtt-client
                                        :config core-config
                                        :network (network/network (:network config))
-                                       :database (database/database (:database config))
+                                       :database db
                                        :ipc (component/using (ipc/ipc-service {:config (:ipc config)})
                                                              [:mqtt-client :database])
                                        :jam (component/using (jam.tpx/get-jam (merge {:tp-id id}
