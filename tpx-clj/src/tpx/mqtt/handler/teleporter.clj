@@ -4,7 +4,6 @@
             [songpark.mqtt.util :refer [broadcast-topic]]
             [songpark.jam.tpx.ipc :as tpx.ipc]
             [taoensso.timbre :as log]
-            [tpx.config :refer [config]]
             [tpx.data :as data]
             [tpx.database :refer [get-hardware-values]]
             [tpx.network :refer [set-network!]]
@@ -18,7 +17,7 @@
         (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/global-volume
                                                         :teleporter/id id
                                                         :teleporter/global-volume volume}))
-    (log/debug ::set-global-volume-wrong-teleporter {:id id
+    (log/debug ::set-global-volume-wrong-teleporter {:teleporter/id id
                                                      :volume volume})))
 
 
@@ -30,7 +29,7 @@
       (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/local-volume
                                                       :teleporter/id id
                                                       :teleporter/local-volume volume}))
-    (log/debug :set-local-volume-wrong-teleporter {:id id
+    (log/debug :set-local-volume-wrong-teleporter {:teleporter/id id
                                                    :volume volume})))
 
 
@@ -42,7 +41,7 @@
       (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/network-volume
                                                       :teleporter/id id
                                                       :teleporter/network-volume volume}))
-    (log/debug :set-network-volume-wrong-teleporter {:id id
+    (log/debug :set-network-volume-wrong-teleporter {:teleporter/id id
                                                      :volume volume})))
 
 (defmethod handle-message :teleporter.cmd/path-reset [{:teleporter/keys [id] :keys [mqtt-client ipc]}]
@@ -53,7 +52,7 @@
       (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/path-reset
                                                       :teleporter/id id
                                                       :teleporter/path-reset true}))
-    (log/debug ::path-reset-wrong-teleporter {:id id})))
+    (log/debug ::path-reset-wrong-teleporter {:teleporter/id id})))
 
 (defmethod handle-message :teleporter.cmd/set-playout-delay [{:teleporter/keys [id playout-delay] :keys [mqtt-client ipc]}]
   (if (data/same-tp? id)
@@ -63,7 +62,7 @@
       (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/playout-delay
                                                       :teleporter/id id
                                                       :teleporter/playout-delay playout-delay}))
-    (log/debug ::set-playout-delay-wrong-teleporter {:id id})))
+    (log/debug ::set-playout-delay-wrong-teleporter {:teleporter/id id})))
 
 (defmethod handle-message :teleporter.cmd/report-network-config [{:keys [mqtt-client]}]
   (reporter/fetch-and-send-current-network-config mqtt-client))
@@ -77,7 +76,7 @@
     (do
       (log/debug ::upgrade)
       (utils/upgrade))
-    (log/debug ::upgrade-wrong-teleporter {:id id})))
+    (log/debug ::upgrade-wrong-teleporter {:teleporter/id id})))
 
 (defmethod handle-message :teleporter.cmd/hangup-all [{:teleporter/keys [id] :keys [mqtt-client ipc]}]
   (if (data/same-tp? id)
@@ -87,7 +86,7 @@
       (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/hangup-all
                                                       :teleporter/id id
                                                       :teleporter/hangup-all true}))
-    (log/debug ::hangup-all-wrong-teleporter {:id id})))
+    (log/debug ::hangup-all-wrong-teleporter {:teleporter/id id})))
 
 (defmethod handle-message :teleporter.cmd/values [{:keys [teleporter/id mqtt-client]}]
   (if (data/same-tp? id)
@@ -97,4 +96,4 @@
         (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/values
                                                         :teleporter/id id
                                                         :teleporter/values values})))
-    (log/debug ::values-wrong-teleporter {:id id})))
+    (log/debug ::values-wrong-teleporter {:teleporter/id id})))
