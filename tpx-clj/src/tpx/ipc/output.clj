@@ -24,10 +24,10 @@
               :sip/error-dialog-mutex #".*Timed-out trying to acquire dialog mutex \(possibly system has deadlocked\) in pjsua_call_hangup.*"
 
               :stream/broken #".*Media stream broken clear all calls.*"
-              :stream/syncing-calling-device #".*Enable time sync udp tx.*"
-              :stream/syncing-called-device #".*-----------Entering sync wait loop------------.*"
-              :stream/sync-failed-calling-device #".*Error initializing hardware sync.*"
-              :stream/sync-failed-called-device #".*SYNC FAILED TIMEOUT waiting.*"
+              :sync/syncing-calling-device #".*Enable time sync udp tx.*"
+              :sync/syncing-called-device #".*-----------Entering sync wait loop------------.*"
+              :sync/sync-failed-calling-device #".*Error initializing hardware sync.*"
+              :sync/sync-failed-called-device #".*SYNC FAILED TIMEOUT waiting.*"
               :stream/streaming #".*STREAM STARTED.*"
               :stream/stopped #".*stop_hw_streaming\(\):Stream tx stopped status was.*"))
 
@@ -47,10 +47,10 @@
     :sip/error-dialog-mutex
 
     :stream/broken
-    :stream/syncing-calling-device
-    :stream/syncing-called-device
-    :stream/sync-failed-calling-device
-    :stream/sync-failed-called-device
+    :sync/syncing-calling-device
+    :sync/syncing-called-device
+    :sync/sync-failed-calling-device
+    :sync/sync-failed-called-device
     :stream/streaming
     :stream/stopped})
 
@@ -114,17 +114,17 @@
           (set/subset? #{:stream/broken} current-set)
           [:stream/broken (into {} lines)]
 
-          (set/subset? #{:stream/syncing-calling-device} current-set)
-          [:stream/syncing (into {} lines)]
+          (set/subset? #{:sync/syncing-calling-device} current-set)
+          [:sync/syncing (into {} lines)]
 
-          (set/subset? #{:stream/syncing-called-device} current-set)
-          [:stream/syncing (into {} lines)]
+          (set/subset? #{:sync/syncing-called-device} current-set)
+          [:sync/syncing (into {} lines)]
 
-          (set/subset? #{:stream/sync-failed-calling-device} current-set)
-          [:stream/sync-failed (into {} lines)]
+          (set/subset? #{:sync/sync-failed-calling-device} current-set)
+          [:sync/sync-failed (into {} lines)]
 
-          (set/subset? #{:stream/sync-failed-called-device} current-set)
-          [:stream/sync-failed (into {} lines)]
+          (set/subset? #{:sync/sync-failed-called-device} current-set)
+          [:sync/sync-failed (into {} lines)]
 
           (set/subset? #{:stream/streaming} current-set)
           [:stream/streaming (into {} lines)]
@@ -154,8 +154,8 @@
                              :error/code -1}
 
     :stream/broken true
-    :stream/syncing true
-    :stream/sync-failed true
+    :sync/syncing true
+    :sync/sync-failed true
     :stream/streaming true
     :stream/stopped true
     

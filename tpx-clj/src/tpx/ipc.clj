@@ -29,8 +29,8 @@
                                :sip/error-dialog-mutex #'ipc.handler/handle-sip-error-dialog-mutex
 
                                :stream/broken #'ipc.handler/handle-stream-broken
-                               :stream/syncing #'ipc.handler/handle-stream-syncing
-                               :stream/sync-failed #'ipc.handler/handle-stream-sync-failed
+                               :sync/syncing #'ipc.handler/handle-sync-syncing
+                               :sync/sync-failed #'ipc.handler/handle-sync-sync-failed
                                :stream/streaming #'ipc.handler/handle-stream-streaming
                                :stream/stopped #'ipc.handler/handle-stream-stopped
                                

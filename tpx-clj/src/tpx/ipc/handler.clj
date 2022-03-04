@@ -47,12 +47,12 @@
   (log/debug :handle-stream-broken data)
   (tpx.ipc/handler ipc :stream/broken true))
 
-(defn handle-stream-syncing [data {:keys [ipc] :as _context}]
-  (log/debug :handle-stream-syncing data)
+(defn handle-sync-syncing [data {:keys [ipc] :as _context}]
+  (log/debug :handle-sync-syncing data)
   (tpx.ipc/handler ipc :stream/syncing true))
 
-(defn handle-stream-sync-failed [data {:keys [ipc] :as _context}]
-  (log/debug :handle-stream-sync-failed data)
+(defn handle-sync-sync-failed [data {:keys [ipc] :as _context}]
+  (log/debug :handle-sync-sync-failed data)
   (tpx.ipc/handler ipc :stream/sync-failed true))
 
 (defn handle-stream-streaming [data {:keys [ipc] :as _context}]
