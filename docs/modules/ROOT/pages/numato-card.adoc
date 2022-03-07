@@ -1,0 +1,44 @@
+= Numato Card FPGA Connection
+
+== Numato Card interfacing
+=== 1.1 The Numato Card
+The Numato Ethernet card is based on the LAN8211E physical layer (PHY)
+transceiver chip. The Numato card exposes an RGMII interface to interface with
+the FPGA on the Zedboard. The RGMII reduces the number of pins needed to
+interface with the card compared to GMII versions of PHY cards
+
+image::numato-card-module.png[Numato Card hardware module]
+
+Figure 1.1 shows the Numato card hardware module. It was selected since
+it allowed the addition of an FPGA controlled ethernet interface at the most
+competitive price in the market. However, the Numato card was not designed for
+the Zedboard, so some soldering and pin adjustments need to be done to connect
+the card successfully to the Zedboard.
+
+=== 1.2 Numato Card Interfaces
+The Numato card is designed to work at 3.3 V. The FPGA pins must also be
+configured to work at 3.3 V. The card has three 2x6 pin expansion headers
+(connectors) for interfacing with FPGAs, microprocessors or MACs.
+
+image::numato-card-hardware-interfaces.png[Numato card hardware interfaces]
+
+Figure 1.2 shows the interfaces block diagram of the Numato card. The card
+support I2C and MDIO interfaces for PHY control. We use the MDIO interface.
+
+=== 1.3 FPGA Ethernet Card Connection
+Tables 1.1, 1.2 and 1.3 show the Interface pins provided by the Numato card and
+also how they are connected to the FPGA. The tables are colour coded for easier reading
+
+image::numato-p1.png[Header P1 Inteface connections]
+image::numato-p2.png[Header P2 Inteface connections]
+image::numato-p3.png[Header P3 Inteface connections]
+
+In the tables above the code NC stands for not connected
+
+==== 1.3.1 Numato Card Control
+The Numato pins are connected to the Switch block in the FPGA. The switch
+block handles both data communication with the Numato card. This allows the
+ARM core and the streaming core to share the same physical interface. Traffic
+destined for the Linux kernel enters the ARM core via the Eth1 interface. While
+traffic destined for the streaming core goes to the streaming network stack, which
+is in the FPGA. The PHY is controlled by the Linux kernel via the MDIO interface.
