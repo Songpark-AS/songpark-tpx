@@ -12,3 +12,4 @@ Linux environment of Teleporters in the Songpark audio collaboration system.
 - xref:linux.adoc[Linux]
 - xref:logging.adoc[Logging]
 - xref:configuration.adoc[Configuration]
+- xref:numato-card.adoc[Numato Card]

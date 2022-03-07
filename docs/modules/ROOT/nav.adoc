@@ -8,3 +8,4 @@
 - xref:linux.adoc[Linux]
 - xref:logging.adoc[Logging]
 - xref:configuration.adoc[Configuration]
+- xref:numato-card.adoc[Numato Card]
