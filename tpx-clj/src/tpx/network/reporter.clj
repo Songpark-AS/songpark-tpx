@@ -64,8 +64,7 @@
     (clojure.string/trim-newline out)))
 
 (defn get-dhcp? []
-  (let [
-        network-config-dir (get-in config [:network :config-dir])
+  (let [network-config-dir (get-in config [:network :config-dir])
         iface (get-in config [:network :iface])
         network-config-filepath (str network-config-dir iface)
         current-iface-config (if (.exists (clojure.java.io/file network-config-filepath))
