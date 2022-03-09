@@ -68,9 +68,15 @@
 (defmethod handle-message :teleporter.cmd/report-network-config [{:keys [mqtt-client]}]
   (reporter/fetch-and-send-current-network-config mqtt-client))
 
-(defmethod handle-message :teleporter.cmd/set-ipv4 [{:message/keys [values]}]
-  (log/debug "Got new IPv4 config" values)
-  (set-network! (clojure.set/rename-keys values {:ip/address :ip :ip/gateway :gateway :ip/subnet :netmask :ip/dhcp? :dhcp?})))
+(defmethod handle-message :teleporter.cmd/set-ipv4 [{:teleporter/keys [network-values id] :keys [mqtt-client]}]
+  (if (data/same-tp? id)
+    (do
+      (log/debug "Got new IPv4 config" network-values)
+      (set-network! (clojure.set/rename-keys network-values {:ip/address :ip :ip/gateway :gateway :ip/subnet :netmask :ip/dhcp? :dhcp?}))
+      (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/net-config-report
+                                                      :teleporter/id id
+                                                      :teleporter/network-config network-values}))
+    (log/debug ::set-ipv4-wrong-teleporter {:id id})))
 
 (defmethod handle-message :teleporter.cmd/upgrade [{:teleporter/keys [id]}]
   (if (data/same-tp? id)
