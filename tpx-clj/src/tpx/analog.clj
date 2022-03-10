@@ -51,14 +51,15 @@
 
 (defn write-relay [relay-position value]
   (log/debug ::write-relay relay-position value)
-  (let [value-bits (vec (repeat 8 0))
+  (let [value-bits (or (codax/get-at! @db [:analog/relays])
+                       (vec (repeat 8 0)))
         position (if (keyword? relay-position)
                    (relays-to-bits relay-position)
                    relay-position)
         reversed-relay-position (dec (Math/abs (- 8 position)))
         value-to-write (assoc value-bits reversed-relay-position (boolean-to-bits value))
-        register (:analog.dac2/relays registers)]
-    (codax/assoc-at! @db position value)
+        register (:analog/relays registers)]
+    (codax/assoc-at! @db [:analog/relays] value-to-write)
     (log/debug "Writing to relay" {:relay-position relay-position
                                    :value value-to-write
                                    :register register})))
