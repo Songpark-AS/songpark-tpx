@@ -38,6 +38,7 @@
         db (component/start (database/database (:database config)))]
     (broadcast-presence
      (fn [{:teleporter/keys [id] :as _result}]
+       (log/info "Successfully reported Teleporter to Platform")
        (let [;; start mqtt-client third before anything else, so that any messaged that might be needing sending
              ;; can be done so, as mqtt-client has finished connecting
              mqtt-client (component/start (mqtt/mqtt-client (assoc-in (:mqtt config) [:config :id] id)))]
@@ -46,6 +47,7 @@
          ;; 100ms sleep to help mqtt-client
          (Thread/sleep 100)
          ;; start the rest of system
+         (log/info "Starting system")
          (reset! system (component/start
                          (apply component/system-map
                                 (into [:logger logger
@@ -60,13 +62,15 @@
                                                              [:ipc :mqtt-client])
                                        :heartbeat (component/using (heartbeat/heartbeat-service {:config (:heartbeat config)})
                                                                    [:mqtt-client])]
-                                      extra-components)))))
+                                      extra-components))))
+         (log/info "System startup done"))
        ;; setup mqtt client further with injections and topics
        (let [{:keys [mqtt-client ipc jam]} @system]
          ;; injections of ipc and jam first
          (mqtt/add-injection mqtt-client :ipc ipc)
          (mqtt/add-injection mqtt-client :jam jam)
          ;; add topic of its own id
+         (log/info "Subscribing to teleporter topic")
          (mqtt/subscribe mqtt-client {(teleporter-topic id) 0})))
      (fn [error]
        ;; add flashing leds to indicate a restart is required
@@ -107,17 +111,7 @@
 
 (comment 
   
-  (PUT "http://localhost:3000/api/teleporter" 
-       {:teleporter/mac "00:0a:35:00:00:00"}
-       (fn [response]
-         (println response))
-       nil)
-
-  (defn init []
-    ;; TODO get MAC address and send it to the platform, platform gives you UUID store that for MQTT topic
-    ;; TODO start MQTT topic 
-    ;; TODO initiate BP communication via serial 
-    ;; TODO pubish to MQTT and start listening for mesages 
-    (println "I AM TPX"))
+  (stop)
+  (init)
 
   )

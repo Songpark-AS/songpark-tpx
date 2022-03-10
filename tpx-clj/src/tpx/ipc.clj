@@ -74,7 +74,8 @@
           :volume/global-volume (ipc.command/global-volume value)
           :volume/network-volume (ipc.command/network-volume value)
           :volume/local-volume (ipc.command/local-volume value)
-          :jam/playout-delay (ipc.command/set-playout-delay value)))
+          :jam/playout-delay (ipc.command/set-playout-delay value)
+          nil))
       (log/warn "Missing HW value" {:what what
                                     :value value}))))
 
