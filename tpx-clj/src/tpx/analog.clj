@@ -1,0 +1,81 @@
+(ns tpx.analog
+  "Namespace for handling the analog FPGA"
+  (:require [clojure.set :refer [map-invert]]
+            [codax.core :as codax]
+            [taoensso.timbre :as log]
+            [tpx.database :refer [db]]))
+
+
+
+;; Magnus RPi Python GUI control SW:
+;; Address 11H, 19H, 21H, 29H and 34H (GAIN) (Write data)
+;; Address 34H (RELAYS) (Write data)
+;; Thats what Christian needs to use for testing the analog card at this stage
+
+
+(def registers {:analog/gain0 0x11 ;; sits on PGA-0
+                :analog/gain1 0x19 ;; sits on PGA-1
+                :analog/gain2 0x21 ;; sits on PGA-2
+                :analog/gain3 0x29 ;; sits on PGA-3
+                :analog/relays 0x34 ;; sits on DAC-2
+                })
+
+;; Values comes from the HW team
+;; The value we read from a Gain register go through this mapping and you would get a corresponding dB value
+(def gain-mappings (->> (map vector
+                             [0, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+                              22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
+                              36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
+                              50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63]
+                             [5.6, 13.6, 14.6, 15.6, 16.6, 17.6, 18.6, 19.6, 20.6, 21.6,
+                              22.6, 23.6, 24.6, 25.6, 26.6, 27.6, 28.6, 29.6, 30.6, 31.6,
+                              32.6, 33.6, 34.6, 35.6, 36.6, 37.6, 38.6, 39.6, 40.6, 41.6,
+                              42.6, 43.6, 44.6, 45.6, 46.6, 47.6, 48.6, 49.6, 50.6, 51.6,
+                              52.6, 53.6, 54.6, 55.6, 56.6, 57.6, 58.6, 59.6, 60.6, 61.6,
+                              62.6, 63.6, 64.6, 65.6, 66.6, 67.6, 68.6])
+                        (into {})))
+
+(def boolean-to-bits {false 0
+                      true 1})
+
+(def bits-to-boolean (map-invert boolean-to-bits))
+
+(def bits-to-relays {0 :analog/relay0
+                     1 :analog/relay1
+                     2 :analog/relay2
+                     3 :analog/relay3
+                     4 :analog/relay4
+                     5 :analog/relay5})
+
+(def relays-to-bits (map-invert bits-to-relays))
+
+(defn write-relay [relay-position value]
+  (log/debug ::write-relay relay-position value)
+  (let [value-bits (vec (repeat 8 0))
+        position (if (keyword? relay-position)
+                   (relays-to-bits relay-position)
+                   relay-position)
+        reversed-relay-position (dec (Math/abs (- 8 position)))
+        value-to-write (assoc value-bits reversed-relay-position (boolean-to-bits value))
+        register (:analog.dac2/relays registers)]
+    (codax/assoc-at! @db position value)
+    (log/debug "Writing to relay" {:relay-position relay-position
+                                   :value value-to-write
+                                   :register register})))
+
+(defn write-gain
+  "Write the gain"
+  [gain value]
+  (let [register (registers gain)]
+    (codax/assoc-at! @db gain value)
+    (log/debug "Write gain" {:register register
+                             :gain gain
+                             :value value})
+    ))
+
+(defn read-gain
+  "Read the gain"
+  [gain]
+  (let [register (registers gain)]
+    (log/debug "Read gain" {:register register
+                            :gain gain})))
