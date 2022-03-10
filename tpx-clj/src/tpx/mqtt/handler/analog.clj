@@ -3,7 +3,8 @@
             [tpx.analog :as analog]
             [tpx.data :as data]
             [songpark.mqtt :as mqtt :refer [handle-message]]
-            [songpark.mqtt.util :refer [broadcast-topic]]))
+            [songpark.mqtt.util :refer [broadcast-topic]]
+            [tpx.sync :refer [sync-platform!]]))
 
 
 (defmethod handle-message :teleporter.cmd/gain [{:teleporter/keys [gain value id] :keys [mqtt-client]}]
@@ -14,7 +15,8 @@
         (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/gain
                                                         :teleporter/id id
                                                         :teleporter/gain gain
-                                                        :teleporter/value value}))
+                                                        :teleporter/value value})
+        (sync-platform!))
     (log/debug ::teleporter-cmd-gain-wrong-teleporter {:teleporter/id id})))
 
 (defmethod handle-message :teleporter.cmd/relay [{:teleporter/keys [id relay value] :keys [mqtt-client]}]
@@ -25,5 +27,6 @@
         (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/relay
                                                         :teleporter/id id
                                                         :teleporter/relay relay
-                                                        :teleporter/value value}))
+                                                        :teleporter/value value})
+        (sync-platform!))
     (log/debug ::teleporter-cmd-relay-wrong-teleporter {:teleporter/id id})))

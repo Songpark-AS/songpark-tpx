@@ -8,6 +8,7 @@
             [tpx.database :refer [get-hardware-values]]
             [tpx.network :refer [set-network!]]
             [tpx.network.reporter :as reporter]
+            [tpx.sync :refer [sync-platform!]]
             [tpx.utils :as utils]))
 
 (defmethod handle-message :teleporter.cmd/global-volume [{:teleporter/keys [id volume] :keys [mqtt-client ipc]}]
@@ -16,7 +17,8 @@
         (tpx.ipc/command ipc :volume/global-volume volume)
         (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/global-volume
                                                         :teleporter/id id
-                                                        :teleporter/global-volume volume}))
+                                                        :teleporter/global-volume volume})
+        (sync-platform!))
     (log/debug ::set-global-volume-wrong-teleporter {:teleporter/id id
                                                      :volume volume})))
 
@@ -28,7 +30,8 @@
       (tpx.ipc/command ipc :volume/local-volume volume)
       (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/local-volume
                                                       :teleporter/id id
-                                                      :teleporter/local-volume volume}))
+                                                      :teleporter/local-volume volume})
+      (sync-platform!))
     (log/debug :set-local-volume-wrong-teleporter {:teleporter/id id
                                                    :volume volume})))
 
@@ -40,7 +43,8 @@
       (tpx.ipc/command ipc :volume/network-volume volume)
       (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/network-volume
                                                       :teleporter/id id
-                                                      :teleporter/network-volume volume}))
+                                                      :teleporter/network-volume volume})
+      (sync-platform!))
     (log/debug :set-network-volume-wrong-teleporter {:teleporter/id id
                                                      :volume volume})))
 
@@ -51,7 +55,8 @@
       (tpx.ipc/command ipc :jam/path-reset true)
       (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/path-reset
                                                       :teleporter/id id
-                                                      :teleporter/path-reset true}))
+                                                      :teleporter/path-reset true})
+      (sync-platform!))
     (log/debug ::path-reset-wrong-teleporter {:teleporter/id id})))
 
 (defmethod handle-message :teleporter.cmd/set-playout-delay [{:teleporter/keys [id playout-delay] :keys [mqtt-client ipc]}]
@@ -61,7 +66,8 @@
       (tpx.ipc/command ipc :jam/playout-delay playout-delay)
       (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/playout-delay
                                                       :teleporter/id id
-                                                      :teleporter/playout-delay playout-delay}))
+                                                      :teleporter/playout-delay playout-delay})
+      (sync-platform!))
     (log/debug ::set-playout-delay-wrong-teleporter {:teleporter/id id})))
 
 (defmethod handle-message :teleporter.cmd/report-network-config [{:keys [mqtt-client]}]
