@@ -10,9 +10,10 @@
   (log/debug :handle-sip-register data)
   (tpx.ipc/handler ipc :sip/register true))
 
-(defn handle-sip-making-call [data {:keys [ipc] :as _context}]
+(defn handle-sip-making-call [data {:keys [ipc start-coredump] :as _context}]
   (log/debug :handle-sip-making-call data)
-  (tpx.ipc/handler ipc :sip/making-call true))
+  (tpx.ipc/handler ipc :sip/making-call true)
+  (start-coredump))
 
 (defn handle-sip-calling [data {:keys [ipc] :as _context}]
   (log/debug :handle-sip-calling data)
@@ -60,10 +61,9 @@
   (tpx.ipc/handler ipc :sync/synced true))
 
 
-(defn handle-stream-streaming [data {:keys [ipc start-coredump] :as _context}]
+(defn handle-stream-streaming [data {:keys [ipc] :as _context}]
   (log/debug :handle-stream-streaming data)
-  (tpx.ipc/handler ipc :stream/streaming true)
-  (start-coredump))
+  (tpx.ipc/handler ipc :stream/streaming true))
 
 (defn handle-stream-stopped [data {:keys [ipc] :as _context}]
   (log/debug :handle-stream-stopped data)

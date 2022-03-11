@@ -45,3 +45,7 @@ ERROR: 13:49:25.102   pjsua_call.c  .Error making call: Too many objects of the 
 
 ;; sync successful
 21:49:31.337    pjsua_app.c  .....*************************************SYNC SUCCESS**********************************
+
+
+;; sync successful?
+init_hw_sync():TSync:Success retried
