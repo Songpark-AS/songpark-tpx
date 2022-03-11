@@ -1,10 +1,20 @@
-{:logger {;; for sentry.io
+{:os {:data-dir "/var/local/songpark/"}
+ :logger {;; for sentry.io
           :sentry-settings {;; turn on/off logging to sentry
                             :log? false
                             ;; DSN to log to
                             :dsn ""}
           ;; level of debugging. anything below this will not be logged
           :level :debug}
+ :hardware/default-values {:volume/global-volume 5
+                           :volume/network-volume 5
+                           :volume/local-volume 5
+                           :jam/playout-delay 15
+                           :analog/gain0 5
+                           :analog/gain1 5
+                           :analog/gain2 5
+                           :analog/gain3 5
+                           :analog/relays [0 0 0 0 0 0 0 0]}
  :defaults {;; in ms
             :playout-delay 20}
  ;; mac address. this is currently fake

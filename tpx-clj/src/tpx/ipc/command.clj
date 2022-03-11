@@ -110,6 +110,9 @@
       (hangup-via-sip sip))))
 
 (comment
+
+  (local-volume 75)
+  (global-volume 25)
   ;; Beatles
   (call-via-sip "sip:9100@voip1.inonit.no")
   (hangup-via-sip "sip:9100@voip1.inonit.no")
@@ -167,4 +170,7 @@
 
       (send-command "pc" "")
       (send-command "netvolr" "10"))
+
+  (do (send-command "pc" "")
+      (send-command "cver" ""))
 )
