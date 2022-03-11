@@ -25,7 +25,7 @@
                  [com.cognitect/transit-clj "1.0.324"]
 
                  ;; jam
-                 [songpark/jam "1.0.0"]
+                 [songpark/jam "1.0.1-SNAPSHOT"]
                  [songpark/mqtt "1.0.1"]
 
                  ;; database
