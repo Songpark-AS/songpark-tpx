@@ -1,4 +1,4 @@
-(defproject tpx "0.2.0"
+(defproject tpx "0.2.1"
   :description "Songpark's Teleporter's communications' logic"
   :url "http://example.com/FIXME"
   :license {:name ""
@@ -25,7 +25,7 @@
                  [com.cognitect/transit-clj "1.0.324"]
 
                  ;; jam
-                 [songpark/jam "1.0.1-SNAPSHOT"]
+                 [songpark/jam "1.0.1"]
                  [songpark/mqtt "1.0.1"]
 
                  ;; database
