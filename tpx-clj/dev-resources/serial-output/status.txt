@@ -41,3 +41,7 @@ ERROR: 13:49:25.102   pjsua_call.c  .Error making call: Too many objects of the 
 
 ;; error making call
 11:54:20.584   pjsua_call.c  .Unable to make call: Invalid Request URI (PJSIP_EINVALIDREQURI) [status=171042]
+
+
+;; sync successful
+21:49:31.337    pjsua_app.c  .....*************************************SYNC SUCCESS**********************************
