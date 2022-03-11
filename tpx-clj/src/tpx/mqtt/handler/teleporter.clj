@@ -109,3 +109,14 @@
                                                         :teleporter/id id
                                                         :teleporter/values values})))
     (log/debug ::values-wrong-teleporter {:teleporter/id id})))
+
+
+(defmethod handle-message :teleporter.cmd/reboot [{:teleporter/keys [id] :keys [mqtt-client]}]
+  (if (data/same-tp? id)
+    (do
+      (log/debug ::reboot)
+      (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/reboot
+                                                      :teleporter/id id
+                                                      :teleporter/reboot true})
+      (utils/reboot))
+    (log/debug ::reboot-wrong-teleporter {:teleporter/id id})))
