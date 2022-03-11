@@ -28,7 +28,8 @@
               :sync/syncing-called-device #".*-----------Entering sync wait loop------------.*"
               :sync/sync-failed-calling-device #".*Error initializing hardware sync.*"
               :sync/sync-failed-called-device #".*SYNC FAILED TIMEOUT waiting.*"
-              :sync/synced #".*SYNC SUCCESS.*"
+              :sync/sync-success #".*SYNC SUCCESS.*"
+              :sync/sync-good #".*SYNC GOOD.*"
               :stream/streaming #".*STREAM STARTED.*"
               :stream/stopped #".*stop_hw_streaming\(\):Stream tx stopped status was.*"))
 
@@ -51,7 +52,8 @@
     :sync/syncing-called-device
     :sync/sync-failed-calling-device
     :sync/sync-failed-called-device
-    :sync/synced
+    :sync/sync-success
+    :sync/sync-good
     
     :stream/broken
     :stream/streaming
@@ -128,7 +130,10 @@
           (set/subset? #{:sync/sync-failed-called-device} current-set)
           [:sync/sync-failed (into {} lines)]
 
-          (set/subset? #{:sync/synced} current-set)
+          (set/subset? #{:sync/sync-success} current-set)
+          [:sync/synced (into {} lines)]
+          
+          (set/subset? #{:sync/sync-good} current-set)
           [:sync/synced (into {} lines)]
 
           ;; stream
