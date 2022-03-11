@@ -111,6 +111,8 @@
 
 (comment
 
+  (start-coredump)
+  
   (local-volume 75)
   (global-volume 25)
   ;; Beatles

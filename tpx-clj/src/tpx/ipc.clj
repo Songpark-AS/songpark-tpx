@@ -28,9 +28,12 @@
                                :sip/error-making-call #'ipc.handler/handle-sip-error-making-call
                                :sip/error-dialog-mutex #'ipc.handler/handle-sip-error-dialog-mutex
 
-                               :stream/broken #'ipc.handler/handle-stream-broken
+                               ;; sync
+                               :sync/synced #'ipc.handler/handle-sync-synced
                                :sync/syncing #'ipc.handler/handle-sync-syncing
                                :sync/sync-failed #'ipc.handler/handle-sync-sync-failed
+                               ;; stream
+                               :stream/broken #'ipc.handler/handle-stream-broken
                                :stream/streaming #'ipc.handler/handle-stream-streaming
                                :stream/stopped #'ipc.handler/handle-stream-stopped
                                

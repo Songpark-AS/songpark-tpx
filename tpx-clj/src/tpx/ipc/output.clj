@@ -28,6 +28,7 @@
               :sync/syncing-called-device #".*-----------Entering sync wait loop------------.*"
               :sync/sync-failed-calling-device #".*Error initializing hardware sync.*"
               :sync/sync-failed-called-device #".*SYNC FAILED TIMEOUT waiting.*"
+              :sync/synced #".*SYNC SUCCESS.*"
               :stream/streaming #".*STREAM STARTED.*"
               :stream/stopped #".*stop_hw_streaming\(\):Stream tx stopped status was.*"))
 
@@ -46,11 +47,13 @@
     :sip/error-making-call
     :sip/error-dialog-mutex
 
-    :stream/broken
     :sync/syncing-calling-device
     :sync/syncing-called-device
     :sync/sync-failed-calling-device
     :sync/sync-failed-called-device
+    :sync/synced
+    
+    :stream/broken
     :stream/streaming
     :stream/stopped})
 
@@ -79,6 +82,7 @@
     (cond (set/subset? #{:jam/coredump} current-set)
           [:jam/coredump (into {} lines)]
 
+          ;; sip
           (set/subset? #{:sip/register} current-set)
           [:sip/register (into {} lines)]
 
@@ -111,9 +115,7 @@
           (set/subset? #{:sip/call-ended} current-set)
           [:sip/call-ended (into {} lines)]
 
-          (set/subset? #{:stream/broken} current-set)
-          [:stream/broken (into {} lines)]
-
+          ;; sync
           (set/subset? #{:sync/syncing-calling-device} current-set)
           [:sync/syncing (into {} lines)]
 
@@ -126,19 +128,28 @@
           (set/subset? #{:sync/sync-failed-called-device} current-set)
           [:sync/sync-failed (into {} lines)]
 
+          (set/subset? #{:sync/synced} current-set)
+          [:sync/synced (into {} lines)]
+
+          ;; stream
           (set/subset? #{:stream/streaming} current-set)
           [:stream/streaming (into {} lines)]
 
           (set/subset? #{:stream/stopped} current-set)
           [:stream/stopped (into {} lines)]
 
+          (set/subset? #{:stream/broken} current-set)
+          [:stream/broken (into {} lines)]
+
           :else
           nil)))
 
 (defn pre-process [happening data]
   (case happening
+    ;; jam
     :jam/coredump (let [[_ data] (:jam/coredump data)] data)
 
+    ;; sip
     :sip/register true
     :sip/menu-enter true
     :sip/making-call true
@@ -153,11 +164,14 @@
     :sip/error-dialog-mutex {:error/type "DIALOG_MUTEX"
                              :error/code -1}
 
-    :stream/broken true
+    ;; sync
+    :sync/synced true
     :sync/syncing true
     :sync/sync-failed true
+    ;; stream
     :stream/streaming true
     :stream/stopped true
+    :stream/broken true
     
     nil))
 
