@@ -1,4 +1,4 @@
-(defproject tpx "0.1.1-SNAPSHOT"
+(defproject tpx "0.2.0"
   :description "Songpark's Teleporter's communications' logic"
   :url "http://example.com/FIXME"
   :license {:name ""
@@ -25,8 +25,8 @@
                  [com.cognitect/transit-clj "1.0.324"]
 
                  ;; jam
-                 [songpark/jam "0.1.0-SNAPSHOT"]
-                 [songpark/mqtt "1.0.1-alpha1"]
+                 [songpark/jam "1.0.0"]
+                 [songpark/mqtt "1.0.1"]
 
                  ;; database
                  [codax "1.3.1"]
@@ -36,7 +36,7 @@
                  ;; scheduler
                  [jarohen/chime "0.3.3"]
                  ;; songpark's common (will also contain an mqtt implementation later)
-                 [songpark/common "0.1.1-SNAPSHOT"]
+                 [songpark/common "0.2.0"]
                  [clojure-interop/java.net "1.0.5"]]
   :main tpx.core
   :target-path "target/%s"
