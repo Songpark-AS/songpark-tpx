@@ -45,6 +45,7 @@
   ;; which seems to do the trick. It's somewhere around the 3 minute mark from what I can see, but
   ;; 10 minutes to be on the safe side. Just be patient, and the REPL will show up
   :repl-options {:timeout 600000}
+  :javac-options ["--release" "8"]
   :profiles {:dev {:source-paths ["src" "dev"]
                    :resource-paths ["dev-resources" "resources"]
                    :dependencies [[midje "1.9.9"]
