@@ -28,14 +28,14 @@
   (send-command "" value))
 
 
-(defn- call-via-sip [sip]
+(defn call-via-sip [sip]
   (log/debug ::m)
   (send-command "m" "")
   (Thread/sleep 500)
   (log/debug ::sip)
   (send-command sip ""))
 
-(defn- hangup-via-sip [sip]
+(defn hangup-via-sip [sip]
   ;; this should take the sip as a command
   ;; but the h command for SIP/BP does not appear to take it
   (send-command "h" ""))
@@ -110,6 +110,11 @@
       (hangup-via-sip sip))))
 
 (comment
+
+  (start-coredump)
+  
+  (local-volume 75)
+  (global-volume 25)
   ;; Beatles
   (call-via-sip "sip:9100@voip1.inonit.no")
   (hangup-via-sip "sip:9100@voip1.inonit.no")
@@ -146,7 +151,7 @@
       (send-command "pd" "")
       )
 
-  (playout-delay "11")
+  (set-playout-delay 20)
 
   (do (send-command "pc" "")
       (send-command "vll" "10")
@@ -167,4 +172,7 @@
 
       (send-command "pc" "")
       (send-command "netvolr" "10"))
+
+  (do (send-command "pc" "")
+      (send-command "cver" ""))
 )

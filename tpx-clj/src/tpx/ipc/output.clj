@@ -6,49 +6,58 @@
 ;; When a regex is found matching a line it will not test the same line on the rest of the regexes that have not yet been tested.
 ;; TODO: Make it test/process all regexes regardless if it has found one regex to match the line
 
-;; This map will be sorted by keyword alphabetically before being processed
-(def regexes {:coredump #"INFO::COREDUMP - (.*)"
-              :sip-registered #".*pjsua_acc.c  ....sip:[^:]+: registration success, status=200 \(OK\).*"
-              ;; sip call
-              :sip-call-buddy-list #"Buddy list:"
-              :sip-call-choices #"Choices:"
-              :sip-call-enter #"  <Enter>    Empty input \(or 'q'\) to cancel"
-              ;; gains
-              :gain-input-titles #"\| Parameters \+  Loopback  \+   Network  \|"
-              :gain-input-volume-g #"\|  Volume_G\s+\+\s+(\d+)\s+\+\s+(\d+)\s+\|"
-              :gain-input-volume-l #"\|  Volume_L\s+\+\s+(\d+)\s+\+\s+(\d+)\s+\|"
-              :gain-input-volume-r #"\|  Volume_R\s+\+\s+(\d+)\s+\+\s+(\d+)\s+\|"
-              :gain-input-global-gain #"Entered global gain"
-              :gain-input-left-gain #"Entered left gain"
-              :gain-input-right-gain #"Entered right gain"
+(def regexes (sorted-map
+              :jam/coredump #"INFO::COREDUMP - (.*)"
+              :sip/register #".*pjsua_acc.c  ....sip:[^:]+: registration success, status=200 \(OK\).*"
+              ;; sip menu. required before we make a call
+              :sip/menu-buddy-list #"Buddy list:"
+              :sip/menu-choices #"Choices:"
+              :sip/menu-enter #"  <Enter>    Empty input \(or 'q'\) to cancel"
+              
+              :sip/making-call #".*pjsua_call\.c \!Making call with acc.*"
+              :sip/calling #".*Call \d+ state changed to CALLING.*"
+              :sip/incoming-call #".*INCOMING CALL NO SYNC.*"
+              :sip/in-call #".*pjsua_app\.c  ...Call \d+ state changed to CONFIRMED.*"
+              :sip/hangup #".*\!Call \d+ hanging up: code=\d+.*"
+              :sip/call-ended #".*Call \d+ is DISCONNECTED.*"
+              :sip/error-making-call #".*Error making call: Too many objects of the specified type \(([A-Z_]+)\) \[status=(\d+)\]"
+              :sip/error-dialog-mutex #".*Timed-out trying to acquire dialog mutex \(possibly system has deadlocked\) in pjsua_call_hangup.*"
 
-              ;; :log #".*(INFO|DEBUG|WARN|ERROR)(::)?(.*)"
-
-              ;; sip-call-started
-
-              :sip-connect #".*Conf connect: \d+ \-\-\> \d+.*"
-              :sip-stream-established #".*Port \d+ \((.*)\) transmitting to port \d+ \((.*)\).*"
-
-              ;; sip-call-stopped
-              :sip-call-hangup #".*\!Call \d+ hanging up: code=\d+.*"
-              :sip-call-status #"  \[(\w+)\] To: (sip:.*);.*"
-
-              ;; network-config
-              :local-ip #"Local Ip Address:.*"
-              :gateway-ip #"Gateway Ip Address:.*"
-              :netmask-ip #"Mask Ip Address:.*"})
+              :stream/broken #".*Media stream broken clear all calls.*"
+              :sync/syncing-calling-device #".*Enable time sync udp tx.*"
+              :sync/syncing-called-device #".*-----------Entering sync wait loop------------.*"
+              :sync/sync-failed-calling-device #".*Error initializing hardware sync.*"
+              :sync/sync-failed-called-device #".*SYNC FAILED TIMEOUT waiting.*"
+              :sync/sync-success #".*SYNC SUCCESS.*"
+              :sync/sync-good #".*SYNC GOOD.*"
+              :stream/streaming #".*STREAM STARTED.*"
+              :stream/stopped #".*stop_hw_streaming\(\):Stream tx stopped status was.*"))
 
 
 (def controller-steps ^{:doc "Last step in the regex steps above"}
-  #{:coredump
-    :sip-registered
-    :sip-call-enter
-    :gain-input-global-gain
-    :gain-input-left-gain
-    :gain-input-right-gain
-    :sip-call-started
-    :sip-call-stopped
-    :log})
+  #{:jam/coredump
+
+    :sip/register
+    :sip/menu-enter
+    :sip/making-call
+    :sip/calling
+    :sip/incoming-call
+    :sip/in-call
+    :sip/hangup
+    :sip/call-ended
+    :sip/error-making-call
+    :sip/error-dialog-mutex
+
+    :sync/syncing-calling-device
+    :sync/syncing-called-device
+    :sync/sync-failed-calling-device
+    :sync/sync-failed-called-device
+    :sync/sync-success
+    :sync/sync-good
+    
+    :stream/broken
+    :stream/streaming
+    :stream/stopped})
 
 (defonce lines (atom []))
 
@@ -72,75 +81,103 @@
         current-set (->> lines
                          (map first)
                          (into #{}))]
-    (cond (set/subset? #{:coredump} current-set)
-          [:coredump (into {} lines)]
+    (cond (set/subset? #{:jam/coredump} current-set)
+          [:jam/coredump (into {} lines)]
 
-          (set/subset? #{:sip-registered} current-set)
-          [:sip-registered (into {} lines)]
+          ;; sip
+          (set/subset? #{:sip/register} current-set)
+          [:sip/register (into {} lines)]
 
-          (set/subset? #{:sip-call-buddy-list
-                         :sip-call-choices
-                         :sip-call-enter} current-set)
-          [:sip-call (into {} lines)]
+          (set/subset? #{:sip/menu-buddy-list
+                         :sip/menu-choices
+                         :sip/menu-enter} current-set)
+          [:sip/menu (into {} lines)]
 
-          (set/subset? #{:log} current-set)
-          [:log (into {} lines)]
+          (set/subset? #{:sip/making-call} current-set)
+          [:sip/making-call (into {} lines)]
 
-          (set/subset? #{:local-ip} current-set)
-          [:local-ip (into {} lines)]
+          (set/subset? #{:sip/calling} current-set)
+          [:sip/calling (into {} lines)]
 
-          (set/subset? #{:sip-connect
-                         :sip-stream-established} current-set)
-          [:sip-call-started (into {} lines)]
+          (set/subset? #{:sip/error-making-call} current-set)
+          [:sip/error-making-call (into {} lines)]
 
-          (set/subset? #{:sip-call-hangup
-                         :sip-call-status} current-set)
-          [:sip-call-stopped (into {} lines)]
+          (set/subset? #{:sip/error-dialog-mutex} current-set)
+          [:sip/error-dialog-mutex (into {} lines)]
 
-          (set/subset? #{:gain-input-titles
-                         :gain-input-volume-g
-                         :gain-input-global-gain}
-                       current-set)
-          [:gain-input-global-gain (into {} lines)]
+          (set/subset? #{:sip/incoming-call} current-set)
+          [:sip/incoming-call (into {} lines)]
+
+          (set/subset? #{:sip/in-call} current-set)
+          [:sip/in-call (into {} lines)]
+
+          (set/subset? #{:sip/hangup} current-set)
+          [:sip/hangup (into {} lines)]
+
+          (set/subset? #{:sip/call-ended} current-set)
+          [:sip/call-ended (into {} lines)]
+
+          ;; sync
+          (set/subset? #{:sync/syncing-calling-device} current-set)
+          [:sync/syncing (into {} lines)]
+
+          (set/subset? #{:sync/syncing-called-device} current-set)
+          [:sync/syncing (into {} lines)]
+
+          (set/subset? #{:sync/sync-failed-calling-device} current-set)
+          [:sync/sync-failed (into {} lines)]
+
+          (set/subset? #{:sync/sync-failed-called-device} current-set)
+          [:sync/sync-failed (into {} lines)]
+
+          (set/subset? #{:sync/sync-success} current-set)
+          [:sync/synced (into {} lines)]
           
-          (set/subset? #{:gain-input-titles
-                         :gain-input-volume-l
-                         :gain-input-left-gain}
-                       current-set)
-          [:gain-input-left-gain (into {} lines)]
+          (set/subset? #{:sync/sync-good} current-set)
+          [:sync/synced (into {} lines)]
 
-          (set/subset? #{:gain-input-titles
-                         :gain-input-volume-r
-                         :gain-input-right-gain}
-                       current-set)
-          [:gain-input-right-gain (into {} lines)]
+          ;; stream
+          (set/subset? #{:stream/streaming} current-set)
+          [:stream/streaming (into {} lines)]
+
+          (set/subset? #{:stream/stopped} current-set)
+          [:stream/stopped (into {} lines)]
+
+          (set/subset? #{:stream/broken} current-set)
+          [:stream/broken (into {} lines)]
 
           :else
           nil)))
 
 (defn pre-process [happening data]
   (case happening
-    :coredump (let [[_ data] (:coredump data)] data)
-    :gain-input-global-gain (let [[_ loopback network] (:gain-input-volume-g data)]
-                              {:loopback loopback
-                               :network network})
-    :gain-input-left-gain (let [[_ loopback network] (:gain-input-volume-l data)]
-                            {:loopback loopback
-                             :network network})
-    :gain-input-right-gain (let [[_ loopback network] (:gain-input-volume-r data)]
-                             {:loopback loopback
-                              :network network})
-    :sip-call-started (let [[_ from to] (:sip-stream-established data)]
-                        {:from from
-                         :to to})
-    :sip-call-stopped (let [[_ status to] (:sip-call-status data)]
-                        {:status status
-                         :to to})
-    :log (let [[_ level _ data] (:log data)]
-           {:log/level (-> level str/lower-case keyword)
-            :log/data data})
-    :local-ip (let [ip (:local-ip data)]
-                {:ip (last (clojure.string/split ip #":"))})
+    ;; jam
+    :jam/coredump (let [[_ data] (:jam/coredump data)] data)
+
+    ;; sip
+    :sip/register true
+    :sip/menu-enter true
+    :sip/making-call true
+    :sip/calling true
+    :sip/incoming-call true
+    :sip/in-call true
+    :sip/hangup true
+    :sip/call-ended true
+    :sip/error-making-call (let [[_ error-type error-code] (:sip/error-making-call data)]
+                             {:error/type error-type
+                              :error/code error-code})
+    :sip/error-dialog-mutex {:error/type "DIALOG_MUTEX"
+                             :error/code -1}
+
+    ;; sync
+    :sync/synced true
+    :sync/syncing true
+    :sync/sync-failed true
+    ;; stream
+    :stream/streaming true
+    :stream/stopped true
+    :stream/broken true
+    
     nil))
 
 (defn handle-output [context fns line]
@@ -149,7 +186,7 @@
                                      (if-let [match (process-line k line)]
                                        (reduced [k match])
                                        nil))
-                                   nil (into (sorted-map) regexes))]
+                                   nil regexes)]
     (swap! lines conj [found match])
     ;; (log/debug {:found found
     ;;             :match match})

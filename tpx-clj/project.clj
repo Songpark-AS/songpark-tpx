@@ -1,4 +1,4 @@
-(defproject tpx "0.1.1-SNAPSHOT"
+(defproject tpx "0.2.1"
   :description "Songpark's Teleporter's communications' logic"
   :url "http://example.com/FIXME"
   :license {:name ""
@@ -23,12 +23,20 @@
                  ;; mqtt implementation
                  [clojurewerkz/machine_head "1.0.0"]
                  [com.cognitect/transit-clj "1.0.324"]
+
+                 ;; jam
+                 [songpark/jam "1.0.1"]
+                 [songpark/mqtt "1.0.1"]
+
+                 ;; database
+                 [codax "1.3.1"]
+                 
                  ;; json
                  [cheshire "5.10.0"]
                  ;; scheduler
                  [jarohen/chime "0.3.3"]
                  ;; songpark's common (will also contain an mqtt implementation later)
-                 [songpark/common "0.1.1-SNAPSHOT"]
+                 [songpark/common "0.2.0"]
                  [clojure-interop/java.net "1.0.5"]]
   :main tpx.core
   :target-path "target/%s"
@@ -37,6 +45,7 @@
   ;; which seems to do the trick. It's somewhere around the 3 minute mark from what I can see, but
   ;; 10 minutes to be on the safe side. Just be patient, and the REPL will show up
   :repl-options {:timeout 600000}
+  :javac-options ["--release" "8"]
   :profiles {:dev {:source-paths ["src" "dev"]
                    :resource-paths ["dev-resources" "resources"]
                    :dependencies [[midje "1.9.9"]

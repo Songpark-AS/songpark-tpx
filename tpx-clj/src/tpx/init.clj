@@ -1,41 +1,80 @@
 (ns tpx.init
   (:require [com.stuartsierra.component :as component]
-            [taoensso.timbre :as log]   
+            [songpark.common.communication :refer [PUT]]
+            [songpark.jam.tpx :as jam.tpx]
+            [songpark.mqtt :as mqtt]
+            [songpark.mqtt.util :refer [teleporter-topic]]
+            [taoensso.timbre :as log]
             [tpx.config :refer [config]]
-            [tpx.logger :as logger]
-            [tpx.ipc :as ipc]
-            [tpx.mqtt :as mqtt]
+            [tpx.data :as data]
+            [tpx.database :as database :refer [get-hardware-values]]
             [tpx.heartbeat :as heartbeat]
-            [tpx.message :as message]
+            [tpx.ipc :as ipc]
+            [tpx.logger :as logger]
+            [tpx.mqtt.handler.jam]
+            [tpx.mqtt.handler.teleporter]
             [tpx.network :as network]))
 
+(defonce system (atom nil))
+
+(defn- get-device-mac []
+  (:mac config))
+
+(defn broadcast-presence [success-cb error-cb]
+  (let [data (merge {:teleporter/nickname (get-in config [:ipc :teleporter :nickname])
+                     :teleporter/mac (get-device-mac)
+                     :teleporter/apt-version (data/get-apt-version)}
+                    (get-hardware-values))
+        platform-url (str (get-in config [:ipc :platform]) "/api/teleporter")]
+    (log/debug "Broadcasting to URL" platform-url data)
+    (PUT platform-url data success-cb error-cb)))
 
 (defn- system-map [extra-components]
   (let [;; logger and config are started this way so that we can ensure
         ;; things are logged as we want and that the config is loaded
-        ;; for all the other modules
+        ;; before all the other modules
         core-config (component/start (tpx.config/config-manager {}))
         logger (component/start (logger/logger (:logger config)))
-        mqtt-config (:mqtt config)]
-    (apply component/system-map
-           (into [:logger logger
-                  :config core-config
-                  :message-service (message/message-service (:message config))
-                  :network (network/network (:network config))
-                  :mqtt-manager (component/using (mqtt/mqtt-manager (merge (:mqtt config)
-                                                                           {:injection-ks [:message-service]}))
-                                                 [:message-service])
-                  :ipc-service (component/using (ipc/ipc-service {:injection-ks [:message-service :mqtt-manager]
-                                                                  :config (:ipc config)})
-                                                [:message-service :mqtt-manager])
-                  :heartbeat (component/using (heartbeat/heartbeat-service {:injection-ks [:message-service :mqtt-manager]
-                                                                            :config (:heartbeat config)})
-                                              [:message-service :mqtt-manager])]
-                 extra-components))))
-
-
-(defonce system (atom nil))
-
+        db (component/start (database/database (:database config)))]
+    (broadcast-presence
+     (fn [{:teleporter/keys [id] :as _result}]
+       (log/info "Successfully reported Teleporter to Platform")
+       (let [;; start mqtt-client third before anything else, so that any messaged that might be needing sending
+             ;; can be done so, as mqtt-client has finished connecting
+             mqtt-client (component/start (mqtt/mqtt-client (assoc-in (:mqtt config) [:config :id] id)))]
+        ;; set teleporter-id for data
+         (data/set-tp-id! id)
+         ;; 100ms sleep to help mqtt-client
+         (Thread/sleep 100)
+         ;; start the rest of system
+         (log/info "Starting system")
+         (reset! system (component/start
+                         (apply component/system-map
+                                (into [:logger logger
+                                       :mqtt-client mqtt-client
+                                       :config core-config
+                                       :network (network/network (:network config))
+                                       :database db
+                                       :ipc (component/using (ipc/ipc-service {:config (:ipc config)})
+                                                             [:mqtt-client :database])
+                                       :jam (component/using (jam.tpx/get-jam (merge {:tp-id id}
+                                                                                     (:jam config)))
+                                                             [:ipc :mqtt-client])
+                                       :heartbeat (component/using (heartbeat/heartbeat-service {:config (:heartbeat config)})
+                                                                   [:mqtt-client])]
+                                      extra-components))))
+         (log/info "System startup done"))
+       ;; setup mqtt client further with injections and topics
+       (let [{:keys [mqtt-client ipc jam]} @system]
+         ;; injections of ipc and jam first
+         (mqtt/add-injection mqtt-client :ipc ipc)
+         (mqtt/add-injection mqtt-client :jam jam)
+         ;; add topic of its own id
+         (log/info "Subscribing to teleporter topic")
+         (mqtt/subscribe mqtt-client {(teleporter-topic id) 0})))
+     (fn [error]
+       ;; add flashing leds to indicate a restart is required
+       (log/error error)))))
 
 (defn stop []
   (when-not (nil? @system)
@@ -52,7 +91,7 @@
     (do
       (log/info "Starting Songpark Teleporter")
       ;; start the system
-      (reset! system (component/start (system-map extra-components)))
+      (system-map extra-components)
 
       ;; log uncaught exceptions in threads
       (Thread/setDefaultUncaughtExceptionHandler
@@ -70,25 +109,9 @@
            (stop)))))))
 
 
-
-
-
-
-
-
 (comment 
   
-  (PUT "http://localhost:3000/api/teleporter" 
-       {:teleporter/mac "00:0a:35:00:00:00"}
-       (fn [response]
-         (println response))
-       nil)
-
-  (defn init []
-    ;; TODO get MAC address and send it to the platform, platform gives you UUID store that for MQTT topic
-    ;; TODO start MQTT topic 
-    ;; TODO initiate BP communication via serial 
-    ;; TODO pubish to MQTT and start listening for mesages 
-    (println "I AM TPX"))
+  (stop)
+  (init)
 
   )

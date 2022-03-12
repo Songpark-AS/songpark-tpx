@@ -66,7 +66,7 @@
     (future
       (while @run-checker?
         (let [status (check-network-status-return-code curl-cmd)]
-          (log/debug ::run-checker "Checking network status")
+          #_(log/debug ::run-checker "Checking network status")
           (if (nil? @webserver)
             (when (= status :down)
               (log/debug ::run-checker "Network is down, lets start the webserver")

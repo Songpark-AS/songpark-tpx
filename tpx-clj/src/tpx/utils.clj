@@ -54,3 +54,7 @@
   (log/debug ::upgrade "Upgrading teleporter firmware")
   (let [data-dir (get-in config [:os :data-dir])]
     (sh "bash" "-c" (str "./upgrader.sh " data-dir))))
+
+
+(defn reboot []
+  (sh "reboot"))
