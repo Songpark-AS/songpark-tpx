@@ -1,6 +1,6 @@
 (defproject tpx "0.2.1"
-  :description "Songpark's Teleporter's communications' logic"
-  :url "http://example.com/FIXME"
+  :description "Teleporter software that is the glue between the FPGA world and the wider system"
+  :url ""
   :license {:name ""
             :url ""}
   :dependencies [[org.clojure/clojure "1.10.1"]
