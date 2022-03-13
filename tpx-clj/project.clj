@@ -20,13 +20,11 @@
                  [com.stuartsierra/component "1.0.0"]
                  ;; serial comms
                  [clj-serial "2.0.5"]
-                 ;; mqtt implementation
-                 [clojurewerkz/machine_head "1.0.0"]
-                 [com.cognitect/transit-clj "1.0.324"]
-
-                 ;; jam
+                 
+                 ;; songpark specific libraries
                  [songpark/jam "1.0.1"]
                  [songpark/mqtt "1.0.1"]
+                 [songpark/common "0.2.0"]
 
                  ;; database
                  [codax "1.3.1"]
@@ -35,8 +33,8 @@
                  [cheshire "5.10.0"]
                  ;; scheduler
                  [jarohen/chime "0.3.3"]
-                 ;; songpark's common (will also contain an mqtt implementation later)
-                 [songpark/common "0.2.0"]
+                 
+                 
                  [clojure-interop/java.net "1.0.5"]]
   :main tpx.core
   :target-path "target/%s"
