@@ -71,7 +71,7 @@
          (mqtt/add-injection mqtt-client :jam jam)
          ;; add topic of its own id
          (log/info "Subscribing to teleporter topic")
-         (mqtt/subscribe mqtt-client {(teleporter-topic id) 0})))
+         (mqtt/subscribe mqtt-client {(teleporter-topic id) 2})))
      (fn [error]
        ;; add flashing leds to indicate a restart is required
        (log/error error)))))
