@@ -1,0 +1,80 @@
+{:os {:data-dir "/var/local/songpark/"}
+ :logger {;; for sentry.io
+          :sentry-settings {;; turn on/off logging to sentry
+                            :log? false
+                            ;; DSN to log to
+                            :dsn ""}
+          ;; level of logging. anything below this will not be logged
+          :level VAR__LOGGER_LEVEL}
+ :hardware/default-values {:volume/global-volume 5
+                           :volume/network-volume 5
+                           :volume/local-volume 5
+                           :jam/playout-delay 15
+                           :analog/gain0 5
+                           :analog/gain1 5
+                           :analog/gain2 5
+                           :analog/gain3 5
+                           :analog/relays [0 0 0 0 0 0 0 0]}
+ :network {;; configuration directory for network on the linux layer
+           :config-dir "/etc/network/interfaces.d/"
+           ;; what we use to check if we're online or offline
+           :check-network-status-curl-cmd "curl https://spp.inonit.no/health"
+           ;; sleep timer in milliseconds
+           :sleep-timer 60000
+           ;; which interface do we interact with
+           :iface "eth1"
+           ;; we currently set the mac address ourselves. this is due to the network
+           ;; layer being handled by the FPGA core
+           :hwaddr "VAR__HW_MAC"
+           ;; no router exists for direct connection between laptop and tp on 192.168.0.0/24 subnet
+           ;; default network settings for when the network module resets the
+           ;; network configuration whenever it doesn't detect the Teleporter
+           ;; being online
+           ;; take care, in that you will not reach this webserver unless you manually
+           ;; reset your own IP to match the range given in :default-network
+           :default-network {;; originally it was suggested to use 192.168.0.168 as
+                             ;; default, but 0.168 is too common, and can easily
+                             ;; cause conflicts. changed to .168.168 instead
+                             :ip "192.168.168.168"
+                             ;; default netmask
+                             :netmask "255.255.255.0"}
+           ;; webserver configuration. is handed to the webserver via the network component
+           :webserver {;; IP the webserver should run on. 0.0.0.0 means it will run on any
+                       ;; IP that currently runs on the existing interface (eth1 typically)
+                       :ip "0.0.0.0"
+                       ;; port to run on
+                       :port 8080
+                       ;; number of threads the HTTP Kit webserver should run on
+                       ;; defaults to four, but we only really need one
+                       :thread 1}
+           ;; set to false in order to write the actual configuration files to Linux
+           ;; if set to true, the configuration files is written to /tmp
+           :fake-reset? true}
+ :defaults {;; in ms
+            :playout-delay 20}
+ ;; mac address. this is currently fake
+ :mac "VAR__FAKE_MAC"
+ ;; mqtt settings
+ :mqtt {:config {;; which schema to use
+                 :scheme "tcp"
+                 ;; host
+                 :host "spmqtt.inonit.no"
+                 ;; port
+                 :port 1883
+                 ;; connect options
+                 :connect-options {;; do we reconnect automatically when losing a connection?
+                                   :auto-reconnect true
+                                   ;; keep-alive in seconds
+                                   :keep-alive-interval 60
+                                   ;; how many messages do we keep in memory on the client when queuing against the network
+                                   :max-inflight 100
+                                   ;; username
+                                   :username "VAR__MQTT_USERNAME"
+                                   ;; password
+                                   :password "VAR__MQTT_PASSWORD"}}}
+ ;; settings for the component IPC
+ :ipc {;; which address is the platform running on
+       :platform "https://spp.inonit.no"
+       :teleporter {;; what do we tell the platform we are called?
+                    :nickname "VAR__TELEPORTER_NICKNAME"}}
+ :heartbeat {:timer 60000}}
