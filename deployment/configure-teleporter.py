@@ -210,12 +210,12 @@ def run_main():
             assert (args.config_path is not None), "--config-path must be provided"
             assert (args.songpark_path is not None), "--songpark-path must be provided"
             assert (args.root_path is not None), "--root-path must be provided"
-                                    
+
             copy_configs_to_teleporter(args.config_path, args.songpark_path, args.root_path)
         elif args.action == "copy-configs-to-rpi":
             assert (args.config_path is not None), "--config-path must be provided"
             assert (args.rpi_path is not None), "--rpi-path must be provided"
-            
+
             copy_configs_to_rpi(args.config_path, args.rpi_path)
         elif args.action == "clear-configs":
             assert (args.config_path is not None), "--config-path must be provided"
