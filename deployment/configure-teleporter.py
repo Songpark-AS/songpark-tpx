@@ -59,6 +59,14 @@ def read_config(path, name):
         out = x.read()
     return out
 
+def list_p(x):
+    return type(x) == list
+
+def copy_file(source, dest):
+    s = os.path.join(*source) if list_p(source) else source
+    d = os.path.join(*dest) if list_p(dest) else dest
+    os.system("cp {source} {dest}".format(source=s, dest=d))
+
 def write_sip_config(template_path, config_path, serial_number):
     serial = get_number(serial_number)
     sip_user = "91{id}".format(id=serial)
@@ -121,6 +129,8 @@ def write_wireguard_config(template_path, config_path, name, serial_number):
     write_config(config_path, WIREGUARD_PRIVATE_KEY.format(who="rpi"), private_key_rpi)
     write_config(config_path, WIREGUARD_PUBLIC_KEY.format(who="teleporter"), public_key_teleporter)
     write_config(config_path, WIREGUARD_PUBLIC_KEY.format(who="rpi"), public_key_rpi)
+    copy_file([template_path, AUTHORIZED_KEYS],
+              [config_path, AUTHORIZED_KEYS])
     
     
 
@@ -144,16 +154,8 @@ def generate_configs(template_path, config_path, logger_level, name, serial_numb
     write_eth1_config(template_path, config_path, serial_number)
     write_wireguard_config(template_path, config_path, name, serial_number)
 
-def list_p(x):
-    return type(x) == list
-    
-def copy_file(source, dest):
-    s = os.path.join(*source) if list_p(source) else source
-    d = os.path.join(*dest) if list_p(dest) else dest
-    os.system("cp {source} {dest}".format(source=s, dest=d))
-
-def copy_configs_to_teleporter(template_path, config_path, songpark_path, root_path):
-    copy_file([template_path, AUTHORIZED_KEYS],
+def copy_configs_to_teleporter(config_path, songpark_path, root_path):
+    copy_file([config_path, AUTHORIZED_KEYS],
               [root_path, "root/.ssh", AUTHORIZED_KEYS])
     copy_file([config_path, WIREGUARD_TELEPORTER_CONFIG],
               [root_path, "etc/wireguard", "wg0.conf"])
@@ -166,8 +168,8 @@ def copy_configs_to_teleporter(template_path, config_path, songpark_path, root_p
     copy_file([config_path, SIP_CONFIG],
               [songpark_path, "usr/local/etc", SIP_CONFIG])
 
-def copy_configs_to_rpi(template_path, config_path, rpi_path):
-    copy_file([template_path, AUTHORIZED_KEYS],
+def copy_configs_to_rpi(config_path, rpi_path):
+    copy_file([config_path, AUTHORIZED_KEYS],
               [rpi_path, "home/pi/.ssh", AUTHORIZED_KEYS])
     copy_file([config_path, WIREGUARD_RPI_CONFIG],
               [rpi_path, "etc/wireguard", "wg0.conf"])
@@ -180,39 +182,50 @@ def cleanup_configs(config_path):
     os.system("rm -rf " + config_path)
 
 def run_main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--teleporter-name", help="What is the Teleporter to be known as?")
-    parser.add_argument("--teleporter-serial", help="Which serial is the Teleporter. Only even numbers", type=int)
-    parser.add_argument("--template-path", help="Path to read template configuration files from", default=None)
-    parser.add_argument('--config-path', help='Path to write configuration files to', default='config-files')
-    parser.add_argument("--logger-level", help="Logger level for logging in TPX", default="info")
-    parser.add_argument("--songpark-path", help="Path to the songpark partition of the Teleporter SD card image")
-    parser.add_argument("--root-path", help="Path to the root partition of the Teleporter SD card image")
-    parser.add_argument("--rpi-path", help="Path to the RPi SD card image")
-    parser.add_argument("--action",
-                        help="Which action to perform",
-                        choices=["generate-configs",
-                                 "copy-configs-to-teleporter",
-                                 "copy-configs-to-rpi",
-                                 "clear-configs"])
-    args = parser.parse_args()
+    try:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--teleporter-name", help="What is the Teleporter to be known as?")
+        parser.add_argument("--teleporter-serial", help="Which serial is the Teleporter. Only even numbers", type=int)
+        parser.add_argument("--template-path", help="Path to read template configuration files from", default=None)
+        parser.add_argument('--config-path', help='Path to write configuration files to', default='config-files')
+        parser.add_argument("--logger-level", help="Logger level for logging in TPX", default="info")
+        parser.add_argument("--songpark-path", help="Path to the songpark partition of the Teleporter SD card image")
+        parser.add_argument("--root-path", help="Path to the root partition of the Teleporter SD card image")
+        parser.add_argument("--rpi-path", help="Path to the RPi SD card image")
+        parser.add_argument("--action",
+                            help="Which action to perform",
+                            choices=["generate-configs",
+                                     "copy-configs-to-teleporter",
+                                     "copy-configs-to-rpi",
+                                         "clear-configs"])
+        args = parser.parse_args()
 
-    if args.template_path is None:
-        print("You need to give a path to the template configuration files")
-        exit(0)
-    
-    if args.action == "generate-configs":
-        generate_configs(args.template_path, args.config_path, args.logger_level, args.teleporter_name, args.teleporter_serial)
-    elif args.action == "copy-configs-to-teleporter":
-        copy_configs_to_teleporter(args.template_path, args.config_path, args.songpark_path, args.root_path)
-    elif args.action == "copy-configs-to-rpi":
-        copy_configs_to_rpi(args.template_path, args.config_path, args.rpi_path)
-    elif args.action == "clear-configs":
-        cleanup_configs(args.config_path)
-    else:
-        print("Choice not supported. Try again")
-        print("You supplied the following args")
-        print(args)
+        if args.action == "generate-configs":
+            assert (args.template_path is not None), "--template-path must be provided"
+            assert (args.config_path is not None), "--config-path must be provided"
+            assert (args.teleporter_name is not None), "--teleporter-name must be provided"
+            assert (args.teleporter_serial is not None), "--teleporter-serial must be provided"
+            #generate_configs(args.template_path, args.config_path, args.logger_level, args.teleporter_name, args.teleporter_serial)
+        elif args.action == "copy-configs-to-teleporter":
+            assert (args.config_path is not None), "--config-path must be provided"
+            assert (args.songpark_path is not None), "--songpark-path must be provided"
+            assert (args.root_path is not None), "--root-path must be provided"
+                                    
+            copy_configs_to_teleporter(args.config_path, args.songpark_path, args.root_path)
+        elif args.action == "copy-configs-to-rpi":
+            assert (args.config_path is not None), "--config-path must be provided"
+            assert (args.rpi_path is not None), "--rpi-path must be provided"
+            
+            copy_configs_to_rpi(args.config_path, args.rpi_path)
+        elif args.action == "clear-configs":
+            assert (args.config_path is not None), "--config-path must be provided"
+            cleanup_configs(args.config_path)
+        else:
+            print("--action missing")
+            print("You supplied the following args")
+            print(args)
+    except Exception as e:
+        print(e)
 
 
 if __name__ == "__main__":
