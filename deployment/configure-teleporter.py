@@ -17,7 +17,11 @@ TEMPLATE_TPX_CONFIG = "config.template.edn"
 TEMPLATE_SIP_CONFIG = "sip.template.cfg"
 TEMPLATE_WIREGUARD_CONFIG = "wireguard.template.conf"
 TEMPLATE_WIREGUARD_SERVER_CONFIG = "wireguard.server.template.conf"
+TEMPLATE_MOTD_TELEPORTER = "motd.template.teleporter"
+TEMPLATE_MOTD_RPI = "motd.template.rpi"
 TEMPLATE_ETH1 = "eth1.template"
+MOTD_TELEPORTER = "motd.teleporter"
+MOTD_RPI = "motd.rpi"
 TPX_CONFIG="config.edn"
 SIP_CONFIG="sip.cfg"
 ETH1_CONFIG="eth1.teleporter"
@@ -49,6 +53,16 @@ def get_public_key(private_key):
 def get_wireguard_ip(serial_number):
     return "10.100.200." + serial_number + "/32"
 
+def get_ip_teleporter(serial_number):
+    return BASE_WIREGUARD_IP_RANGE.format(number=get_number(serial_number))
+
+def get_ip_rpi(serial_number):
+    return BASE_WIREGUARD_IP_RANGE.format(number=get_number(serial_number))
+
+def get_sip_id(serial_number):
+    serial = get_number(serial_number)
+    return "91{id}".format(id=serial)
+
 def write_config(path, name, config):
     with open(os.path.join(path, name), 'w') as f:
         f.write(config)
@@ -68,8 +82,7 @@ def copy_file(source, dest):
     os.system("cp {source} {dest}".format(source=s, dest=d))
 
 def write_sip_config(template_path, config_path, serial_number):
-    serial = get_number(serial_number)
-    sip_user = "91{id}".format(id=serial)
+    sip_user = get_sip_id(serial_number)
     sip_password = get_random_string(32)
 
     sip_config = read_config(template_path, TEMPLATE_SIP_CONFIG)
@@ -100,11 +113,11 @@ def write_tpx_config(template_path, config_path, name, serial_number, logger_lev
 def write_wireguard_config(template_path, config_path, name, serial_number):
     private_key_teleporter = get_private_key()
     public_key_teleporter = get_public_key(private_key_teleporter)
-    ip_teleporter = BASE_WIREGUARD_IP_RANGE.format(number=get_number(serial_number))
+    ip_teleporter = get_ip_teleporter()
 
     private_key_rpi = get_private_key()
     public_key_rpi = get_public_key(private_key_rpi)
-    ip_rpi = BASE_WIREGUARD_IP_RANGE.format(number=get_number(serial_number + 1))
+    ip_rpi = get_ip_rpi()
 
     wireguard_teleporter_config = read_config(template_path, TEMPLATE_WIREGUARD_CONFIG)
     wireguard_teleporter_config = wireguard_teleporter_config.replace("VAR__WIREGUARD_PRIVATE_KEY", private_key_teleporter)
@@ -131,6 +144,22 @@ def write_wireguard_config(template_path, config_path, name, serial_number):
     write_config(config_path, WIREGUARD_PUBLIC_KEY.format(who="rpi"), public_key_rpi)
     copy_file([template_path, AUTHORIZED_KEYS],
               [config_path, AUTHORIZED_KEYS])
+
+def write_motd(template_path, config_path, name, serial_number):
+    motd_teleporter = read_config(template_path, TEMPLATE_MOTD_TELEPORTER)
+    motd_rpi = read_config(template_path, TEMPLATE_MOTD_RPI)
+
+    ip_rpi = get_ip_rpi(serial_number)
+    sip_id = get_sip_id(serial_number)
+
+    motd_teleporter = motd_teleporter.replace("VAR__NAME", name)
+    motd_teleporter = motd_teleporter.replace("VAR__IP_RPI", ip_rpi)
+    motd_teleporter = motd_teleporter.replace("VAR__SIP_ID", sip_id)
+
+    motd_rpi = motd_rpi.replace("VAR__NAME", name)
+
+    write_config(config_path, MOTD_TELEPORTER, motd_teleporter)
+    write_config(config_path, MOTD_RPI, motd_rpi)
     
     
 
@@ -153,6 +182,7 @@ def generate_configs(template_path, config_path, logger_level, name, serial_numb
     write_tpx_config(template_path, config_path, name, serial_number, logger_level)
     write_eth1_config(template_path, config_path, serial_number)
     write_wireguard_config(template_path, config_path, name, serial_number)
+    write_motd(template_path, config_path, name, serial_number)
 
 def copy_configs_to_teleporter(config_path, songpark_path, root_path):
     copy_file([config_path, AUTHORIZED_KEYS],
@@ -167,6 +197,8 @@ def copy_configs_to_teleporter(config_path, songpark_path, root_path):
               [songpark_path, "usr/local/etc", TPX_CONFIG])
     copy_file([config_path, SIP_CONFIG],
               [songpark_path, "usr/local/etc", SIP_CONFIG])
+    copy_file([config_path, MOTD_TELEPORTER],
+              [root_path, "/etc", "motd.txt"])
 
 def copy_configs_to_rpi(config_path, rpi_path):
     copy_file([config_path, AUTHORIZED_KEYS],
@@ -177,6 +209,8 @@ def copy_configs_to_rpi(config_path, rpi_path):
               [rpi_path, "etc/wireguard/keys", "publickey"])
     copy_file([config_path, WIREGUARD_PRIVATE_KEY.format(who="rpi")],
               [rpi_path, "etc/wireguard/keys", "privatekey"])
+    copy_file([config_path, MOTD_RPI],
+              [rpi_path, "/etc", "motd.txt"])
 
 def cleanup_configs(config_path):
     os.system("rm -rf " + config_path)
@@ -197,7 +231,7 @@ def run_main():
                             choices=["generate-configs",
                                      "copy-configs-to-teleporter",
                                      "copy-configs-to-rpi",
-                                         "clear-configs"])
+                                     "clear-configs"])
         args = parser.parse_args()
 
         if args.action == "generate-configs":

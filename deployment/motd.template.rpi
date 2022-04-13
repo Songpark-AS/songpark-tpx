@@ -1,0 +1,5 @@
+#####    VAR__NAME RPi    #######
+
+This Raspberry pi controls VAR__NAME. You can use minicom -D /dev/ttyACM0
+
+This is the file /etc/motd.txt. Please updated when needed!
