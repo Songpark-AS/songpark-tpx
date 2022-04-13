@@ -22,7 +22,7 @@
                  [clj-serial "2.0.5"]
                  
                  ;; songpark specific libraries
-                 [songpark/jam "1.0.1"]
+                 [songpark/jam "1.0.2"]
                  [songpark/mqtt "1.0.1"]
                  [songpark/common "0.2.0"]
 
