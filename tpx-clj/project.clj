@@ -20,21 +20,21 @@
                  [com.stuartsierra/component "1.0.0"]
                  ;; serial comms
                  [clj-serial "2.0.5"]
-                 
+
                  ;; songpark specific libraries
                  [songpark/jam "1.0.2"]
                  [songpark/mqtt "1.0.1"]
                  [songpark/common "0.2.0"]
+                 [songpark/gpio "1.0.0-SNAPSHOT"]
 
                  ;; database
                  [codax "1.3.1"]
-                 
+
                  ;; json
                  [cheshire "5.10.0"]
                  ;; scheduler
                  [jarohen/chime "0.3.3"]
-                 
-                 
+
                  [clojure-interop/java.net "1.0.5"]]
   :main tpx.core
   :target-path "target/%s"
@@ -48,7 +48,7 @@
                    :resource-paths ["dev-resources" "resources"]
                    :dependencies [[midje "1.9.9"]
                                   [ring/ring-mock "0.4.0"]
-                                  
+
                                   [hashp "0.2.0"]
                                   [clj-commons/spyscope "0.1.48"]]
                    :injections [(require 'spyscope.core)]
