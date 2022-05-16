@@ -72,10 +72,11 @@
               (log/debug ::run-checker "Network is down, lets start the webserver")
               (log/debug ::run-checker "Setting default static IPv4")
               (activate-iface-config (gen-iface-config :default-static network-options))
-              (reset! webserver
-                      (component/start (webserver/webserver {:config webserver-settings
-                                                             :set-network! set-network!
-                                                             :server server}))))
+              ;; (reset! webserver
+              ;;         (component/start (webserver/webserver {:config webserver-settings
+              ;;                                                :set-network! set-network!
+              ;;                                                :server server})))
+              )
             (when (and (= status :up) (not (iface-config-equals-current-config? (gen-iface-config :default-static network-options))))
               (log/debug ::run-checker "Network is up again, lets shutdown the webserver")
               (component/stop @webserver)
