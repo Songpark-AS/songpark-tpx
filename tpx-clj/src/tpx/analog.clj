@@ -71,8 +71,7 @@
     (codax/assoc-at! @db gain value)
     (log/debug "Write gain" {:register register
                              :gain gain
-                             :value value})
-    ))
+                             :value value})))
 
 (defn read-gain
   "Read the gain"
