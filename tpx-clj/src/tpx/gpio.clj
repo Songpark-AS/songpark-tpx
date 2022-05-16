@@ -23,7 +23,7 @@
   (assert (set/subset? (set (keys leds))
                        (set (keys @(:leds gpio))))
           (str "leds can only contain the keys " (keys @(:leds gpio))))
-  (reset! (:leds gpio) leds))
+  (swap! (:leds gpio) merge leds))
 
 (defn set-button-action [gpio button function]
   (assert (fn? function) "function has to be a function")
@@ -38,7 +38,7 @@
   (reset! running? false))
 
 
-(defrecord GPIO [f buttons leds device handles watchers])
+(defrecord GPIO [f buttons leds device handles watchers context])
 
 (defn- get-writeable-leds [on-off-map gpio]
   (->> @(:leds gpio)
@@ -64,20 +64,20 @@
 (defn- get-sleep-time [boundary end-time start-time]
   (max 1 (- boundary (get-milliseconds (- end-time start-time)))))
 
-(defn- handle-buttons [{:keys [buttons watchers running?] :as gpio}]
+(defn- handle-buttons [{:keys [buttons watchers running? context] :as gpio}]
   (future
     (try
       (let [bounce (atom {})
             ;; epsilon of 10 ms for bouncing signals
             epsilon 10.0]
         (while @running?
-          ;; (println :handle-buttons)
+          ;; (log/debug :handle-buttons)
           (let [event (gpio/event @watchers 10000)]
             (when event
               (let [{:gpio/keys [tag nano-timestamp edge]} event
                     rising (get-in @bounce [tag :rising])]
-                ;; (println {:event event
-                ;;           :bounce @bounce})
+                ;; (log/debug {:event event
+                ;;             :bounce @bounce})
                 (cond (and (nil? rising)
                            (= edge :rising))
                       (swap! bounce assoc-in [tag :rising] nano-timestamp)
@@ -87,7 +87,9 @@
                       (let [ms (get-milliseconds (- nano-timestamp rising) :double)]
                         (when (> ms epsilon)
                           (if-let [f (get @buttons tag)]
-                            (do (f gpio ms)
+                            (do (f (assoc context
+                                          :gpio gpio
+                                          :delay ms))
                                 (swap! bounce dissoc tag))
                             (do (log/error "GPIO: Could not find a function for " tag)
                                 (swap! bounce dissoc tag)))))
@@ -164,7 +166,7 @@
       this
       (do (log/info "Starting GPIO Manager")
           (let [gpio* (get-gpio gpio-settings)]
-            (set-leds gpio* :led/green :on)
+            (set-led gpio* :led/green :on)
             (assoc this
                    :started? true
                    :gpio gpio*)))))
@@ -172,7 +174,8 @@
     (if-not started?
       this
       (do (log/info "Stopping GPIO Manager")
-          (set-leds gpio :led/green :off)
+          (set-led gpio :led/green :off)
+          (Thread/sleep 50)
           (close! gpio)
           (assoc this
                  :started? false
@@ -182,6 +185,16 @@
   (map->GPIOManager {:gpio-settings settings}))
 
 (comment
+
+  (let [gpio (-> @tpx.init/system
+                 :gpio-manager
+                 :gpio)]
+    (get-led gpio :led/red)
+    #_(set-leds gpio {:led/red :off
+                      :led/yellow :off})
+    #_(set-led gpio :led/red :off)
+    gpio)
+
   (def tmp (get-gpio {:buttons (atom {:button/push1
                                       (fn [gpio delay]
                                         (let [flip-value ({:on :off

@@ -17,7 +17,7 @@
                                           "org.opensaml.*"}
                                   :allow #{"*"}}})
 
-  
+
   (init/stop)
   (init/init))
 
@@ -29,10 +29,9 @@
     (reset! logger (component/start (logger/logger {})))))
 
 
-(comment 
+(comment
   (init/stop)
   (restart)
-  
 
   ;; start logging locally on the file system
   ;; useful for multithreaded environments, as not every log is printed to stdout
