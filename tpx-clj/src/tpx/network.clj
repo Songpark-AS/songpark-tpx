@@ -3,7 +3,6 @@
   (:require [clojure.string :as str]
             [com.stuartsierra.component :as component]
             [tpx.config :refer [config]]
-            [tpx.network.webserver :as webserver]
             [tpx.network.configurator :refer [gen-iface-config]]
             [clojure.java.shell :refer [sh]]
             [taoensso.timbre :as log]))
