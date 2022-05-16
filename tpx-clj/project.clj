@@ -14,8 +14,6 @@
                  ;; http server
                  [http-kit "2.3.0"]
                  [ring/ring-core "1.9.4"]
-                 ;; html rendering
-                 [hiccup "1.0.5"]
                  ;; structure
                  [com.stuartsierra/component "1.0.0"]
                  ;; serial comms
@@ -25,7 +23,9 @@
                  [songpark/jam "1.0.2"]
                  [songpark/mqtt "1.0.2"]
                  [songpark/common "0.2.0"]
-                 [songpark/gpio "1.0.0-SNAPSHOT"]
+
+                 ;; GPIO for Clojure
+                 [io.helins/linux.gpio "2.0.1"]
 
                  ;; database
                  [codax "1.3.1"]

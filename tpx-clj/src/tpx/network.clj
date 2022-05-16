@@ -37,7 +37,6 @@
           (Thread/sleep 200)
           (sh "bash" "-c" (str "ifup " iface))))))
 
-
 (defn set-network! [{:keys [ip netmask gateway dhcp?] :as opts}]
   (let [fake-reset? (get-in config [:network :fake-reset?])]
     (log/info "Set network" opts)
@@ -56,80 +55,11 @@
       (zero? exit) :up
       :else :down)))
 
-(defn- run-checker [options]
-  (let [curl-cmd (get-in options [:network :check-network-status-curl-cmd])
-        network-options (get-in options [:network :default-network])
-        sleep-timer (get-in options [:network :sleep-timer])
-        webserver-settings (get-in options [:network :webserver])
-        server (atom nil)
-        webserver (atom nil)]
-    (future
-      (while @run-checker?
-        (let [status (check-network-status-return-code curl-cmd)]
-          #_(log/debug ::run-checker "Checking network status")
-          (if (nil? @webserver)
-            (when (= status :down)
-              (log/debug ::run-checker "Network is down, lets start the webserver")
-              (log/debug ::run-checker "Setting default static IPv4")
-              (activate-iface-config (gen-iface-config :default-static network-options))
-              ;; (reset! webserver
-              ;;         (component/start (webserver/webserver {:config webserver-settings
-              ;;                                                :set-network! set-network!
-              ;;                                                :server server})))
-              )
-            (when (and (= status :up) (not (iface-config-equals-current-config? (gen-iface-config :default-static network-options))))
-              (log/debug ::run-checker "Network is up again, lets shutdown the webserver")
-              (component/stop @webserver)
-              (reset! webserver nil))))
-
-        (Thread/sleep sleep-timer)))))
-
-(defrecord Network [started? network-up? data]
-  component/Lifecycle
-  (start [this]
-    (if started?
-      this
-      (let [server (atom nil)
-            network-up? (atom true)]
-        (log/info "Starting Network detection")
-        (reset! run-checker? true)
-        (assoc this
-               :data (atom {:future (run-checker config)})
-               :network-up? network-up?
-               :started? true))))
-  (stop [this]
-    (if-not started?
-      this
-      (do (log/info "Stopping Network detection")
-          (reset! network-up? false)
-          (reset! run-checker? false)
-          (future-cancel (:future @(:data this)))
-          (assoc this
-                 :started? false)))))
-
-(defn network [settings]
-  (map->Network settings))
-
 
 (comment
 
   (check-network-status-return-code "curl http://127.0.0.1:3000/health")
   (set-network! {})
 
-  (def server (atom nil))
-  (def webserver (atom nil))
-  (let [webserver-settings {:ip "0.0.0.0"
-                            :port 8080
-                            :thread 1}]
-    (reset! webserver
-            (component/start (webserver/webserver {:config webserver-settings
-                                                   :set-network! set-network!
-                                                   :server server}))))
-  (component/stop @webserver)
-  (get-in config [:network :check-network-status-ping-cmd])
-
-  (def network-manager (atom nil))
-  (reset! network-manager (component/start (network (get-in config [:network]))))
-  (component/stop @network-manager)
   (check-network-status-ping "ping -c 3 google.com")
   )
