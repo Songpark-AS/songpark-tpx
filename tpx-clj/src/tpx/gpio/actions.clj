@@ -5,10 +5,10 @@
 
 (defn get-settings []
   {:context {:set-network! set-network!}
-   :buttons (atom {:button/push1
-                   (fn [{:keys [delay set-network!]}]
-                     (log/debug "Pressed :button/push1" {:delay delay})
-                     ;; when the delay is larger than 5 seconds or otherwise
-                     ;; we set the network to use DHCP again
-                     (when (> delay (get-in config [:network :button-delay] 5000))
-                       (set-network! {:dhcp? true})))})})
+   :buttons {:button/push1
+             (fn [{:keys [delay set-network!]}]
+               (log/debug "Pressed :button/push1" {:delay delay})
+               ;; when the delay is larger than 5 seconds or otherwise
+               ;; we set the network to use DHCP again
+               (when (> delay (get-in config [:network :button-delay] 5000))
+                 (set-network! {:dhcp? true})))}})
