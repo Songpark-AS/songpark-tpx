@@ -2,10 +2,30 @@
   (:require [com.stuartsierra.component :as component]
             [clojure.set :as set]
             [helins.linux.gpio :as gpio]
-            [taoensso.timbre :as log])
+            [taoensso.timbre :as log]
+            [tpx.gpio.bitbang :as bitbang])
   ;; AutoCloseable needs to be imported, otherwise the with-open macro hangs
   (:import [java.lang AutoCloseable]))
 
+(defn bitbang-write [gpio register data-to-write]
+  (let [handle (:handle-write gpio)
+        buffer (:buffer-write gpio)]
+    (bitbang/bit-write register data-to-write handle buffer)))
+
+(defn bitbang-read
+  ([gpio register]
+   (bitbang-read gpio register true))
+  ([gpio register decimal?]
+   (let [{:keys [handle-write handle-read
+                 buffer-write buffer-read]} gpio
+         result (bitbang/bit-reader register
+                                    handle-write
+                                    handle-read
+                                    buffer-write
+                                    buffer-read)]
+     (if decimal?
+       (bitbang/convert-from-binary result)
+       result))))
 
 (def ^:private on-off-map {:on false :off true})
 (defn set-led [{:keys [handle-write buffer-write leds] :as gpio} led on-off-value]

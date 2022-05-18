@@ -19,11 +19,14 @@
         (sync-platform!))
     (log/debug ::teleporter-cmd-gain-wrong-teleporter {:teleporter/id id})))
 
-(defmethod handle-message :teleporter.cmd/relay [{:teleporter/keys [id relay value] :keys [mqtt-client]}]
+
+;; 48v on/off
+(defmethod handle-message :teleporter.cmd/relay [{:teleporter/keys [id relay value]
+                                                   :keys [gpio mqtt-client]}]
   (if (data/same-tp? id)
     (do (log/debug ::teleporter-cmd-relay {:relay relay
                                            :value value})
-        (analog/write-relay relay value)
+        (analog/write-relay gpio relay value)
         (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/relay
                                                         :teleporter/id id
                                                         :teleporter/relay relay

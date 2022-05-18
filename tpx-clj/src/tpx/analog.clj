@@ -3,7 +3,8 @@
   (:require [clojure.set :refer [map-invert]]
             [codax.core :as codax]
             [taoensso.timbre :as log]
-            [tpx.database :refer [db]]))
+            [tpx.database :refer [db]]
+            [tpx.gpio :as gpio]))
 
 
 
@@ -11,6 +12,19 @@
 ;; Address 11H, 19H, 21H, 29H and 34H (GAIN) (Write data)
 ;; Address 34H (RELAYS) (Write data)
 ;; Thats what Christian needs to use for testing the analog card at this stage
+
+;; RELAYS - 34H:
+;; D0 - REL0 - RELAY K1/K1 - HZCLN - (HIGH-Z_COMBO_LEFT)
+;; D1 - REL1 - RELAY K2/K2 - HZCRN - (HIGH-Z_COMBO_RIGHT)
+;; D2 - REL2 - RELAY K3/K4 - MUTEHDN - (~MUTE_HEADPHONES)
+;; D3 - REL3 - RELAY K4/K5 - MUTEUBLN - (~MUTE_UNBALANCED_LINE_OUT)
+;; D4 - REL4 - RELAY K5/K6 - MUTEBLN - (~MUTE_BALANCED_LINE_OUT)
+;; D5 - REL5 - RELAY K6/K3 - R48VPWRN - (48V_Ph_PWR)
+;; D6 - 0
+;; D7 - 0
+;; 0 = RELAY OFF
+;; 1 = RELAY ON
+;; Kx(PCB-Rev0)/Kx(PCB-Rev1)
 
 
 (def registers {:analog/gain0 0x11 ;; sits on PGA-0
@@ -49,7 +63,7 @@
 
 (def relays-to-bits (map-invert bits-to-relays))
 
-(defn write-relay [relay-position value]
+(defn write-relay [gpio relay-position value]
   (log/debug ::write-relay relay-position value)
   (let [value-bits (or (codax/get-at! @db [:analog/relays])
                        (vec (repeat 8 0)))

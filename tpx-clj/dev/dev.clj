@@ -37,6 +37,8 @@
   ;; useful for multithreaded environments, as not every log is printed to stdout
   (start-logging)
 
+
+
   (codax/assoc-at! @db [:test :foo] :bar)
   (codax/get-at! @db [:test :foo])
   )
