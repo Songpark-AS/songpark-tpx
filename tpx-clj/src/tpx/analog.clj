@@ -4,7 +4,8 @@
             [codax.core :as codax]
             [taoensso.timbre :as log]
             [tpx.database :refer [db]]
-            [tpx.gpio :as gpio]))
+            [tpx.gpio :as gpio]
+            [tpx.gpio.bitbang :refer [convert-from-binary]]))
 
 
 
@@ -35,7 +36,8 @@
                 })
 
 ;; Values comes from the HW team
-;; The value we read from a Gain register go through this mapping and you would get a corresponding dB value
+;; The value we read from a Gain register go through this mapping and
+;; you would get a corresponding dB value
 (def gain-mappings (->> (map vector
                              [0, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
                               22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
@@ -65,31 +67,49 @@
 
 (defn write-relay [gpio relay-position value]
   (log/debug ::write-relay relay-position value)
-  (let [value-bits (or (codax/get-at! @db [:analog/relays])
+  (let [value (if (boolean? value)
+                (boolean-to-bits value)
+                value)
+        value-bits (or (codax/get-at! @db [:analog/relays])
                        (vec (repeat 8 0)))
         position (if (keyword? relay-position)
                    (relays-to-bits relay-position)
                    relay-position)
         reversed-relay-position (dec (Math/abs (- 8 position)))
-        value-to-write (assoc value-bits reversed-relay-position (boolean-to-bits value))
+        value-to-write (assoc value-bits reversed-relay-position value)
         register (:analog/relays registers)]
     (codax/assoc-at! @db [:analog/relays] value-to-write)
+    (gpio/bitbang-write gpio 0x34 (convert-from-binary value-to-write))
     (log/debug "Writing to relay" {:relay-position relay-position
                                    :value value-to-write
                                    :register register})))
 
 (defn write-gain
   "Write the gain"
-  [gain value]
-  (let [register (registers gain)]
-    (codax/assoc-at! @db gain value)
-    (log/debug "Write gain" {:register register
-                             :gain gain
-                             :value value})))
+  [gpio gain value]
+  (codax/assoc-at! @db gain value)
+  (log/debug "Write gain" {:gain gain
+                           :value value})
+  (cond (= gain :analog/left-gain)
+        (do (gpio/bitbang-write gpio (registers :analog/gain0) value)
+            (gpio/bitbang-write gpio (registers :analog/gain1) value))
+
+        (= gain :analog/right-gain)
+        (do (gpio/bitbang-write gpio (registers :analog/gain2) value)
+            (gpio/bitbang-write gpio (registers :analog/gain3) value))
+
+        :else
+        (gpio/bitbang-write gpio (registers gain) value)))
 
 (defn read-gain
   "Read the gain"
-  [gain]
-  (let [register (registers gain)]
-    (log/debug "Read gain" {:register register
-                            :gain gain})))
+  [gpio gain]
+  (log/debug "Read gain" {:gain gain})
+  (cond (= gain :analog/left-gain)
+        (gpio/bitbang-read gpio (registers :analog/gain0))
+
+        (= gain :analog/right-gain)
+        (gpio/bitbang-read gpio (registers :analog/gain2))
+
+        :else
+        (gpio/bitbang-read gpio (registers gain))))
