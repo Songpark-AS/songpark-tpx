@@ -82,7 +82,7 @@
     (gpio/bitbang-write gpio 0x34 (convert-from-binary value-to-write))
     (log/debug "Writing to relay" {:relay-position relay-position
                                    :value value-to-write
-                                   :register register})))
+                                   :register (format "0x%X" register)})))
 
 
 ;; the actual range from the HW folks are 8 to 63
