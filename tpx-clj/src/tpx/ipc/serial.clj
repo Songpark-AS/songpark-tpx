@@ -80,7 +80,7 @@
 (comment
 
   (log/debug @config)
-  
+
   (connect-to-port {:mycontext true} {:sip-call-started #'ipc.handler/handle-sip-call-started
                                       :sip-call-stopped #'ipc.handler/handle-sip-call-stopped
                                       :sip-registered #'ipc.handler/handle-sip-registered
@@ -88,12 +88,12 @@
                                       :gain-input-global-gain #'ipc.handler/handle-gain-input-global-gain
                                       :gain-input-left-gain #'ipc.handler/handle-gain-input-left-gain
                                       :gain-input-right-gain #'ipc.handler/handle-gain-input-right-gain} (:pts @config))
-  
+
 
   (send-command (:port @config) "vol" 100)
   (send-command (:port @config) "m" "")
   (send-command (:port @config) "\n" "")
-  
+
   (send-command (:port @config) "sip:9115@voip1.inonit.no" "")
   (send-command (:port @config) "h" "")
   (send-command (:port @config) "h" "sip:9115@voip1.inonit.no")
@@ -105,4 +105,3 @@
   (swap! config assoc :pts "/dev/ttys013")
 
   )
-

@@ -15,10 +15,11 @@
   (if (data/same-tp? id)
     (do (log/debug ::set-global-volume {:volume volume})
         (tpx.ipc/command ipc :volume/global-volume volume)
-        (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/global-volume
-                                                        :teleporter/id id
-                                                        :teleporter/global-volume volume})
-        (sync-platform!))
+        (sync-platform! {:mqtt-client mqtt-client
+                         :topic (broadcast-topic id)
+                         :message {:message/type :teleporter/global-volume
+                                   :teleporter/id id
+                                   :teleporter/global-volume volume}}))
     (log/debug ::set-global-volume-wrong-teleporter {:teleporter/id id
                                                      :volume volume})))
 
@@ -28,10 +29,11 @@
     (do
       (log/debug ::set-local-volume {:volume volume})
       (tpx.ipc/command ipc :volume/local-volume volume)
-      (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/local-volume
-                                                      :teleporter/id id
-                                                      :teleporter/local-volume volume})
-      (sync-platform!))
+      (sync-platform! {:mqtt-client mqtt-client
+                       :topic (broadcast-topic id)
+                       :message {:message/type :teleporter/local-volume
+                                 :teleporter/id id
+                                 :teleporter/local-volume volume}}))
     (log/debug :set-local-volume-wrong-teleporter {:teleporter/id id
                                                    :volume volume})))
 
@@ -41,10 +43,11 @@
     (do
       (log/debug ::set-network-volume {:volume volume})
       (tpx.ipc/command ipc :volume/network-volume volume)
-      (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/network-volume
-                                                      :teleporter/id id
-                                                      :teleporter/network-volume volume})
-      (sync-platform!))
+      (sync-platform! {:mqtt-client mqtt-client
+                       :topic (broadcast-topic id)
+                       :message {:message/type :teleporter/network-volume
+                                 :teleporter/id id
+                                 :teleporter/network-volume volume}}))
     (log/debug :set-network-volume-wrong-teleporter {:teleporter/id id
                                                      :volume volume})))
 
@@ -64,10 +67,11 @@
     (do
       (log/debug ::set-playout-delay playout-delay)
       (tpx.ipc/command ipc :jam/playout-delay playout-delay)
-      (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/playout-delay
-                                                      :teleporter/id id
-                                                      :teleporter/playout-delay playout-delay})
-      (sync-platform!))
+      (sync-platform! {:mqtt-client mqtt-client
+                       :topic (broadcast-topic id)
+                       :message {:message/type :teleporter/playout-delay
+                                 :teleporter/id id
+                                 :teleporter/playout-delay playout-delay}}))
     (log/debug ::set-playout-delay-wrong-teleporter {:teleporter/id id})))
 
 (defmethod handle-message :teleporter.cmd/report-network-config [{:keys [mqtt-client]}]
@@ -77,7 +81,10 @@
   (if (data/same-tp? id)
     (do
       (log/debug "Got new IPv4 config" network-values)
-      (set-network! (clojure.set/rename-keys network-values {:ip/address :ip :ip/gateway :gateway :ip/subnet :netmask :ip/dhcp? :dhcp?}))
+      (set-network! (clojure.set/rename-keys network-values {:ip/address :ip
+                                                             :ip/gateway :gateway
+                                                             :ip/subnet :netmask
+                                                             :ip/dhcp? :dhcp?}))
       (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/net-config-report
                                                       :teleporter/id id
                                                       :teleporter/network-config network-values}))

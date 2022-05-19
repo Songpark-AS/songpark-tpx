@@ -1,6 +1,8 @@
 (ns tpx.init
   (:require [com.stuartsierra.component :as component]
             [songpark.common.communication :refer [PUT]]
+            [tpx.gpio :as gpio]
+            [tpx.gpio.actions :as gpio.actions]
             [songpark.jam.tpx :as jam.tpx]
             [songpark.mqtt :as mqtt]
             [songpark.mqtt.util :refer [teleporter-topic]]
@@ -53,7 +55,7 @@
                                 (into [:logger logger
                                        :mqtt-client mqtt-client
                                        :config core-config
-                                       :network (network/network (:network config))
+                                       :gpio (gpio/get-gpio (gpio.actions/get-settings))
                                        :database db
                                        :ipc (component/using (ipc/ipc-service {:config (:ipc config)})
                                                              [:mqtt-client :database])
@@ -69,6 +71,7 @@
          ;; injections of ipc and jam first
          (mqtt/add-injection mqtt-client :ipc ipc)
          (mqtt/add-injection mqtt-client :jam jam)
+         (mqtt/add-injection mqtt-client :gpio (:gpio @system))
          ;; add topic of its own id
          (log/info "Subscribing to teleporter topic")
          (mqtt/subscribe mqtt-client {(teleporter-topic id) 2})))
@@ -109,8 +112,8 @@
            (stop)))))))
 
 
-(comment 
-  
+(comment
+
   (stop)
   (init)
 

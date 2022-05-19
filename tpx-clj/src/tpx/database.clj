@@ -17,10 +17,12 @@
                       :volume/network-volume
                       :volume/local-volume
                       :jam/playout-delay
-                      :analog/gain0
-                      :analog/gain1
-                      :analog/gain2
-                      :analog/gain3
+                      :analog/left-gain
+                      :analog/right-gain
+                      ;; :analog/gain0
+                      ;; :analog/gain1
+                      ;; :analog/gain2
+                      ;; :analog/gain3
                       :analog/relays])]
       (-> values
           (dissoc :analog/relays)

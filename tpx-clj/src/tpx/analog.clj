@@ -3,7 +3,9 @@
   (:require [clojure.set :refer [map-invert]]
             [codax.core :as codax]
             [taoensso.timbre :as log]
-            [tpx.database :refer [db]]))
+            [tpx.database :refer [db]]
+            [tpx.gpio :as gpio]
+            [tpx.gpio.bitbang :refer [convert-from-binary]]))
 
 
 
@@ -11,6 +13,19 @@
 ;; Address 11H, 19H, 21H, 29H and 34H (GAIN) (Write data)
 ;; Address 34H (RELAYS) (Write data)
 ;; Thats what Christian needs to use for testing the analog card at this stage
+
+;; RELAYS - 34H:
+;; D0 - REL0 - RELAY K1/K1 - HZCLN - (HIGH-Z_COMBO_LEFT)
+;; D1 - REL1 - RELAY K2/K2 - HZCRN - (HIGH-Z_COMBO_RIGHT)
+;; D2 - REL2 - RELAY K3/K4 - MUTEHDN - (~MUTE_HEADPHONES)
+;; D3 - REL3 - RELAY K4/K5 - MUTEUBLN - (~MUTE_UNBALANCED_LINE_OUT)
+;; D4 - REL4 - RELAY K5/K6 - MUTEBLN - (~MUTE_BALANCED_LINE_OUT)
+;; D5 - REL5 - RELAY K6/K3 - R48VPWRN - (48V_Ph_PWR)
+;; D6 - 0
+;; D7 - 0
+;; 0 = RELAY OFF
+;; 1 = RELAY ON
+;; Kx(PCB-Rev0)/Kx(PCB-Rev1)
 
 
 (def registers {:analog/gain0 0x11 ;; sits on PGA-0
@@ -21,7 +36,8 @@
                 })
 
 ;; Values comes from the HW team
-;; The value we read from a Gain register go through this mapping and you would get a corresponding dB value
+;; The value we read from a Gain register go through this mapping and
+;; you would get a corresponding dB value
 (def gain-mappings (->> (map vector
                              [0, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
                               22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
@@ -49,34 +65,66 @@
 
 (def relays-to-bits (map-invert bits-to-relays))
 
-(defn write-relay [relay-position value]
+(defn write-relay [gpio relay-position value]
   (log/debug ::write-relay relay-position value)
-  (let [value-bits (or (codax/get-at! @db [:analog/relays])
+  (let [value (if (boolean? value)
+                (boolean-to-bits value)
+                value)
+        value-bits (or (codax/get-at! @db [:analog/relays])
                        (vec (repeat 8 0)))
         position (if (keyword? relay-position)
                    (relays-to-bits relay-position)
                    relay-position)
         reversed-relay-position (dec (Math/abs (- 8 position)))
-        value-to-write (assoc value-bits reversed-relay-position (boolean-to-bits value))
+        value-to-write (assoc value-bits reversed-relay-position value)
         register (:analog/relays registers)]
     (codax/assoc-at! @db [:analog/relays] value-to-write)
+    (gpio/bitbang-write gpio 0x34 (convert-from-binary value-to-write))
     (log/debug "Writing to relay" {:relay-position relay-position
                                    :value value-to-write
-                                   :register register})))
+                                   :register (format "0x%X" register)})))
+
+
+;; the actual range from the HW folks are 8 to 63
+;; with 0 being a special value
+;; if it's zero we pass along as is, where as anything that is non-zero
+;; we add 8 to it
+;; this has the peculiar effect that the front end has a range of 0 to 56,
+;; and on the TPX the range is 0, 8-63
+(def ^:private gain-jump 8)
 
 (defn write-gain
   "Write the gain"
-  [gain value]
-  (let [register (registers gain)]
+  [gpio gain value]
+  (let [value (if (zero? value)
+                value
+                (+ value gain-jump))]
     (codax/assoc-at! @db gain value)
-    (log/debug "Write gain" {:register register
-                             :gain gain
+    (log/debug "Write gain" {:gain gain
                              :value value})
-    ))
+    (cond (= gain :analog/left-gain)
+          (do (gpio/bitbang-write gpio (registers :analog/gain0) value)
+              (gpio/bitbang-write gpio (registers :analog/gain1) value))
+
+          (= gain :analog/right-gain)
+          (do (gpio/bitbang-write gpio (registers :analog/gain2) value)
+              (gpio/bitbang-write gpio (registers :analog/gain3) value))
+
+          :else
+          (gpio/bitbang-write gpio (registers gain) value))))
 
 (defn read-gain
   "Read the gain"
-  [gain]
-  (let [register (registers gain)]
-    (log/debug "Read gain" {:register register
-                            :gain gain})))
+  [gpio gain]
+  (log/debug "Read gain" {:gain gain})
+  (let [value (cond (= gain :analog/left-gain)
+                    (gpio/bitbang-read gpio (registers :analog/gain0))
+
+                    (= gain :analog/right-gain)
+                    (gpio/bitbang-read gpio (registers :analog/gain2))
+
+                    :else
+                    (gpio/bitbang-read gpio (registers gain)))]
+    (if (zero? value)
+      value
+      (+ value gain-jump))))
