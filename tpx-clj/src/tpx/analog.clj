@@ -84,32 +84,47 @@
                                    :value value-to-write
                                    :register register})))
 
+
+;; the actual range from the HW folks are 8 to 63
+;; with 0 being a special value
+;; if it's zero we pass along as is, where as anything that is non-zero
+;; we add 8 to it
+;; this has the peculiar effect that the front end has a range of 0 to 56,
+;; and on the TPX the range is 0, 8-63
+(def ^:private gain-jump 8)
+
 (defn write-gain
   "Write the gain"
   [gpio gain value]
-  (codax/assoc-at! @db gain value)
-  (log/debug "Write gain" {:gain gain
-                           :value value})
-  (cond (= gain :analog/left-gain)
-        (do (gpio/bitbang-write gpio (registers :analog/gain0) value)
-            (gpio/bitbang-write gpio (registers :analog/gain1) value))
+  (let [value (if (zero? value)
+                value
+                (+ value gain-jump))]
+    (codax/assoc-at! @db gain value)
+    (log/debug "Write gain" {:gain gain
+                             :value value})
+    (cond (= gain :analog/left-gain)
+          (do (gpio/bitbang-write gpio (registers :analog/gain0) value)
+              (gpio/bitbang-write gpio (registers :analog/gain1) value))
 
-        (= gain :analog/right-gain)
-        (do (gpio/bitbang-write gpio (registers :analog/gain2) value)
-            (gpio/bitbang-write gpio (registers :analog/gain3) value))
+          (= gain :analog/right-gain)
+          (do (gpio/bitbang-write gpio (registers :analog/gain2) value)
+              (gpio/bitbang-write gpio (registers :analog/gain3) value))
 
-        :else
-        (gpio/bitbang-write gpio (registers gain) value)))
+          :else
+          (gpio/bitbang-write gpio (registers gain) value))))
 
 (defn read-gain
   "Read the gain"
   [gpio gain]
   (log/debug "Read gain" {:gain gain})
-  (cond (= gain :analog/left-gain)
-        (gpio/bitbang-read gpio (registers :analog/gain0))
+  (let [value (cond (= gain :analog/left-gain)
+                    (gpio/bitbang-read gpio (registers :analog/gain0))
 
-        (= gain :analog/right-gain)
-        (gpio/bitbang-read gpio (registers :analog/gain2))
+                    (= gain :analog/right-gain)
+                    (gpio/bitbang-read gpio (registers :analog/gain2))
 
-        :else
-        (gpio/bitbang-read gpio (registers gain))))
+                    :else
+                    (gpio/bitbang-read gpio (registers gain)))]
+    (if (zero? value)
+      value
+      (+ value gain-jump))))
