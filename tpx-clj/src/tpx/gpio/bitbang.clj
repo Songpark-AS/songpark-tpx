@@ -1,5 +1,6 @@
 (ns tpx.gpio.bitbang
-  (:require [helins.linux.gpio :as gpio])
+  (:require [helins.linux.gpio :as gpio]
+            [taoensso.timbre :as log])
   (:import [java.lang AutoCloseable]))
 
 ;; IMPORTANT INFO FOR SOFTWARE DEVELOPERS
@@ -45,14 +46,53 @@
 
 (defn- generate-cmd-str
   "generates the Instruction that will be provided sent to FPGA"
-  [op register value]
-  (let [rw-bits (if (= :read op)
-                  [0 0]
-                  [0 1])
-        bits (concat rw-bits (get-data-address-bits register 6) (get-data-address-bits value 8))]
-    ;; once we have the bits, we need to convert them to true and false,
-    ;; as the GPIO library we use operates with booleans, and not 1 and 0
-    (map {0 false 1 true} bits)))
+  [op cmd ?sub-cmd-value & [?value]]
+  (let [[_ op-bit :as cmd-bits] (get-data-address-bits cmd 8)
+        sub-cmd (if ?value
+                  ?sub-cmd-value
+                  nil)
+        value (if-not ?value
+                ?sub-cmd-value
+                ?value)
+        sub-cmd-bits (if sub-cmd
+                       (get-data-address-bits sub-cmd 8)
+                       nil)
+        value-bits (get-data-address-bits value 8)
+        bits (concat cmd-bits
+                     sub-cmd-bits
+                     value-bits)]
+    (cond
+      (and (= op :read) (= op-bit 1))
+      (throw (ex-info "Operation should be read, but the R/W bit is set to 1"
+                      {:op op
+                       :cmd cmd
+                       :cmd-bits cmd-bits
+                       :value value
+                       :value-bits value-bits
+                       :bits bits}))
+      (and (= op :write) (= op-bit 0))
+      (throw (ex-info "Operation should be write, but the R/W bit is set to 0"
+                      {:op op
+                       :cmd cmd
+                       :cmd-bits cmd-bits
+                       :value value
+                       :value-bits value-bits
+                       :bits bits}))
+      :else
+      ;; once we have the bits, we need to convert them to true and false,
+      ;; as the GPIO library we use operates with booleans, and not 1 and 0
+      (map {0 false 1 true} bits))))
+
+(defn- debug-cmd-str [bits]
+  (let [[ca op r5 r4 r3 r2 r1 r0 & data]
+        (->> bits
+             (map {false 0 true 1}))]
+    (log/debug
+     ::debug-cmd-str
+     {:ca ca
+      :op op
+      :relay [r5 r4 r3 r2 r1 r0]
+      :data data})))
 
 (defn- sleep [^Long delay]
   (let [start ^Long (System/nanoTime)]
@@ -60,15 +100,17 @@
 
 (defn bit-reader
   "Function that will pass and value to the FPGA and read the result"
-  [register handle-write handle-read buffer-write buffer-read]
+  [handle-write handle-read buffer-write buffer-read cmd]
   (let [high true
         low false
         out (atom [])
-        bits {false 0 true 1}]
+        bits {false 0 true 1}
+        cmd-bits (generate-cmd-str :read cmd 0)]
+    (debug-cmd-str cmd-bits)
     (gpio/write handle-write
                 (gpio/set-line+ buffer-write {:chip-select low}))
     ;; --
-    (doseq [bit (generate-cmd-str :read register 0)]
+    (doseq [bit cmd-bits]
       (gpio/write handle-write
                   (gpio/set-line+ buffer-write {:mosi bit}))
       (gpio/read handle-read buffer-read)
@@ -89,29 +131,33 @@
 
 (defn bit-read
   "Function that will return the FPGA value as decimal it uses bit reader"
-  [register {:keys [chip-select clock mosi miso]}]
-  (convert-from-binary (bit-reader register chip-select clock miso mosi)))
+  [{:keys [chip-select clock mosi miso]} cmd]
+  (convert-from-binary (bit-reader chip-select clock miso mosi cmd)))
 
 (defn bit-write
   "Function that will pass values over to the FPGA via bit banging"
-  [register data-to-write handle buffer]
-  (let [high true
-        low false]
-    (gpio/write handle
-                (gpio/set-line+ buffer {:chip-select low}))
-    (doseq [bit (generate-cmd-str :write register data-to-write)]
-      (gpio/write handle
-                  (gpio/set-line+ buffer {:mosi bit}))
-      (sleep 100)
-      (gpio/write handle
-                  (gpio/set-line+ buffer {:clock high}))
-      (sleep 100)
-      (gpio/write handle
-                  (gpio/set-line+ buffer {:clock low}))
-      (sleep 100))
-    (sleep 100)
-    (gpio/write handle
-                (gpio/set-line+ buffer {:chip-select high}))))
+  ([handle buffer cmd value]
+   (bit-write handle buffer cmd nil value))
+  ([handle buffer cmd sub-cmd value]
+   (let [high true
+         low false
+         cmd-bits (generate-cmd-str :write cmd sub-cmd value)]
+     (debug-cmd-str cmd-bits)
+     (gpio/write handle
+                 (gpio/set-line+ buffer {:chip-select low}))
+     (doseq [bit cmd-bits]
+       (gpio/write handle
+                   (gpio/set-line+ buffer {:mosi bit}))
+       (sleep 100)
+       (gpio/write handle
+                   (gpio/set-line+ buffer {:clock high}))
+       (sleep 100)
+       (gpio/write handle
+                   (gpio/set-line+ buffer {:clock low}))
+       (sleep 100))
+     (sleep 100)
+     (gpio/write handle
+                 (gpio/set-line+ buffer {:chip-select high})))))
 
 
 (comment

@@ -7,22 +7,25 @@
   ;; AutoCloseable needs to be imported, otherwise the with-open macro hangs
   (:import [java.lang AutoCloseable]))
 
-(defn bitbang-write [gpio register data-to-write]
-  (let [handle (:handle-write gpio)
-        buffer (:buffer-write gpio)]
-    (bitbang/bit-write register data-to-write handle buffer)))
+(defn bitbang-write
+  ([gpio cmd value]
+   (bitbang-write gpio cmd nil value))
+  ([gpio cmd sub-cmd value]
+   (let [handle (:handle-write gpio)
+         buffer (:buffer-write gpio)]
+     (bitbang/bit-write handle buffer cmd sub-cmd value))))
 
 (defn bitbang-read
-  ([gpio register]
-   (bitbang-read gpio register true))
-  ([gpio register decimal?]
+  ([gpio cmd]
+   (bitbang-read gpio cmd true))
+  ([gpio cmd decimal?]
    (let [{:keys [handle-write handle-read
                  buffer-write buffer-read]} gpio
-         result (bitbang/bit-reader register
-                                    handle-write
+         result (bitbang/bit-reader handle-write
                                     handle-read
                                     buffer-write
-                                    buffer-read)]
+                                    buffer-read
+                                    cmd)]
      (if decimal?
        (bitbang/convert-from-binary result)
        result))))
