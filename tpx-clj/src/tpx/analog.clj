@@ -14,7 +14,7 @@
 ;; Address 34H (RELAYS) (Write data)
 ;; Thats what Christian needs to use for testing the analog card at this stage
 
-;; RELAYS - 34H:
+;; RELAYS - 0x48:
 ;; D0 - REL0 - RELAY K1/K1 - HZCLN - (HIGH-Z_COMBO_LEFT)
 ;; D1 - REL1 - RELAY K2/K2 - HZCRN - (HIGH-Z_COMBO_RIGHT)
 ;; D2 - REL2 - RELAY K3/K4 - MUTEHDN - (~MUTE_HEADPHONES)
@@ -27,12 +27,21 @@
 ;; 1 = RELAY ON
 ;; Kx(PCB-Rev0)/Kx(PCB-Rev1)
 
+;; CMD(W): CS-PG0 - 0x40
+;; CMD(W): CS-PG1 - 0x42
+;; CMD(W): CS-PG2 - 0x44
+;; CMD(W): CS-PG3 - 0x46
+;; CMD(W): CS-RELAY - 0x48
+;; CMD(R): CS-OVF - 0x0A
 
-(def registers {:analog/gain0 0x11 ;; sits on PGA-0
-                :analog/gain1 0x19 ;; sits on PGA-1
-                :analog/gain2 0x21 ;; sits on PGA-2
-                :analog/gain3 0x29 ;; sits on PGA-3
-                :analog/relays 0x34 ;; sits on DAC-2
+
+(def registers {:analog/gain0 0x44 ;; sits on PGA-2
+                :analog/gain1 0x46 ;; sits on PGA-3
+                :analog/gain2 0x40 ;; sits on PGA-0
+                :analog/gain3 0x42 ;; sits on PGA-1
+                :analog/relays 0x48 ;; sits on DAC-2
+                :analog/input 0x4C
+                :analog/overflow 0x0A
                 })
 
 ;; Values comes from the HW team
@@ -56,14 +65,16 @@
 
 (def bits-to-boolean (map-invert boolean-to-bits))
 
-(def bits-to-relays {0 :analog/relay0
-                     1 :analog/relay1
-                     2 :analog/relay2
-                     3 :analog/relay3
-                     4 :analog/relay4
-                     5 :analog/relay5})
+(def bits-to-relays {0 :analog/relay0 ;; RELAY K1 - HZCLN = GND - ON - (HIGH-Z_COMBO_LEFT) P51
+                     1 :analog/relay1 ;; RELAY K2 - HZCRN = GND - ON - (HIGH-Z_COMBO_RIGHT) P55
+                     2 :analog/relay2 ;; RELAY K3 - MUTEHDN = GND - ON - (~MUTE_HEADPHONES) P74
+                     3 :analog/relay3 ;; RELAY K4 - MUTEUBLN = GND - ON - (~MUTE_UNBALANCED_LINE_OUT) P66
+                     4 :analog/relay4 ;; RELAY K5 - MUTEBLN = GND - ON - (~MUTE_BALANCED_LINE_OUT) P61
+                     5 :analog/relay5 ;; RELAY K6 - R48VPWRN = VCC - OFF - P1 (48V_Ph_PWR) P1
+                     })
 
-(def relays-to-bits (map-invert bits-to-relays))
+(def relays-to-bits (assoc (map-invert bits-to-relays)
+                           :analog.relay/r48v 5))
 
 (defn write-relay [gpio relay-position value]
   (log/debug ::write-relay relay-position value)
@@ -79,11 +90,61 @@
         value-to-write (assoc value-bits reversed-relay-position value)
         register (:analog/relays registers)]
     (codax/assoc-at! @db [:analog/relays] value-to-write)
-    (gpio/bitbang-write gpio 0x34 (convert-from-binary value-to-write))
+    (gpio/bitbang-write gpio
+                        (:analog/relays registers)
+                        (convert-from-binary value-to-write))
     (log/debug "Writing to relay" {:relay-position relay-position
                                    :value value-to-write
                                    :register (format "0x%X" register)})))
 
+(defn- get-relay-position [relay]
+  (dec (Math/abs (- 8 relay))))
+
+(defn- get-relay-value [new old]
+  (let [value (if (some? new)
+                new
+                old)]
+    (if (boolean? value)
+      (boolean-to-bits value)
+      value)))
+
+(defn write-relays [gpio data]
+  (log/debug ::write-relays data)
+  (let [{new-value0 :analog/relay0
+         new-value1 :analog/relay1
+         new-value2 :analog/relay2
+         new-value3 :analog/relay3
+         new-value4 :analog/relay4
+         new-value5 :analog/relay5} data
+        [_
+         _
+         old-value5
+         old-value4
+         old-value3
+         old-value2
+         old-value1
+         old-value0
+         :as value-bits] (or (codax/get-at! @db [:analog/relays])
+                         (vec (repeat 8 0)))
+        ;; position (if (keyword? relay-position)
+        ;;            (relays-to-bits relay-position)
+        ;;            relay-position)
+        ;; reversed-relay-position (dec (Math/abs (- 8 position)))
+        value-to-write (-> value-bits
+                           (assoc (get-relay-position 5) (get-relay-value new-value5 old-value5))
+                           (assoc (get-relay-position 4) (get-relay-value new-value4 old-value4))
+                           (assoc (get-relay-position 3) (get-relay-value new-value3 old-value3))
+                           (assoc (get-relay-position 2) (get-relay-value new-value2 old-value2))
+                           (assoc (get-relay-position 1) (get-relay-value new-value1 old-value1))
+                           (assoc (get-relay-position 0) (get-relay-value new-value0 old-value0)))
+        register (:analog/relays registers)]
+    (codax/assoc-at! @db [:analog/relays] value-to-write)
+    (gpio/bitbang-write gpio
+                        (:analog/relays registers)
+                        (convert-from-binary value-to-write))
+    (log/debug "Writing to relay" {:data data
+                                   :value-to-write value-to-write
+                                   :register (format "0x%X" register)})))
 
 ;; the actual range from the HW folks are 8 to 63
 ;; with 0 being a special value
@@ -102,16 +163,22 @@
     (codax/assoc-at! @db gain value)
     (log/debug "Write gain" {:gain gain
                              :value value})
-    (cond (= gain :analog/left-gain)
-          (do (gpio/bitbang-write gpio (registers :analog/gain0) value)
-              (gpio/bitbang-write gpio (registers :analog/gain1) value))
+    (cond (= gain :analog/gain0)
+          (gpio/bitbang-write gpio (registers :analog/gain0) 0x12 value)
 
-          (= gain :analog/right-gain)
-          (do (gpio/bitbang-write gpio (registers :analog/gain2) value)
-              (gpio/bitbang-write gpio (registers :analog/gain3) value))
+          (= gain :analog/gain1)
+          (gpio/bitbang-write gpio (registers :analog/gain1) 0x12 value)
+
+          (= gain :analog/gain2)
+          (gpio/bitbang-write gpio (registers :analog/gain2) 0x12 value)
+
+          (= gain :analog/gain3)
+          (gpio/bitbang-write gpio (registers :analog/gain3) 0x12 value)
 
           :else
-          (gpio/bitbang-write gpio (registers gain) value))))
+          (throw (ex-info "Unable to adjust the gain as it is not supported"
+                          {:gain gain
+                           :value value})))))
 
 (defn read-gain
   "Read the gain"
@@ -128,3 +195,23 @@
     (if (zero? value)
       value
       (+ value gain-jump))))
+
+
+;; CMD(W) DATA - I2S SWITCH - CMD(W) = 0x4C
+;; 0x4C 0x00 - 0000 0000 - 0 = LineIn(Con1&2)
+;; 0x4C 0x01 - 0000 0001 - 1 = Combo(3&4)
+
+(defn switch-input [gpio switch which-input]
+  (assert (boolean? which-input) "Which-input must be true or false")
+  (when (= switch :analog/input)
+    (if (false? which-input)
+      ;; set LineIn (Connector 1 & 2)
+      (gpio/bitbang-write gpio (:analog/input registers) 0x00)
+      ;; set Combo (Connector 3&4)
+      (gpio/bitbang-write gpio (:analog/input registers) 0x01)))
+  (when (= switch :analog.input/xlr-jack)
+    (if (false? which-input)
+      (write-relays gpio {:analog/relay0 false
+                          :analog/relay1 false})
+      (write-relays gpio {:analog/relay0 true
+                          :analog/relay1 true}))))

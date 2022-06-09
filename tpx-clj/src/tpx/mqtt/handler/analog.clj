@@ -21,6 +21,20 @@
                                    :teleporter/value value}}))
     (log/debug ::teleporter-cmd-gain-wrong-teleporter {:teleporter/id id})))
 
+(defmethod handle-message :teleporter.cmd/switch [{:teleporter/keys [switch value id]
+                                                   :keys [gpio mqtt-client]}]
+  (if (data/same-tp? id)
+    (do (log/debug ::teleporter-cmd-switch {:swith switch
+                                            :value value})
+        (analog/switch-input gpio switch value)
+        (sync-platform! {:mqtt-client mqtt-client
+                         :topic (broadcast-topic id)
+                         :message {:message/type :teleporter/switch
+                                   :teleporter/id id
+                                   :teleporter/switch switch
+                                   :teleporter/value value}}))
+    (log/debug ::teleporter-cmd-switch-teleporter {:teleporter/id id})))
+
 
 (defmethod handle-message :teleporter.cmd/relay [{:teleporter/keys [id relay value]
                                                   :keys [gpio mqtt-client]}]
