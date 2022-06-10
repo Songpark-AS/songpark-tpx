@@ -61,7 +61,8 @@
                          :jvm-opts ["-Dcom.sun.management.jmxremote"
                                     "-Dcom.sun.management.jmxremote.port=1089"
                                     "-Dcom.sun.management.jmxremote.ssl=false"
-                                    "-Dcom.sun.management.jmxremote.authenticate=false"]}
+                                    "-Dcom.sun.management.jmxremote.authenticate=false"
+                                    "-Djava.rmi.server.hostname=10.100.200.110"]}
              :uberjar {:aot :all
                        :uberjar-name "tpx.jar"
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
