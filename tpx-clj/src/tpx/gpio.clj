@@ -1,41 +1,11 @@
 (ns tpx.gpio
-  (:require [chime.core :as chime]
-            [com.stuartsierra.component :as component]
+  (:require [com.stuartsierra.component :as component]
             [clojure.set :as set]
             [helins.linux.gpio :as gpio]
             [taoensso.timbre :as log]
             [tpx.gpio.bitbang :as bitbang])
   ;; AutoCloseable needs to be imported, otherwise the with-open macro hangs
-  (:import [java.lang AutoCloseable]
-           [java.time Instant Duration]))
-
-
-(defn start-overload-checks [callback ms]
-  (chime/chime-at
-   (chime/periodic-seq (Instant/now)
-                       (Duration/ofMillis ms))
-   (fn [time]
-     (callback time))
-   {:error-handler (fn [e]
-                     (log/error ::start-overload-checks
-                                {:exception e
-                                 :message (ex-message e)
-                                 :data (ex-data e)})
-                     false)}))
-
-;; (def _gpio (:gpio @tpx.init/system))
-;; (def tmp (start-overload-checks (fn [time]
-;;                                   (let [[ovf3+4 ovf1+2] (->> (bitbang-read _gpio 0x0a)
-;;                                                              (bitbang/convert-to-binary)
-;;                                                              (drop 6))]
-;;                                     (when-not (zero? ovf3+4)
-;;                                       (log/debug "Overflow on 3+4"))
-;;                                     (when-not (zero? ovf1+2)
-;;                                       (log/debug "Overflow on 1+2"))))
-;;                                 100))
-
-
-;; (.close tmp)
+  (:import [java.lang AutoCloseable]))
 
 (defn bitbang-write
   ([gpio cmd value]

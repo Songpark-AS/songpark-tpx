@@ -12,6 +12,12 @@
 ;; MISO - Master In Slave Out
 
 
+(defn flag-on? [bit]
+  (not (zero? bit)))
+
+(defn flag-off? [bit]
+  (zero? bit))
+
 (defn convert-to-binary
   [value]
   (map (comp {\1 1 \0 0} char) (Long/toString value 2)))
@@ -84,15 +90,16 @@
       (map {0 false 1 true} bits))))
 
 (defn- debug-cmd-str [bits]
-  (let [[ca op r5 r4 r3 r2 r1 r0 & data]
-        (->> bits
-             (map {false 0 true 1}))]
+  (let [bits-01 (->> bits
+                     (mapv {false 0 true 1}))
+        [ca op r5 r4 r3 r2 r1 r0 & data] bits-01]
     (log/debug
      ::debug-cmd-str
-     {:ca ca
+     {:bits bits-01
+      :ca ca
       :op op
       :relay [r5 r4 r3 r2 r1 r0]
-      :data data})))
+      :data (vec data)})))
 
 (defn- sleep [^Long delay]
   (let [start ^Long (System/nanoTime)]
@@ -106,21 +113,22 @@
         out (atom [])
         bits {false 0 true 1}
         cmd-bits (generate-cmd-str :read cmd 0)]
-    #_(debug-cmd-str cmd-bits)
+    ;; (debug-cmd-str cmd-bits)
     (gpio/write handle-write
                 (gpio/set-line+ buffer-write {:chip-select low}))
     ;; --
     (doseq [bit cmd-bits]
       (gpio/write handle-write
                   (gpio/set-line+ buffer-write {:mosi bit}))
-      (gpio/read handle-read buffer-read)
-      (swap! out conj (get bits (gpio/get-line buffer-read :miso)))
       (sleep 100)
       (gpio/write handle-write
                   (gpio/set-line+ buffer-write {:clock high}))
       (sleep 100)
       (gpio/write handle-write
                   (gpio/set-line+ buffer-write {:clock low}))
+      (sleep 100)
+      (gpio/read handle-read buffer-read)
+      (swap! out conj (get bits (gpio/get-line buffer-read :miso)))
       (sleep 100))
     ;; --
 
@@ -142,7 +150,7 @@
    (let [high true
          low false
          cmd-bits (generate-cmd-str :write cmd sub-cmd value)]
-     #_(debug-cmd-str cmd-bits)
+     ;; (debug-cmd-str cmd-bits)
      (gpio/write handle
                  (gpio/set-line+ buffer {:chip-select low}))
      (doseq [bit cmd-bits]

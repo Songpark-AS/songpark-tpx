@@ -7,6 +7,8 @@
 
   (let [_gpio (:gpio @tpx.init/system)]
     (gpio/bitbang-write _gpio 0x48 (bitbang/convert-from-binary [0 0 0 0 0 0 1 1])))
+  (let [_gpio (:gpio @tpx.init/system)]
+    (gpio/set-led _gpio :led/red :on))
 
   (do
     (let [_gpio (:gpio @tpx.init/system)]
