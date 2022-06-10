@@ -13,9 +13,11 @@
             [tpx.heartbeat :as heartbeat]
             [tpx.ipc :as ipc]
             [tpx.logger :as logger]
+            [tpx.mqtt.handler.analog]
             [tpx.mqtt.handler.jam]
             [tpx.mqtt.handler.teleporter]
-            [tpx.network :as network]))
+            [tpx.network :as network]
+            [tpx.scheduler :as scheduler]))
 
 (defonce system (atom nil))
 
@@ -57,6 +59,8 @@
                                        :config core-config
                                        :gpio (gpio/get-gpio (gpio.actions/get-settings))
                                        :database db
+                                       :scheduler (component/using (scheduler/get-scheduler (:scheduler config))
+                                                                   [:mqtt-client :gpio])
                                        :ipc (component/using (ipc/ipc-service {:config (:ipc config)})
                                                              [:mqtt-client :database])
                                        :jam (component/using (jam.tpx/get-jam (merge {:tp-id id}
