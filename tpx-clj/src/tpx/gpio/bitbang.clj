@@ -106,7 +106,7 @@
         out (atom [])
         bits {false 0 true 1}
         cmd-bits (generate-cmd-str :read cmd 0)]
-    (debug-cmd-str cmd-bits)
+    #_(debug-cmd-str cmd-bits)
     (gpio/write handle-write
                 (gpio/set-line+ buffer-write {:chip-select low}))
     ;; --
@@ -142,7 +142,7 @@
    (let [high true
          low false
          cmd-bits (generate-cmd-str :write cmd sub-cmd value)]
-     (debug-cmd-str cmd-bits)
+     #_(debug-cmd-str cmd-bits)
      (gpio/write handle
                  (gpio/set-line+ buffer {:chip-select low}))
      (doseq [bit cmd-bits]

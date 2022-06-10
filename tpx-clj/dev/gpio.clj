@@ -23,6 +23,7 @@
      :data data})
 
   (let [_gpio (:gpio @tpx.init/system)]
-    (-> (gpio/bitbang-read _gpio 0x0a)
-        (bitbang/convert-to-binary)))
+    (->> (gpio/bitbang-read _gpio 0x0a)
+         (bitbang/convert-to-binary)
+         #_(drop 6)))
  )
