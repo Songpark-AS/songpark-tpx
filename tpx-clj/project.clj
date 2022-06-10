@@ -54,6 +54,14 @@
                    :injections [(require 'spyscope.core)]
                    :plugins [[lein-midje "3.1.3"]
                              [lein-plantuml "0.1.22"]]}
+             :profiling {:source-paths ["src" "dev"]
+                         :resource-paths ["dev-resources" "resources"]
+                         :dependencies [[clj-commons/spyscope "0.1.48"]]
+                         :injections [(require 'spyscope.core)]
+                         :jvm-opts ["-Dcom.sun.management.jmxremote"
+                                    "-Dcom.sun.management.jmxremote.port=1089"
+                                    "-Dcom.sun.management.jmxremote.ssl=false"
+                                    "-Dcom.sun.management.jmxremote.authenticate=false"]}
              :uberjar {:aot :all
                        :uberjar-name "tpx.jar"
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
