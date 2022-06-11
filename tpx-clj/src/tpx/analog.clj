@@ -89,10 +89,10 @@
         reversed-relay-position (dec (Math/abs (- 8 position)))
         value-to-write (assoc value-bits reversed-relay-position value)
         register (:analog/relays registers)]
-    (codax/assoc-at! @db [:analog/relays] value-to-write)
     (gpio/bitbang-write gpio
                         (:analog/relays registers)
                         (convert-from-binary value-to-write))
+    (codax/assoc-at! @db [:analog/relays] value-to-write)
     (log/debug "Writing to relay" {:relay-position relay-position
                                    :value value-to-write
                                    :register (format "0x%X" register)})))
@@ -138,10 +138,10 @@
                            (assoc (get-relay-position 1) (get-relay-value new-value1 old-value1))
                            (assoc (get-relay-position 0) (get-relay-value new-value0 old-value0)))
         register (:analog/relays registers)]
-    (codax/assoc-at! @db [:analog/relays] value-to-write)
     (gpio/bitbang-write gpio
                         (:analog/relays registers)
                         (convert-from-binary value-to-write))
+    (codax/assoc-at! @db [:analog/relays] value-to-write)
     (log/debug "Writing to relay" {:data data
                                    :value-to-write value-to-write
                                    :register (format "0x%X" register)})))
@@ -160,7 +160,6 @@
   (let [value (if (zero? value)
                 value
                 (+ value gain-jump))]
-    (codax/assoc-at! @db gain value)
     (log/debug "Write gain" {:gain gain
                              :value value})
     (cond (= gain :analog/gain0)
@@ -178,7 +177,8 @@
           :else
           (throw (ex-info "Unable to adjust the gain as it is not supported"
                           {:gain gain
-                           :value value})))))
+                           :value value})))
+    (codax/assoc-at! @db gain value)))
 
 (defn read-gain
   "Read the gain"
@@ -208,7 +208,8 @@
       ;; set LineIn (Connector 1 & 2)
       (gpio/bitbang-write gpio (:analog/input registers) 0x00)
       ;; set Combo (Connector 3&4)
-      (gpio/bitbang-write gpio (:analog/input registers) 0x01)))
+      (gpio/bitbang-write gpio (:analog/input registers) 0x01))
+    (codax/assoc-at! @db [:analog/input] which-input))
   (when (= switch :analog.input/xlr-jack)
     (if (false? which-input)
       (write-relays gpio {:analog/relay0 false
