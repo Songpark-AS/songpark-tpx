@@ -25,5 +25,5 @@ else
     umount /dev/loop44p4
 
     dmsetup remove /dev/loop44
-    
+
 fi

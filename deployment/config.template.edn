@@ -18,7 +18,7 @@
  :network {;; configuration directory for network on the linux layer
            :config-dir "/etc/network/interfaces.d/"
            ;; what we use to check if we're online or offline
-           :check-network-status-curl-cmd "curl https://spp.inonit.no/health"
+           :check-network-status-curl-cmd "curl https://broadcast.songpark.com/health"
            ;; sleep timer in milliseconds
            :sleep-timer 60000
            ;; which interface do we interact with
@@ -58,7 +58,7 @@
  :mqtt {:config {;; which schema to use
                  :scheme "tcp"
                  ;; host
-                 :host "spmqtt.inonit.no"
+                 :host "mqtt.songpark.com"
                  ;; port
                  :port 1883
                  ;; connect options
@@ -74,7 +74,7 @@
                                    :password "VAR__MQTT_PASSWORD"}}}
  ;; settings for the component IPC
  :ipc {;; which address is the platform running on
-       :platform "https://spp.inonit.no"
+       :platform "https://broadcast.songpark.com"
        :teleporter {;; what do we tell the platform we are called?
                     :nickname "VAR__TELEPORTER_NICKNAME"}}
  :heartbeat {:timer 60000}}
