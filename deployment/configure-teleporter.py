@@ -211,9 +211,11 @@ def copy_configs_to_teleporter(config_path, songpark_path, root_path):
     copy_file([config_path, SIP_CONFIG],
               [songpark_path, "usr/local/etc", SIP_CONFIG])
     copy_file([config_path, MOTD_TELEPORTER],
-              [root_path, "/etc", "motd.txt"])
+              [root_path, "etc", "motd.txt"])
     copy_file([config_path, HOSTNAME_TELEPORTER],
-              [root_path, "/etc", "hostname"])
+              [root_path, "etc", "hostname"])
+    copy_file([config_path, ETH1_CONFIG],
+              [root_path, "etc/network/interfaces.d", "eth1"])
 
 def copy_configs_to_rpi(config_path, rpi_path):
     copy_file([config_path, AUTHORIZED_KEYS],
