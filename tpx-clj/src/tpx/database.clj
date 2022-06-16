@@ -11,8 +11,10 @@
   (codax/with-read-transaction [@db tx]
     (let [{:keys [analog/relays] :as values}
           (reduce (fn [out k]
-                    (assoc out k (or (codax/get-at tx [k])
-                                     (get-in config [:hardware/default-values k]))))
+                    (let [v (codax/get-at tx [k])]
+                      (assoc out k (if (some? v)
+                                     v
+                                     (get-in config [:hardware/default-values k])))))
                   {} [:volume/global-volume
                       :volume/network-volume
                       :volume/local-volume
@@ -22,15 +24,24 @@
                       :analog/gain1
                       :analog/gain2
                       :analog/gain3
-                      :analog/relays])]
+                      :analog/relays])
+          relay0 (bit-to-boolean (nth relays 7))
+          relay1 (bit-to-boolean (nth relays 6))
+          relay5 (bit-to-boolean (nth relays 2))
+          xlr-jack (if (or (false? relay0)
+                           (false? relay1))
+                     false
+                     true)]
       (-> values
           (dissoc :analog/relays)
-          (assoc :analog/relay0 (bit-to-boolean (nth relays 7)))
-          (assoc :analog/relay1 (bit-to-boolean (nth relays 6)))
-          (assoc :analog/relay2 (bit-to-boolean (nth relays 5)))
-          (assoc :analog/relay3 (bit-to-boolean (nth relays 4)))
-          (assoc :analog/relay4 (bit-to-boolean (nth relays 3)))
-          (assoc :analog/relay5 (bit-to-boolean (nth relays 2)))))))
+          ;; (assoc :analog/relay0 (bit-to-boolean (nth relays 7)))
+          ;; (assoc :analog/relay1 (bit-to-boolean (nth relays 6)))
+          ;; (assoc :analog/relay2 (bit-to-boolean (nth relays 5)))
+          ;; (assoc :analog/relay3 (bit-to-boolean (nth relays 4)))
+          ;; (assoc :analog/relay4 (bit-to-boolean (nth relays 3)))
+          ;; (assoc :analog/relay5 (bit-to-boolean (nth relays 2)))
+          (assoc :analog.relay/r48v relay5)
+          (assoc :analog.input/xlr-jack xlr-jack)))))
 
 
 (defrecord Database [started?]
