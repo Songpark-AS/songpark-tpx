@@ -61,7 +61,7 @@ def get_ip_teleporter(serial_number):
     return BASE_WIREGUARD_IP_RANGE.format(number=get_number(serial_number))
 
 def get_ip_rpi(serial_number):
-    return BASE_WIREGUARD_IP_RANGE.format(number=get_number(serial_number))
+    return BASE_WIREGUARD_IP_RANGE.format(number=get_number(serial_number) + 1)
 
 def get_sip_id(serial_number):
     serial = get_number(serial_number)
