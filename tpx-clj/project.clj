@@ -20,8 +20,8 @@
                  [clj-serial "2.0.5"]
 
                  ;; songpark specific libraries
-                 [songpark/jam "1.0.2"]
-                 [songpark/mqtt "1.0.3-SNAPSHOT"]
+                 [songpark/jam "1.0.3"]
+                 [songpark/mqtt "1.0.3"]
                  [songpark/common "0.2.0"]
 
                  ;; GPIO for Clojure
