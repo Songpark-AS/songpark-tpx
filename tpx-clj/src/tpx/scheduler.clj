@@ -33,50 +33,54 @@
       ;; all the time, but sends it only once, and then sends a false on the
       ;; overload when the person stops screaming
       (try
-        (let [{overflow1+2-old :overflow1+2
-               overflow3+4-old :overflow3+4} @overflow
-              [overflow1+2 overflow3+4] (->> (gpio/bitbang-read gpio 0x0a)
+        (let [[overflow1+2 overflow3+4] (->> (gpio/bitbang-read gpio 0x0a)
                                              (bitbang/convert-to-binary)
-                                             (drop 6))
-              status1+2 (cond (> overflow1+2 overflow1+2-old) :up
-                              (< overflow1+2 overflow1+2-old) :down
-                              :else :same)
-              status3+4 (cond (> overflow3+4 overflow3+4-old) :up
-                              (< overflow3+4 overflow3+4-old) :down
-                              :else :same)
-              tp-id (data/get-tp-id)
-              topic (broadcast-topic tp-id)]
-          (reset! overflow {:overflow1+2 overflow1+2
-                            :overflow3+4 overflow3+4})
-          ;; (log/debug {:status3+4 status3+4
-          ;;             :status1+2 status1+2
-          ;;             :overflow @overflow})
-          (when (or (= :up status1+2)
-                    (= :up status3+4))
-            (gpio/set-led gpio :led/red :on))
-          (when (or (= :down status1+2)
-                    (= :down status3+4))
-            (gpio/set-led gpio :led/red :off))
-          (when (= :up status1+2)
-            (mqtt/publish mqtt-client topic {:message/type :teleporter/overload
-                                             :teleporter/id tp-id
-                                             :teleporter/overload :analog/overload1+2?
-                                             :teleporter/value true}))
-          (when (= :down status1+2)
-            (mqtt/publish mqtt-client topic {:message/type :teleporter/overload
-                                             :teleporter/id tp-id
-                                             :teleporter/overload :analog/overload1+2?
-                                             :teleporter/value false}))
-          (when (= :up status3+4)
-            (mqtt/publish mqtt-client topic {:message/type :teleporter/overload
-                                             :teleporter/id tp-id
-                                             :teleporter/overload :analog/overload3+4?
-                                             :teleporter/value true}))
-          (when (= :down status3+4)
-            (mqtt/publish mqtt-client topic {:message/type :teleporter/overload
-                                             :teleporter/id tp-id
-                                             :teleporter/overload :analog/overload3+4?
-                                             :teleporter/value false})))
+                                             (drop 6))]
+          ;; put this in for debugging. If the Analog card is not flashed, we
+          ;; get back nil instead of numbers
+          (when (and (number? overflow1+2)
+                     (number? overflow3+4))
+            (let [{overflow1+2-old :overflow1+2
+                   overflow3+4-old :overflow3+4} @overflow
+                  status1+2 (cond (> overflow1+2 overflow1+2-old) :up
+                                  (< overflow1+2 overflow1+2-old) :down
+                                  :else :same)
+                  status3+4 (cond (> overflow3+4 overflow3+4-old) :up
+                                  (< overflow3+4 overflow3+4-old) :down
+                                  :else :same)
+                  tp-id (data/get-tp-id)
+                  topic (broadcast-topic tp-id)]
+              (reset! overflow {:overflow1+2 overflow1+2
+                                :overflow3+4 overflow3+4})
+              ;; (log/debug {:status3+4 status3+4
+              ;;             :status1+2 status1+2
+              ;;             :overflow @overflow})
+              (when (or (= :up status1+2)
+                        (= :up status3+4))
+                (gpio/set-led gpio :led/red :on))
+              (when (or (= :down status1+2)
+                        (= :down status3+4))
+                (gpio/set-led gpio :led/red :off))
+              (when (= :up status1+2)
+                (mqtt/publish mqtt-client topic {:message/type :teleporter/overload
+                                                 :teleporter/id tp-id
+                                                 :teleporter/overload :analog/overload1+2?
+                                                 :teleporter/value true}))
+              (when (= :down status1+2)
+                (mqtt/publish mqtt-client topic {:message/type :teleporter/overload
+                                                 :teleporter/id tp-id
+                                                 :teleporter/overload :analog/overload1+2?
+                                                 :teleporter/value false}))
+              (when (= :up status3+4)
+                (mqtt/publish mqtt-client topic {:message/type :teleporter/overload
+                                                 :teleporter/id tp-id
+                                                 :teleporter/overload :analog/overload3+4?
+                                                 :teleporter/value true}))
+              (when (= :down status3+4)
+                (mqtt/publish mqtt-client topic {:message/type :teleporter/overload
+                                                 :teleporter/id tp-id
+                                                 :teleporter/overload :analog/overload3+4?
+                                                 :teleporter/value false})))))
         (catch Exception e
           (log/error e))))))
 
