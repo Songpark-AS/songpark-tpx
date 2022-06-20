@@ -36,7 +36,7 @@
                                :stream/broken #'ipc.handler/handle-stream-broken
                                :stream/streaming #'ipc.handler/handle-stream-streaming
                                :stream/stopped #'ipc.handler/handle-stream-stopped
-                               
+
                                :jam/coredump #'ipc.handler/handle-coredump}))
 
 (defn- command* [_ipc what data]
@@ -96,7 +96,7 @@
                                   :start-coredump #'ipc.command/start-coredump})
             (init-hw-values!)
             this*))))
-  
+
   (stop [this]
     (if-not started?
       this
@@ -122,4 +122,3 @@
 (comment
 
   )
-

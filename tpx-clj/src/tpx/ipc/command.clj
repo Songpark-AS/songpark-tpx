@@ -62,7 +62,7 @@
 (defn start-coredump []
   (let [allowed? @allow-start-coredump]
     (if allowed?
-      (do 
+      (do
         (reset! allow-start-coredump false)
         (send-command "pc" "")
         (Thread/sleep 200)
@@ -112,28 +112,36 @@
 (comment
 
   (start-coredump)
-  
+
   (local-volume 75)
   (global-volume 25)
   ;; Beatles
-  (call-via-sip "sip:9100@voip1.inonit.no")
-  (hangup-via-sip "sip:9100@voip1.inonit.no")
+  (call-via-sip "sip:9100@voip1.songpark.com")
+  (hangup-via-sip "sip:9100@voip1.songpark.com")
 
   ;; Elvis Presely
-  (call-via-sip "sip:9102@voip1.inonit.no")
-  (hangup-via-sip "sip:9102@voip1.inonit.no")
+  (call-via-sip "sip:9102@voip1.songpark.com")
+  (hangup-via-sip "sip:9102@voip1.songpark.com")
 
   ;; Jimi Hendrix
-  (call-via-sip "sip:9104@voip1.inonit.no")
-  (hangup-via-sip "sip:9104@voip1.inonit.no")
+  (call-via-sip "sip:9104@voip1.songpark.com")
+  (hangup-via-sip "sip:9104@voip1.songpark.com")
 
   ;; Adele
-  (call-via-sip "sip:9106@voip1.inonit.no")
-  (hangup-via-sip "sip:9106@voip1.inonit.no")
+  (call-via-sip "sip:9106@voip1.songpark.com")
+  (hangup-via-sip "sip:9106@voip1.songpark.com")
 
   ;; Madonna
-  (call-via-sip "sip:9108@voip1.inonit.no")
-  (hangup-via-sip "sip:9108@voip1.inonit.no")
+  (call-via-sip "sip:9108@voip1.songpark.com")
+  (hangup-via-sip "sip:9108@voip1.songpark.com")
+
+  ;; Bach
+  (call-via-sip "sip:9110@voip1.songpark.com")
+  (hangup-via-sip "sip:9110@voip1.songpark.com")
+
+  ;; ABBA
+  (call-via-sip "sip:9120@voip1.songpark.com")
+  (hangup-via-sip "sip:9120@voip1.songpark.com")
 
   (send-command "" "")
   (send-command "ha" "")
@@ -175,4 +183,7 @@
 
   (do (send-command "pc" "")
       (send-command "cver" ""))
+
+  (do (send-command "pc" "")
+      (send-command "bver" ""))
 )

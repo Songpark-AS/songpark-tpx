@@ -13,7 +13,7 @@
               :sip/menu-buddy-list #"Buddy list:"
               :sip/menu-choices #"Choices:"
               :sip/menu-enter #"  <Enter>    Empty input \(or 'q'\) to cancel"
-              
+
               :sip/making-call #".*pjsua_call\.c \!Making call with acc.*"
               :sip/calling #".*Call \d+ state changed to CALLING.*"
               :sip/incoming-call #".*INCOMING CALL NO SYNC.*"
@@ -38,7 +38,6 @@
   #{:jam/coredump
 
     :sip/register
-    :sip/menu-enter
     :sip/making-call
     :sip/calling
     :sip/incoming-call
@@ -54,7 +53,7 @@
     :sync/sync-failed-called-device
     :sync/sync-success
     :sync/sync-good
-    
+
     :stream/broken
     :stream/streaming
     :stream/stopped})
@@ -132,7 +131,7 @@
 
           (set/subset? #{:sync/sync-success} current-set)
           [:sync/synced (into {} lines)]
-          
+
           (set/subset? #{:sync/sync-good} current-set)
           [:sync/synced (into {} lines)]
 
@@ -177,7 +176,7 @@
     :stream/streaming true
     :stream/stopped true
     :stream/broken true
-    
+
     nil))
 
 (defn handle-output [context fns line]
