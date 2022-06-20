@@ -3,6 +3,7 @@
             [clojure.set :as set]
             [helins.linux.gpio :as gpio]
             [taoensso.timbre :as log]
+            [tpx.config :refer [config]]
             [tpx.gpio.bitbang :as bitbang])
   ;; AutoCloseable needs to be imported, otherwise the with-open macro hangs
   (:import [java.lang AutoCloseable]))
@@ -176,16 +177,29 @@
     (try
       (let [device (gpio/device "/dev/gpiochip0")
             ;; see bitbang for what these mean
-            chip-select 10
-            clock 12
-            mosi 11
-            miso 13
+            {:keys [chip-select
+                    clock
+                    mosi
+                    miso
+                    led-yellow
+                    led-green
+                    led-red
+                    button1]
+             :or
+             {chip-select 10
+              clock 12
+              mosi 11
+              miso 13
+              led-yellow 15
+              led-green 14
+              led-red 9
+              button1 0}} (:gpio/pins config)
             handle-write (gpio/handle device
-                                      {15          {:gpio/state true
+                                      {led-yellow  {:gpio/state true
                                                     :gpio/tag :led/yellow}
-                                       14          {:gpio/state true
+                                       led-green   {:gpio/state true
                                                     :gpio/tag :led/green}
-                                       9           {:gpio/state true
+                                       led-red     {:gpio/state true
                                                     :gpio/tag :led/red}
                                        chip-select {:gpio/state true
                                                     :gpio/tag :chip-select}
@@ -199,8 +213,8 @@
                                             :gpio/tag :miso}}
                                      {:gpio/direction :input})
             watchers (gpio/watcher device
-                                   {0 {:gpio/tag :button/push1
-                                       :gpio/direction :input}})
+                                   {button1 {:gpio/tag :button/push1
+                                             :gpio/direction :input}})
             component (assoc component
                              :rw-lock (atom false)
                              :device device
@@ -212,7 +226,9 @@
         (handle-buttons component)
         component)
       (catch Throwable t
-        (log/error :init-gpio/error t)))))
+        (log/error :init-gpio/error {:throwable t
+                                     :message (ex-message t)
+                                     :data (ex-data t)})))))
 
 
 (defrecord GPIO [started? buttons leds context rw-lock rw-attempts
