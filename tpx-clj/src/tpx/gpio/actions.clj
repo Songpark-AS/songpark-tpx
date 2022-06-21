@@ -11,4 +11,7 @@
                ;; when the delay is larger than 5 seconds or otherwise
                ;; we set the network to use DHCP again
                (when (> delay (get-in config [:network :button-delay] 5000))
-                 (set-network! {:dhcp? true})))}})
+                 (set-network! {:dhcp? true})))
+             :button/rotary
+             (fn [{:keys [delay]}]
+               (log/debug "Pressed :button/rotary" {:delay delay}))}})

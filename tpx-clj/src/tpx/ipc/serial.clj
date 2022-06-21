@@ -44,12 +44,12 @@
    (connect-to-port context fns (:pts @config)))
   ([context fns pts]
    (log/debug ::connect-to-port "connecting...")
-   (let [port (serial/open pts)
-         my-handler (handler context fns)        ]
-     (swap! config assoc :port port)
-     ;; TEMP
-     ;; (serial/listen! port my-handler false)
-     )))
+   ;; TEMP
+   ;; (let [port (serial/open pts)
+   ;;       my-handler (handler context fns)        ]
+   ;;   (swap! config assoc :port port)
+   ;;   (serial/listen! port my-handler false))
+   ))
 
 (defn disconnect
   ([]

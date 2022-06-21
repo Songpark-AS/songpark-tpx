@@ -25,8 +25,7 @@
   (:mac config))
 
 (defn broadcast-presence [success-cb error-cb]
-  (let [data (merge {:teleporter/nickname (get-in config [:ipc :teleporter :nickname])
-                     :teleporter/mac (get-device-mac)
+  (let [data (merge {:teleporter/serial (get-in config [:teleporter :serial])
                      :teleporter/apt-version (data/get-apt-version)}
                     (get-hardware-values))
         platform-url (str (get-in config [:ipc :platform]) "/api/teleporter")]
