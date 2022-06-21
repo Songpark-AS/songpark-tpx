@@ -34,6 +34,8 @@
       ;; overload when the person stops screaming
       (try
         (if-let [value (gpio/bitbang-read gpio 0x0a)]
+          ;; only run this if we actually get a value from the read
+          ;; (which we might not if this is on a non-TP machine)
           (let [[overflow1+2 overflow3+4] (->> value
                                                (bitbang/convert-to-binary)
                                                (drop 6))]

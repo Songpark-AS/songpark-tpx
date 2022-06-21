@@ -98,15 +98,17 @@
 (def ^:private on-off-map {:on false :off true})
 (defn set-led [{:keys [handle-write buffer-write leds] :as gpio} led on-off-value]
   (assert (#{:on :off} on-off-value) "on-off-value has to be either :on or :off")
-  (assert (contains? @leds led) (str "led has to be one of " (keys @leds)))
-  (swap! leds assoc led on-off-value)
-  (let [leds* (->> @leds
-                   (map (fn [[k v]]
-                          [k (on-off-map v)]))
-                   (into {}))]
-    (when handle-write
-      (gpio/write handle-write
-                  (gpio/set-line+ buffer-write leds*))))
+  (if-not (contains? @leds led)
+    (log/warn (str "led has to be one of " (keys @leds)))
+    (do
+      (swap! leds assoc led on-off-value)
+      (let [leds* (->> @leds
+                       (map (fn [[k v]]
+                              [k (on-off-map v)]))
+                       (into {}))]
+        (when handle-write
+          (gpio/write handle-write
+                      (gpio/set-line+ buffer-write leds*))))))
   gpio)
 
 (defn get-led [{:keys [leds]} led]
@@ -121,6 +123,22 @@
                        (set (keys @(:leds gpio))))
           (str "leds can only contain the keys " (keys @(:leds gpio))))
   (swap! (:leds gpio) merge leds))
+
+(defn start-blink [{:keys [blinks leds] :as gpio} led ms]
+  (when-not (contains? @blinks led)
+    (swap! blinks assoc led
+           (future
+             (while true
+               (if (= :on (get @leds led))
+                 (set-led gpio led :off)
+                 (set-led gpio led :on))
+               (Thread/sleep ms))))))
+
+(defn stop-blink [{:keys [blinks] :as gpio} led]
+  (when-let [led-f (get @blinks led)]
+    (future-cancel led-f)
+    (set-led gpio led :off)
+    (swap! blinks dissoc led)))
 
 (defn close! [{:keys [running? device handle-write handle-read watchers] :as _gpio}]
   (reset! running? false)
@@ -187,6 +205,7 @@
         on-off-map {:on false :off true}]
     (try
       (let [device (gpio/device "/dev/gpiochip0")
+            leds (:leds component)
             ;; see bitbang for what these mean
             {:keys [chip-select
                     clock
@@ -263,6 +282,14 @@
                                             (gpio/buffer handle-read)))]
         (when watchers
           (handle-buttons component))
+        (when led-red
+          (swap! leds assoc :led/red :off))
+        (when led-yellow
+          (swap! leds assoc :led/yellow :off))
+        (when led-green
+          (swap! leds assoc :led/green :off))
+        (when led-prompt
+          (swap! leds assoc :led/prompt :off))
         component)
       (catch Throwable t
         (log/error :init-gpio/error {:throwable t
@@ -278,14 +305,14 @@
       this
       (do (log/info "Starting GPIO")
           (let [this* (init-gpio this)]
-            (set-led this* :led/green :on)
+            ;; (set-led this* :led/green :on)
             (assoc this*
                    :started? true)))))
   (stop [this]
     (if-not started?
       this
       (do (log/info "Stopping GPIO")
-          (set-led this :led/green :off)
+          ;; (set-led this :led/green :off)
           (Thread/sleep 50)
           (close! this)
           (assoc this
@@ -293,9 +320,8 @@
 
 (defn get-gpio [settings]
   (map->GPIO (merge {:buttons {:button/push1 nil}
-                     :leds (atom {:led/red :off
-                                  :led/yellow :off
-                                  :led/green :off})
+                     :leds (atom {})
+                     :blinks (atom {})
                      :device nil
                      :handle-write nil
                      :handle-read nil

@@ -41,6 +41,15 @@
   (stop-gpio _gpio)
 
 
+  (let [_gpio (:gpio @tpx.init/system)]
+    (gpio/set-led _gpio :led/prompt :on))
+
+  (let [_gpio (:gpio @tpx.init/system)]
+    (gpio/start-blink _gpio :led/prompt 1000))
+
+  (let [_gpio (:gpio @tpx.init/system)]
+    (gpio/stop-blink _gpio :led/prompt))
+
 
   (let [_gpio (:gpio @tpx.init/system)]
     (gpio/bitbang-write _gpio 0x48 (bitbang/convert-from-binary [0 0 0 0 0 0 1 1])))
@@ -65,4 +74,3 @@
     (->> (gpio/bitbang-read _gpio 0x0a)
          (bitbang/convert-to-binary)
          #_(drop 6)))
- )
