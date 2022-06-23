@@ -1,7 +1,8 @@
 (ns tpx.gpio.actions
   (:require [taoensso.timbre :as log]
             [tpx.config :refer [config]]
-            [tpx.network :refer [set-network!]]))
+            [tpx.network :refer [set-network!]]
+            [songpark.mqtt :as mqtt]))
 
 (defn get-settings []
   {:context {:set-network! set-network!}
@@ -14,4 +15,16 @@
                  (set-network! {:dhcp? true})))
              :button/rotary
              (fn [{:keys [delay]}]
-               (log/debug "Pressed :button/rotary" {:delay delay}))}})
+               (log/debug "Pressed :button/rotary" {:delay delay}))
+             :button/prompt
+             (fn [{:keys [delay]}]
+               ;; (mqtt/publish (:mqtt-client @tpx.init/system)
+               ;;               "asdf"
+               ;;               {:hi true})
+               (log/debug "Pressed :button/prompt" {:delay delay}))
+             :rotary/clk
+             (fn [{:keys [delay]}]
+               (log/debug "Rotaded :rotary/clk" {:delay delay}))
+             :rotary/dt
+             (fn [{:keys [delay]}]
+               (log/debug "Rotated :rotary/dt" {:delay delay}))}})

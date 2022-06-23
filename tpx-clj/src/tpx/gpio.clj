@@ -218,6 +218,7 @@
                     rotary-clk
                     rotary-dt
                     led-prompt
+                    button-prompt
                     button-rotary]
              ;; :or
              ;; {chip-select 10
@@ -264,9 +265,18 @@
                        (if button1
                          {button1 {:gpio/tag :button/push1
                                    :gpio/direction :input}})
+                       (if button-prompt
+                         {button-prompt {:gpio/tag :button/prompt
+                                         :gpio/direction :input}})
                        (if button-rotary
                          {button-rotary {:gpio/tag :button/rotary
-                                         :gpio/direction :input}}))
+                                         :gpio/direction :input}})
+                       (if rotary-clk
+                         {rotary-clk {:gpio/tag :rotary/clk
+                                      :gpio/direction :input}})
+                       (if rotary-dt
+                         {rotary-dt {:gpio/tag :rotary/dt
+                                     :gpio/direction :input}}))
             watchers (when input-map
                        (gpio/watcher device
                                     input-map))
