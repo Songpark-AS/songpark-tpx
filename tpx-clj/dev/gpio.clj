@@ -40,15 +40,15 @@
 
   (stop-gpio _gpio)
 
-
   (let [_gpio (:gpio @tpx.init/system)]
-    (gpio/set-led _gpio :led/prompt :on))
+    (gpio/set-led _gpio :led/prompt :off))
 
   (let [_gpio (:gpio @tpx.init/system)]
     (gpio/start-blink _gpio :led/prompt 1000))
 
   (let [_gpio (:gpio @tpx.init/system)]
-    (gpio/stop-blink _gpio :led/prompt))
+    (gpio/stop-blink _gpio :led/prompt)
+    (gpio/set-led _gpio :led/prompt :on))
 
 
   (let [_gpio (:gpio @tpx.init/system)]

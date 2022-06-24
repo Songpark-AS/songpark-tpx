@@ -214,7 +214,7 @@
                     led-yellow
                     led-green
                     led-red
-                    button1
+                    button-push1
                     rotary-clk
                     rotary-dt
                     led-prompt
@@ -228,7 +228,7 @@
              ;;  led-yellow 15
              ;;  led-green 14
              ;;  led-red 9
-             ;;  button1 0}
+             ;;  button-push1 0}
              } (:gpio/pins config)
             write-map (merge
                        (if led-prompt
@@ -262,21 +262,12 @@
                                        read-map
                                        {:gpio/direction :input}))
             input-map (merge
-                       (if button1
-                         {button1 {:gpio/tag :button/push1
-                                   :gpio/direction :input}})
+                       (if button-push1
+                         {button-push1 {:gpio/tag :button/push1
+                                        :gpio/direction :input}})
                        (if button-prompt
                          {button-prompt {:gpio/tag :button/prompt
-                                         :gpio/direction :input}})
-                       (if button-rotary
-                         {button-rotary {:gpio/tag :button/rotary
-                                         :gpio/direction :input}})
-                       (if rotary-clk
-                         {rotary-clk {:gpio/tag :rotary/clk
-                                      :gpio/direction :input}})
-                       (if rotary-dt
-                         {rotary-dt {:gpio/tag :rotary/dt
-                                     :gpio/direction :input}}))
+                                         :gpio/direction :input}}))
             watchers (when input-map
                        (gpio/watcher device
                                     input-map))
