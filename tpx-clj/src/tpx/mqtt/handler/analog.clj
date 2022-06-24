@@ -1,15 +1,16 @@
 (ns tpx.mqtt.handler.analog
-  (:require [taoensso.timbre :as log]
+  (:require [songpark.mqtt :as mqtt :refer [handle-message]]
+            [songpark.mqtt.util :refer [broadcast-topic]]
+            [taoensso.timbre :as log]
             [tpx.analog :as analog]
             [tpx.data :as data]
-            [songpark.mqtt :as mqtt :refer [handle-message]]
-            [songpark.mqtt.util :refer [broadcast-topic]]
             [tpx.sync :refer [sync-platform!]]))
 
 
 (defmethod handle-message :teleporter.cmd/gain [{:teleporter/keys [gain value id]
-                                                 :keys [gpio mqtt-client]}]
-  (if (data/same-tp? id)
+                                                 :keys [gpio mqtt-client]
+                                                 :as msg}]
+  (if (data/allowed? msg)
     (do (log/debug ::teleporter-cmd-gain {:gain gain
                                           :value value})
         (try
@@ -25,8 +26,9 @@
     (log/debug ::teleporter-cmd-gain-wrong-teleporter {:teleporter/id id})))
 
 (defmethod handle-message :teleporter.cmd/switch [{:teleporter/keys [switch value id]
-                                                   :keys [gpio mqtt-client]}]
-  (if (data/same-tp? id)
+                                                   :keys [gpio mqtt-client]
+                                                   :as msg}]
+  (if (data/allowed? msg)
     (do (log/debug ::teleporter-cmd-switch {:swith switch
                                             :value value})
         (try
@@ -43,8 +45,9 @@
 
 
 (defmethod handle-message :teleporter.cmd/relay [{:teleporter/keys [id relay value]
-                                                  :keys [gpio mqtt-client]}]
-  (if (data/same-tp? id)
+                                                  :keys [gpio mqtt-client]
+                                                  :as msg}]
+  (if (data/allowed? msg)
     (do (log/debug ::teleporter-cmd-relay {:relay relay
                                            :value value})
         (try

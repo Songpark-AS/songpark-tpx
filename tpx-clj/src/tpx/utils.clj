@@ -59,3 +59,6 @@
 (defn reboot []
   (log/info "Rebooting machine")
   (sh "reboot"))
+
+(defn get-platform-url [path]
+  (str (get-in config [:ipc :platform]) path))

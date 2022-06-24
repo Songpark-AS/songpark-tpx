@@ -15,9 +15,11 @@
             [tpx.logger :as logger]
             [tpx.mqtt.handler.analog]
             [tpx.mqtt.handler.jam]
+            [tpx.mqtt.handler.pairing]
             [tpx.mqtt.handler.teleporter]
             [tpx.network :as network]
-            [tpx.scheduler :as scheduler]))
+            [tpx.scheduler :as scheduler]
+            [tpx.utils :as util]))
 
 (defonce system (atom nil))
 
@@ -28,7 +30,7 @@
   (let [data (merge {:teleporter/serial (get-in config [:teleporter :serial])
                      :teleporter/apt-version (data/get-apt-version)}
                     (get-hardware-values))
-        platform-url (str (get-in config [:ipc :platform]) "/api/teleporter")]
+        platform-url (util/get-platform-url "/api/teleporter")]
     (log/debug "Broadcasting to URL" platform-url data)
     (PUT platform-url data success-cb error-cb)))
 
@@ -67,17 +69,18 @@
                                                              [:ipc :mqtt-client])
                                        :heartbeat (component/using (heartbeat/heartbeat-service {:config (:heartbeat config)})
                                                                    [:mqtt-client])]
-                                      extra-components))))
-         (log/info "System startup done"))
+                                      extra-components)))))
        ;; setup mqtt client further with injections and topics
-       (let [{:keys [mqtt-client ipc jam]} @system]
+       (let [{:keys [mqtt-client ipc jam gpio]} @system]
          ;; injections of ipc and jam first
          (mqtt/add-injection mqtt-client :ipc ipc)
          (mqtt/add-injection mqtt-client :jam jam)
          (mqtt/add-injection mqtt-client :gpio (:gpio @system))
          ;; add topic of its own id
          (log/info "Subscribing to teleporter topic")
-         (mqtt/subscribe mqtt-client {(teleporter-topic id) 2})))
+         (mqtt/subscribe mqtt-client {(teleporter-topic id) 2})
+         (gpio/set-led gpio :led/prompt :on)
+         (log/info "System startup done")))
      (fn [error]
        ;; add flashing leds to indicate a restart is required
        (log/error error)))))

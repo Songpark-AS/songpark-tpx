@@ -1,30 +1,36 @@
 (ns tpx.gpio.actions
-  (:require [taoensso.timbre :as log]
+  (:require [songpark.common.communication :refer [POST]]
+            [taoensso.timbre :as log]
             [tpx.config :refer [config]]
+            [tpx.data :as data]
             [tpx.network :refer [set-network!]]
-            [songpark.mqtt :as mqtt]))
+            [tpx.pairing :as pairing]
+            [tpx.utils :as util]))
 
 (defn get-settings []
   {:context {:set-network! set-network!}
-   :buttons {:button/push1
-             (fn [{:keys [delay set-network!]}]
+   :buttons {:button/prompt
+             (fn [{:keys [delay set-network! gpio]}]
                (log/debug "Pressed :button/push1" {:delay delay})
                ;; when the delay is larger than 5 seconds or otherwise
                ;; we set the network to use DHCP again
-               (when (> delay (get-in config [:network :button-delay] 5000))
-                 (set-network! {:dhcp? true})))
-             :button/rotary
-             (fn [{:keys [delay]}]
-               (log/debug "Pressed :button/rotary" {:delay delay}))
-             :button/prompt
-             (fn [{:keys [delay]}]
-               ;; (mqtt/publish (:mqtt-client @tpx.init/system)
-               ;;               "asdf"
-               ;;               {:hi true})
-               (log/debug "Pressed :button/prompt" {:delay delay}))
-             :rotary/clk
-             (fn [{:keys [delay]}]
-               (log/debug "Rotaded :rotary/clk" {:delay delay}))
-             :rotary/dt
-             (fn [{:keys [delay]}]
-               (log/debug "Rotated :rotary/dt" {:delay delay}))}})
+               (cond
+                 (> delay (get-in config [:network :button-delay] 5000))
+                 (do (log/debug "Resetting network to DHCP")
+                     (set-network! {:dhcp? true}))
+
+                 (pairing/pairing?)
+                 (let [platform-url (util/get-platform-url "/api/teleporter/pair")]
+                   (log/debug "Setting to paired")
+
+                   (POST platform-url
+                         {:message/type :pairing/paired
+                          :teleporter/id (data/get-tp-id)
+                          :auth.user/id (data/get-user-id)}
+                         (fn [_]
+                           (pairing/set-status gpio :paired))))
+
+                 ;; do nothing
+                 :else
+                 (do (log/debug "Do nothing")
+                     nil)))}})
