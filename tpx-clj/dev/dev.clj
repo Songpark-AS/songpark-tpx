@@ -41,4 +41,5 @@
 
   (codax/assoc-at! @db [:test :foo] :bar)
   (codax/get-at! @db [:test :foo])
+
   )

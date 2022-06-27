@@ -99,9 +99,7 @@
                                                              :ip/gateway :gateway
                                                              :ip/subnet :netmask
                                                              :ip/dhcp? :dhcp?}))
-      (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/net-config-report
-                                                      :teleporter/id id
-                                                      :teleporter/network-config network-values}))
+      (reporter/fetch-and-send-current-network-config mqtt-client))
     (log/debug ::set-ipv4-wrong-teleporter {:id id})))
 
 (defmethod handle-message :teleporter.cmd/upgrade [{:teleporter/keys [id]

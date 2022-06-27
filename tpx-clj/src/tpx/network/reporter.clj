@@ -1,5 +1,6 @@
 (ns tpx.network.reporter
   (:require [clojure.java.shell :refer [sh]]
+            [clojure.string :as str]
             [com.stuartsierra.component :as component]
             [songpark.mqtt :as mqtt]
             [songpark.mqtt.util :as mqtt.util]
@@ -29,39 +30,35 @@
 (defn send-current-network-report [mqtt-client]
   (send-network-report @current-network-config mqtt-client))
 
-(defn get-local-ip [strip-cidr?]
+(defn get-local-ip []
   (let [iface (get-in config [:network :iface])
-        {:keys [exit out err]} (sh "bash" "-c" (str "nmcli -t -f IP4.ADDRESS dev show " iface " | sed 's/IP4\\.ADDRESS\\[1\\]\\://g'"))]
+        {:keys [exit out err]} (->> (sh "bash" "-c" "ifconfig" iface))]
     (when-not (zero? exit)
       (log/error "get-local-ip error" {:exit exit
                                        :err err}))
-    (if strip-cidr?
-      (first (clojure.string/split (clojure.string/trim-newline out) #"/"))
-      (clojure.string/trim-newline out))))
-
-
-(defn get-netmaskrange [netmask]
-  (map #(bit-and %1 %2) (concat (repeat netmask 1) (repeat (- 32 netmask) 0)) (repeat 32 1)))
+    (->> out
+         (re-find #"(?m)inet\s([0-9\.]+)")
+         last)))
 
 (defn get-netmask-ip []
-  (let [ip-subrange [128 64 32 16 8 4 2 1]
-        netmask (Integer/parseInt (last (clojure.string/split (get-local-ip false) #"/")))
-        netmask-range (partition 8 (get-netmaskrange netmask))]
-    (->> netmask-range
-         (reduce (fn [out subrange]
-                   (conj out (reduce + (map #(if (zero? %2)
-                                               0
-                                               %1) ip-subrange subrange))))
-                 [])
-         (clojure.string/join "."))))
+  (let [iface (get-in config [:network :iface])
+        {:keys [exit out err]} (->> (sh "bash" "-c" "ifconfig" iface))]
+    (when-not (zero? exit)
+      (log/error "get-local-ip error" {:exit exit
+                                       :err err}))
+    (->> out
+         (re-find #"(?m)netmask\s([0-9\.]+)")
+         last)))
 
 (defn get-gateway-ip []
   (let [iface (get-in config [:network :iface])
-        {:keys [exit out err]} (sh "bash" "-c" (str "nmcli -t -f IP4.GATEWAY dev show " iface " | sed 's/IP4\\.GATEWAY\\://g'"))]
+        {:keys [exit out err]} (sh "bash" "-c" (str "ip route show 0.0.0.0/0 dev "
+                                                    iface
+                                                    " | cut -d\\  -f3"))]
     (when-not (zero? exit)
       (log/error "get-gateway-ip error" {:exit exit
-                                       :err err}))
-    (clojure.string/trim-newline out)))
+                                         :err err}))
+    (str/trim out)))
 
 (defn get-dhcp? []
   (let [network-config-dir (get-in config [:network :config-dir])
@@ -75,14 +72,15 @@
     ;; "inet static" not found => true
     ;; current-iface-config is nil => true
     (if (not (nil? current-iface-config))
-      (let [stripped-config (clojure.string/trim (clojure.string/replace current-iface-config #"(?m)^#.*$" ""))]
-        (if (clojure.string/includes? stripped-config "inet static")
+      (let [stripped-config (-> (str/replace current-iface-config #"(?m)^#.*$" "")
+                                (str/trim))]
+        (if (str/includes? stripped-config "inet static")
           false
           true))
       true)))
 
 (defn fetch-current-network-config []
-  (let [local-ip (get-local-ip true)
+  (let [local-ip (get-local-ip)
         gateway-ip (get-gateway-ip)
         netmask-ip (get-netmask-ip)
         dhcp? (get-dhcp?)]
@@ -98,9 +96,14 @@
 
 (comment
   (get-dhcp?)
-  (get-local-ip true)
+  (get-local-ip)
   (get-gateway-ip)
   (get-netmask-ip)
   (fetch-current-network-config)
   (send-network-report @current-network-config)
+  (->> (sh "bash" "-c" "ifconfig" "eth1")
+      :out
+      ;; (re-find #"(?m)inet\s([0-9\.]+)")
+      ;; last
+      )
   )
