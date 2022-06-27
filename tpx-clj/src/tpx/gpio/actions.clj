@@ -1,5 +1,6 @@
 (ns tpx.gpio.actions
-  (:require [songpark.common.communication :refer [POST]]
+  (:require [songpark.common.communication :refer [DELETE
+                                                   POST]]
             [taoensso.timbre :as log]
             [tpx.config :refer [config]]
             [tpx.data :as data]
@@ -15,9 +16,19 @@
                ;; when the delay is larger than 5 seconds or otherwise
                ;; we set the network to use DHCP again
                (cond
-                 (> delay (get-in config [:network :button-delay] 5000))
+                 (> delay (get-in config [:button-delay :network] 10000))
                  (do (log/debug "Resetting network to DHCP")
                      (set-network! {:dhcp? true}))
+
+                 (and (> delay (get-in config [:button-delay :unpair] 3000))
+                      (pairing/paired?))
+                 (let [platform-url (util/get-platform-url "/api/teleporter/pair")]
+                   (log/debug "Unpairing Teleporter")
+                   (DELETE platform-url
+                           {:teleporter/id (data/get-tp-id)}
+                           (fn [_]
+                             (pairing/set-status gpio :unpaired)
+                             (data/set-user-id! nil))))
 
                  (pairing/pairing?)
                  (let [platform-url (util/get-platform-url "/api/teleporter/pair")]
