@@ -15,6 +15,14 @@
       (send-command "pc" "")
       (send-command "vlr" value)))
 
+(defn input1-volume [value]
+  (do (send-command "pc" "")
+      (send-command "vll" value)))
+
+(defn input2-volume [value]
+  (do (send-command "pc" "")
+      (send-command "vlr" value)))
+
 (defn network-volume [value]
   (do (send-command "pc" "")
       (send-command "netvoll" value)

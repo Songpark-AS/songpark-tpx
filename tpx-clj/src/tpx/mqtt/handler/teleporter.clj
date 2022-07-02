@@ -14,17 +14,17 @@
 (defmethod handle-message :teleporter.cmd/global-volume [{:teleporter/keys [id volume]
                                                           :keys [mqtt-client ipc]
                                                           :as msg}]
-  (if (data/allowed? id)
-    (do (log/debug ::set-global-volume {:volume volume})
-        (tpx.ipc/command ipc :volume/global-volume volume)
-        (sync-platform! {:mqtt-client mqtt-client
-                         :topic (broadcast-topic id)
-                         :message {:message/type :teleporter/global-volume
-                                   :teleporter/id id
-                                   :teleporter/global-volume volume}}))
+  (if (data/allowed? msg)
+    (do
+      (log/debug ::set-global-volume {:volume volume})
+      (tpx.ipc/command ipc :volume/global-volume volume)
+      (sync-platform! {:mqtt-client mqtt-client
+                       :topic (broadcast-topic id)
+                       :message {:message/type :teleporter/global-volume
+                                 :teleporter/id id
+                                 :teleporter/global-volume volume}}))
     (log/debug ::set-global-volume-wrong-teleporter {:teleporter/id id
                                                      :volume volume})))
-
 
 (defmethod handle-message :teleporter.cmd/local-volume [{:teleporter/keys [volume id]
                                                          :keys [mqtt-client ipc]
@@ -40,6 +40,46 @@
                                  :teleporter/local-volume volume}}))
     (log/debug :set-local-volume-wrong-teleporter {:teleporter/id id
                                                    :volume volume})))
+
+(defmethod handle-message :teleporter.cmd/input1-volume [{:teleporter/keys [volume id]
+                                                          :keys [mqtt-client ipc]
+                                                          :as msg}]
+  (if (data/allowed? msg)
+    (do
+      (log/debug ::set-input1-volume {:volume volume})
+      (tpx.ipc/command ipc :volume/input1-volume volume)
+      (sync-platform! {:message {:message/type :teleporter/input1-volume
+                                 :teleporter/id id
+                                 :teleporter/input1-volume volume}}))
+    (log/debug :set-input1-volume-wrong-teleporter {:teleporter/id id
+                                                   :volume volume})))
+
+(defmethod handle-message :teleporter.cmd/input2-volume [{:teleporter/keys [volume id]
+                                                          :keys [mqtt-client ipc]
+                                                          :as msg}]
+  (if (data/allowed? msg)
+    (do
+      (log/debug ::set-input2-volume {:volume volume})
+      (tpx.ipc/command ipc :volume/input2-volume volume)
+      (sync-platform! {:message {:message/type :teleporter/input2-volume
+                                 :teleporter/id id
+                                 :teleporter/input2-volume volume}}))
+    (log/debug :set-input2-volume-wrong-teleporter {:teleporter/id id
+                                                    :volume volume})))
+
+(defmethod handle-message :teleporter.cmd/input1+2-volume [{:teleporter/keys [volume id]
+                                                            :keys [mqtt-client ipc]
+                                                            :as msg}]
+  (if (data/allowed? msg)
+    (do
+      (log/debug ::set-input1+2-volume {:volume volume})
+      (tpx.ipc/command ipc :volume/input1+2-volume volume)
+      (sync-platform! {:message {:message/type :teleporter/input1+2-volume
+                                 :teleporter/id id
+                                 :teleporter/input1+2-volume volume}}))
+    (log/debug :set-input1+2-volume-wrong-teleporter {:teleporter/id id
+                                                      :volume volume})))
+
 
 
 (defmethod handle-message :teleporter.cmd/network-volume [{:teleporter/keys [volume id]
@@ -132,7 +172,6 @@
                                                         :teleporter/id id
                                                         :teleporter/values values})))
     (log/debug ::values-wrong-teleporter {:teleporter/id id})))
-
 
 (defmethod handle-message :teleporter.cmd/reboot [{:teleporter/keys [id]
                                                    :keys [mqtt-client]

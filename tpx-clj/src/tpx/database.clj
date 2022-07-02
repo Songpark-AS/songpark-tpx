@@ -18,6 +18,8 @@
                   {} [:volume/global-volume
                       :volume/network-volume
                       :volume/local-volume
+                      :volume/input1-volume
+                      :volume/input2-volume
                       :jam/playout-delay
                       :analog/input
                       :analog/gain0
