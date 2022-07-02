@@ -30,6 +30,10 @@
       (send-command "pc" "")
       (send-command "netvolr" value)))
 
+(defn network-mute [value]
+  (println "I AM NOT IMPLEMENTED"))
+
+
 (defn set-playout-delay [value]
   (send-command "pd" "")
   (Thread/sleep 200)

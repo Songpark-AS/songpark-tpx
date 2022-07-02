@@ -18,9 +18,7 @@
     (do
       (log/debug ::set-global-volume {:volume volume})
       (tpx.ipc/command ipc :volume/global-volume volume)
-      (sync-platform! {:mqtt-client mqtt-client
-                       :topic (broadcast-topic id)
-                       :message {:message/type :teleporter/global-volume
+      (sync-platform! {:message {:message/type :teleporter/global-volume
                                  :teleporter/id id
                                  :teleporter/global-volume volume}}))
     (log/debug ::set-global-volume-wrong-teleporter {:teleporter/id id
@@ -33,9 +31,7 @@
     (do
       (log/debug ::set-local-volume {:volume volume})
       (tpx.ipc/command ipc :volume/local-volume volume)
-      (sync-platform! {:mqtt-client mqtt-client
-                       :topic (broadcast-topic id)
-                       :message {:message/type :teleporter/local-volume
+      (sync-platform! {:message {:message/type :teleporter/local-volume
                                  :teleporter/id id
                                  :teleporter/local-volume volume}}))
     (log/debug :set-local-volume-wrong-teleporter {:teleporter/id id
@@ -80,8 +76,6 @@
     (log/debug :set-input1+2-volume-wrong-teleporter {:teleporter/id id
                                                       :volume volume})))
 
-
-
 (defmethod handle-message :teleporter.cmd/network-volume [{:teleporter/keys [volume id]
                                                            :keys [mqtt-client ipc]
                                                            :as msg}]
@@ -89,13 +83,24 @@
     (do
       (log/debug ::set-network-volume {:volume volume})
       (tpx.ipc/command ipc :volume/network-volume volume)
-      (sync-platform! {:mqtt-client mqtt-client
-                       :topic (broadcast-topic id)
-                       :message {:message/type :teleporter/network-volume
+      (sync-platform! {:message {:message/type :teleporter/network-volume
                                  :teleporter/id id
                                  :teleporter/network-volume volume}}))
     (log/debug :set-network-volume-wrong-teleporter {:teleporter/id id
                                                      :volume volume})))
+
+(defmethod handle-message :teleporter.cmd/network-mute [{:teleporter/keys [mute id]
+                                                         :keys [mqtt-client ipc]
+                                                         :as msg}]
+  (if (data/allowed? msg)
+    (do
+      (log/debug ::set-network-mute {:mute mute})
+      (tpx.ipc/command ipc :volume/network-mute mute)
+      (sync-platform! {:message {:message/type :teleporter/network-mute
+                                 :teleporter/id id
+                                 :teleporter/network-mute mute}}))
+    (log/debug :set-network-mute-wrong-teleporter {:teleporter/id id
+                                                   :mute mute})))
 
 (defmethod handle-message :teleporter.cmd/path-reset [{:teleporter/keys [id]
                                                        :keys [mqtt-client ipc]
@@ -103,11 +108,7 @@
   (if (data/allowed? msg)
     (do
       (log/debug ::path-reset)
-      (tpx.ipc/command ipc :jam/path-reset true)
-      (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/path-reset
-                                                      :teleporter/id id
-                                                      :teleporter/path-reset true})
-      (sync-platform!))
+      (tpx.ipc/command ipc :jam/path-reset true))
     (log/debug ::path-reset-wrong-teleporter {:teleporter/id id})))
 
 (defmethod handle-message :teleporter.cmd/set-playout-delay [{:teleporter/keys [id playout-delay]
@@ -117,9 +118,7 @@
     (do
       (log/debug ::set-playout-delay playout-delay)
       (tpx.ipc/command ipc :jam/playout-delay playout-delay)
-      (sync-platform! {:mqtt-client mqtt-client
-                       :topic (broadcast-topic id)
-                       :message {:message/type :teleporter/playout-delay
+      (sync-platform! {:message {:message/type :teleporter/playout-delay
                                  :teleporter/id id
                                  :teleporter/playout-delay playout-delay}}))
     (log/debug ::set-playout-delay-wrong-teleporter {:teleporter/id id})))
@@ -156,10 +155,7 @@
   (if (data/allowed? msg)
     (do
       (log/debug ::hangup-all)
-      (tpx.ipc/command ipc :sip/hangup-all true)
-      (mqtt/publish mqtt-client (broadcast-topic id) {:message/type :teleporter/hangup-all
-                                                      :teleporter/id id
-                                                      :teleporter/hangup-all true}))
+      (tpx.ipc/command ipc :sip/hangup-all true))
     (log/debug ::hangup-all-wrong-teleporter {:teleporter/id id})))
 
 (defmethod handle-message :teleporter.cmd/values [{:keys [teleporter/id mqtt-client]

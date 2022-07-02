@@ -50,6 +50,7 @@
                               (ipc.command/global-volume data))
     :volume/network-volume (do (codax/assoc-at! @db [what] data)
                                (ipc.command/network-volume data))
+    :volume/network-mute (ipc.command/network-mute data)
     :volume/local-volume (do (codax/assoc-at! @db [what] data)
                              (ipc.command/local-volume data))
     :volume/input1-volume (do (codax/assoc-at! @db [what] data)
