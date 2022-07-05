@@ -11,6 +11,24 @@
             [tpx.sync :refer [sync-platform!]]
             [tpx.utils :as utils]))
 
+(defmethod handle-message :teleporter.cmd/fx [{:teleporter/keys [id value fx input]
+                                               :keys [mqtt-client ipc]
+                                               :as msg}]
+  (if (data/allowed? msg)
+    (do
+      (log/debug ::set-fx {:fx fx
+                           :input input
+                           :value value})
+      (sync-platform! {:message {:message/type :teleporter/fx
+                                 :teleporter/input input
+                                 :teleporter/id id
+                                 :teleporter/fx fx
+                                 :teleporter/value value}}))
+    (log/debug ::set-fx-wrong-teleporter {:teleporter/id id
+                                          :fx fx
+                                          :input input
+                                          :value value})))
+
 (defmethod handle-message :teleporter.cmd/global-volume [{:teleporter/keys [id volume]
                                                           :keys [mqtt-client ipc]
                                                           :as msg}]
