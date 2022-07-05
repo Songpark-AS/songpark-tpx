@@ -6,6 +6,7 @@
             [taoensso.timbre :as log]
             [tpx.data :as data]
             [tpx.database :refer [get-hardware-values]]
+            [tpx.fx :as fx]
             [tpx.network :refer [set-network!]]
             [tpx.network.reporter :as reporter]
             [tpx.sync :refer [sync-platform!]]
@@ -19,11 +20,8 @@
       (log/debug ::set-fx {:fx fx
                            :input input
                            :value value})
-      (sync-platform! {:message {:message/type :teleporter/fx
-                                 :teleporter/input input
-                                 :teleporter/id id
-                                 :teleporter/fx fx
-                                 :teleporter/value value}}))
+      (fx/write-fx input fx value)
+      (sync-platform!))
     (log/debug ::set-fx-wrong-teleporter {:teleporter/id id
                                           :fx fx
                                           :input input

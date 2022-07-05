@@ -2,31 +2,97 @@
   (:require [codax.core :as codax]
             [com.stuartsierra.component :as component]
             [tpx.config :refer [config]]
+            [tpx.fx :refer [get-path]]
             [taoensso.timbre :as log]))
 
 (defonce db (atom nil))
 (def bit-to-boolean {0 false 1 true nil false})
 
+(->> (mapv (fn [k]
+         [(get-path "input1" k)
+          (get-path "input2" k)])
+       [:gate/switch
+        :gate/threshold
+        :gate/attack
+        :gate/release
+        :reverb/switch
+        :reverb/mix
+        :reverb/damp
+        :reverb/room-size
+        :amplify/switch
+        :amplify/drive
+        :amplify/tone
+        :equalizer/switch
+        :equalizer/low
+        :equalizer/medium-low
+        :equalizer/medium-high
+        :equalizer/high
+        :echo/switch
+        :echo/delay-time
+        :echo/level
+        :compressor/switch
+        :compressor/threshold
+        :compressor/ratio
+        :compressor/attack
+        :compressor/release])
+     (flatten)
+     (sort)
+     (map (fn [k]
+            [k 0]))
+     (into (sorted-map))
+     (clojure.pprint/pprint))
+
 (defn get-hardware-values []
   (codax/with-read-transaction [@db tx]
-    (let [{:keys [analog/relays] :as values}
+    (let [ks (flatten
+              [(mapv (fn [k]
+                       [(get-path "input1" k)
+                        (get-path "input2" k)])
+                     [:pan
+                      :gain
+                      :gate/switch
+                      :gate/threshold
+                      :gate/attack
+                      :gate/release
+                      :reverb/switch
+                      :reverb/mix
+                      :reverb/damp
+                      :reverb/room-size
+                      :amplify/switch
+                      :amplify/drive
+                      :amplify/tone
+                      :equalizer/switch
+                      :equalizer/low
+                      :equalizer/medium-low
+                      :equalizer/medium-high
+                      :equalizer/high
+                      :echo/switch
+                      :echo/delay-time
+                      :echo/level
+                      :compressor/switch
+                      :compressor/threshold
+                      :compressor/ratio
+                      :compressor/attack
+                      :compressor/release])
+               [:volume/global-volume
+                :volume/network-volume
+                :volume/local-volume
+                :volume/input1-volume
+                :volume/input2-volume
+                :jam/playout-delay
+                :analog/input
+                :analog/gain0
+                :analog/gain1
+                :analog/gain2
+                :analog/gain3
+                :analog/relays]])
+          {:keys [analog/relays] :as values}
           (reduce (fn [out k]
                     (let [v (codax/get-at tx [k])]
                       (assoc out k (if (some? v)
                                      v
                                      (get-in config [:hardware/default-values k])))))
-                  {} [:volume/global-volume
-                      :volume/network-volume
-                      :volume/local-volume
-                      :volume/input1-volume
-                      :volume/input2-volume
-                      :jam/playout-delay
-                      :analog/input
-                      :analog/gain0
-                      :analog/gain1
-                      :analog/gain2
-                      :analog/gain3
-                      :analog/relays])
+                  {} ks)
           relay0 (bit-to-boolean (nth relays 7))
           relay1 (bit-to-boolean (nth relays 6))
           relay5 (bit-to-boolean (nth relays 2))
