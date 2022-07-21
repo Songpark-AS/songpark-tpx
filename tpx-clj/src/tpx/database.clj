@@ -2,52 +2,53 @@
   (:require [codax.core :as codax]
             [com.stuartsierra.component :as component]
             [tpx.config :refer [config]]
-            [tpx.fx :refer [get-path]]
+            [tpx.utils :refer [get-input-path]]
             [taoensso.timbre :as log]))
 
 (defonce db (atom nil))
 (def bit-to-boolean {0 false 1 true nil false})
 
-(->> (mapv (fn [k]
-         [(get-path "input1" k)
-          (get-path "input2" k)])
-       [:gate/switch
-        :gate/threshold
-        :gate/attack
-        :gate/release
-        :reverb/switch
-        :reverb/mix
-        :reverb/damp
-        :reverb/room-size
-        :amplify/switch
-        :amplify/drive
-        :amplify/tone
-        :equalizer/switch
-        :equalizer/low
-        :equalizer/medium-low
-        :equalizer/medium-high
-        :equalizer/high
-        :echo/switch
-        :echo/delay-time
-        :echo/level
-        :compressor/switch
-        :compressor/threshold
-        :compressor/ratio
-        :compressor/attack
-        :compressor/release])
-     (flatten)
-     (sort)
-     (map (fn [k]
-            [k 0]))
-     (into (sorted-map))
-     (clojure.pprint/pprint))
+(comment
+  (->> (mapv (fn [k]
+              [(get-input-path "input1" k)
+               (get-input-path "input2" k)])
+            [:gate/switch
+             :gate/threshold
+             :gate/attack
+             :gate/release
+             :reverb/switch
+             :reverb/mix
+             :reverb/damp
+             :reverb/room-size
+             :amplify/switch
+             :amplify/drive
+             :amplify/tone
+             :equalizer/switch
+             :equalizer/low
+             :equalizer/medium-low
+             :equalizer/medium-high
+             :equalizer/high
+             :echo/switch
+             :echo/delay-time
+             :echo/level
+             :compressor/switch
+             :compressor/threshold
+             :compressor/ratio
+             :compressor/attack
+             :compressor/release])
+      (flatten)
+      (sort)
+      (map (fn [k]
+             [k 0]))
+      (into (sorted-map))
+      (clojure.pprint/pprint)))
 
 (defn get-hardware-values []
   (codax/with-read-transaction [@db tx]
     (let [ks (flatten
               [(mapv (fn [k]
-                       [(get-path "input1" k)
-                        (get-path "input2" k)])
+                       [(get-input-path "input1" k)
+                        (get-input-path "input2" k)])
                      [:pan
                       :gain
                       :gate/switch

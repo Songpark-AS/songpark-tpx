@@ -5,6 +5,12 @@
             [taoensso.timbre :as log]
             [tpx.config :refer [config]]))
 
+(defn get-input-path [input k]
+  (let [ns* (namespace k)
+        n* (name k)]
+    (keyword (str/join "." (flatten (remove str/blank? ["fx" input ns*])))
+             n*)))
+
 (defn scale-value
   "Linearly transforms x from range input-range to output-range where:
 
