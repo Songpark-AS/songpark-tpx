@@ -2,8 +2,7 @@
   (:require [taoensso.timbre :as log]
             [tpx.data :as data]
             [tpx.pairing :as pairing]
-            [songpark.mqtt :as mqtt :refer [handle-message]]
-            [songpark.mqtt.util :refer [broadcast-topic]]))
+            [songpark.mqtt :as mqtt :refer [handle-message]]))
 
 (defmethod handle-message :pairing/pair [{id :teleporter/id
                                           user-id :auth.user/id

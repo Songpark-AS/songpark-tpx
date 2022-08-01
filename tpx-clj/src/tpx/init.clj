@@ -14,6 +14,7 @@
             [tpx.ipc :as ipc]
             [tpx.logger :as logger]
             [tpx.mqtt.handler.analog]
+            [tpx.mqtt.handler.fx]
             [tpx.mqtt.handler.jam]
             [tpx.mqtt.handler.pairing]
             [tpx.mqtt.handler.teleporter]
