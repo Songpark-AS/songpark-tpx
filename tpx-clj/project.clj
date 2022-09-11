@@ -17,8 +17,7 @@
                  ;; structure
                  [com.stuartsierra/component "1.0.0"]
                  ;; serial comms
-                 ;; comment this out for wideband RPi
-                 ;; [clj-serial "2.0.5"]
+                 [clj-serial "2.0.5"]
 
                  ;; songpark specific libraries
                  [songpark/jam "1.0.3"]

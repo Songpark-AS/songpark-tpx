@@ -129,8 +129,3 @@
 
 (defn ipc-service [settings]
   (map->IpcService settings))
-
-
-(comment
-
-  )
