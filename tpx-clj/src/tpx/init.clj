@@ -1,8 +1,8 @@
 (ns tpx.init
   (:require [com.stuartsierra.component :as component]
             [songpark.common.communication :refer [PUT]]
-            [tpx.gpio :as gpio]
-            [tpx.gpio.actions :as gpio.actions]
+            ;; [tpx.gpio :as gpio]
+            ;; [tpx.gpio.actions :as gpio.actions]
             [songpark.jam.tpx :as jam.tpx]
             [songpark.mqtt :as mqtt]
             [songpark.mqtt.util :refer [teleporter-topic]]
@@ -59,10 +59,10 @@
                                 (into [:logger logger
                                        :mqtt-client mqtt-client
                                        :config core-config
-                                       :gpio (gpio/get-gpio (gpio.actions/get-settings))
+                                       ;; :gpio (gpio/get-gpio (gpio.actions/get-settings))
                                        :database db
-                                       :scheduler (component/using (scheduler/get-scheduler (:scheduler config))
-                                                                   [:mqtt-client :gpio])
+                                       ;; :scheduler (component/using (scheduler/get-scheduler (:scheduler config))
+                                       ;;                             [:mqtt-client :gpio])
                                        :ipc (component/using (ipc/ipc-service {:config (:ipc config)})
                                                              [:mqtt-client :database])
                                        :jam (component/using (jam.tpx/get-jam (merge {:tp-id id}
@@ -72,15 +72,15 @@
                                                                    [:mqtt-client])]
                                       extra-components)))))
        ;; setup mqtt client further with injections and topics
-       (let [{:keys [mqtt-client ipc jam gpio]} @system]
+       (let [{:keys [mqtt-client ipc jam #_gpio]} @system]
          ;; injections of ipc and jam first
          (mqtt/add-injection mqtt-client :ipc ipc)
          (mqtt/add-injection mqtt-client :jam jam)
-         (mqtt/add-injection mqtt-client :gpio (:gpio @system))
+         ;; (mqtt/add-injection mqtt-client :gpio (:gpio @system))
          ;; add topic of its own id
          (log/info "Subscribing to teleporter topic")
          (mqtt/subscribe mqtt-client {(teleporter-topic id) 2})
-         (gpio/set-led gpio :led/prompt :on)
+         ;; (gpio/set-led gpio :led/prompt :on)
          (log/info "System startup done")))
      (fn [error]
        ;; add flashing leds to indicate a restart is required
