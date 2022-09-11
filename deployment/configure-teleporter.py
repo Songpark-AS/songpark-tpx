@@ -61,7 +61,7 @@ def get_ip_teleporter(serial_number):
     return BASE_WIREGUARD_IP_RANGE.format(number=get_number(serial_number))
 
 def get_ip_rpi(serial_number):
-    return BASE_WIREGUARD_IP_RANGE.format(number=get_number(serial_number) + 1)
+    return BASE_WIREGUARD_IP_RANGE.format(number=get_number(serial_number + 1))
 
 def get_sip_id(serial_number):
     serial = get_number(serial_number)
@@ -231,8 +231,24 @@ def copy_configs_to_rpi(config_path, rpi_path):
     copy_file([config_path, HOSTNAME_RPI],
               [root_path, "/etc", "hostname"])
 
-def cleanup_configs(config_path):
+def cleanup_configs(config_path, songpark_path, root_path, rpi_path):
     os.system("rm -rf " + config_path)
+    os.system("rm -rf " + songpark_path)
+    os.system("rm -rf " + root_path)
+    os.system("rm -rf " + rpi_path)
+
+def create_paths(config_path, songpark_path, root_path, rpi_path):
+    if config_path:
+        os.system("mkdir -p {path}".format(path=config_path))
+    if songpark_path:
+        os.system("mkdir -p {path}/usr/local/etc".format(path=songpark_path))
+    if root_path:
+        os.system("mkdir -p {path}/root/.ssh".format(path=root_path))
+        os.system("mkdir -p {path}/etc/wireguard/keys".format(path=root_path))
+        os.system("mkdir -p {path}/etc/network/interfaces.d".format(path=root_path))
+    if rpi_path:
+        os.system("mkdir -p {path}/home/pi/.ssh".format(path=rpi_path))
+        os.system("mkdir -p {path}/etc/wireguard/keys".format(path=rpi_path))
 
 def run_main():
     try:
@@ -250,7 +266,8 @@ def run_main():
                             choices=["generate-configs",
                                      "copy-configs-to-teleporter",
                                      "copy-configs-to-rpi",
-                                     "clear-configs"])
+                                     "clear-configs",
+                                     "create-paths"])
         args = parser.parse_args()
 
         if args.action == "generate-configs":
@@ -272,7 +289,13 @@ def run_main():
             copy_configs_to_rpi(args.config_path, args.rpi_path)
         elif args.action == "clear-configs":
             assert (args.config_path is not None), "--config-path must be provided"
-            cleanup_configs(args.config_path)
+            cleanup_configs(args.config_path, args.songpark_path, args.root_path, args.rpi_path)
+        elif args.action == "create-paths":
+            assert (args.config_path is not None), "--config-path must be provided"
+            assert (args.songpark_path is not None), "--songpark-path must be provided"
+            assert (args.root_path is not None), "--root-path must be provided"
+            assert (args.rpi_path is not None), "--rpi-path must be provided"
+            create_paths(args.config_path, args.songpark_path, args.root_path, args.rpi_path)
         else:
             print("--action missing")
             print("You supplied the following args")
