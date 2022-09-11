@@ -100,11 +100,9 @@
           (let [this* (assoc this
                              :started? true
                              :c (async/chan (async/sliding-buffer 10)))]
-            (if (not= (true? (get config [:ipc/fake?])))
-              (setup-serial-ports! {:ipc this*
-                                    :mqtt-client mqtt-client
-                                    :start-coredump #'ipc.command/start-coredump})
-              (reset! ipc.serial/fake? true))
+            (setup-serial-ports! {:ipc this*
+                                  :mqtt-client mqtt-client
+                                  :start-coredump #'ipc.command/start-coredump})
             (init-hw-values!)
             this*))))
 
@@ -112,8 +110,7 @@
     (if-not started?
       this
       (do (log/info "Stopping IpcService")
-          (when (not= (true? (get config [:ipc/fake?])))
-            (ipc.serial/disconnect))
+          (ipc.serial/disconnect)
           (async/close! c)
           (assoc this
                  :started? false

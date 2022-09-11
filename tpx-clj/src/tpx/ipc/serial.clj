@@ -1,7 +1,7 @@
 (ns tpx.ipc.serial
   (:require [com.stuartsierra.component :as component]
             [clojure.java.io :as io]
-            ;; [serial.core :as serial]
+            [serial.core :as serial]
             [taoensso.timbre :as log]
             [tpx.ipc.output :refer [handle-output]]
             [tpx.ipc.handler :as ipc.handler]))
@@ -13,8 +13,6 @@
 ;; zedboards, given no other services appear
 ;; to be using /dev/ptmx
 (defonce config (atom {:pts "/tmp/ttyTPX"}))
-
-(defonce fake? (atom false))
 
 
 ;; TODO: examine possibility to have open-handler? inside the handler function
@@ -44,12 +42,10 @@
    (connect-to-port context fns (:pts @config)))
   ([context fns pts]
    (log/debug ::connect-to-port "connecting...")
-   ;; TEMP
-   ;; (let [port (serial/open pts)
-   ;;       my-handler (handler context fns)        ]
-   ;;   (swap! config assoc :port port)
-   ;;   (serial/listen! port my-handler false))
-   ))
+   (let [port (serial/open pts)
+         my-handler (handler context fns)        ]
+     (swap! config assoc :port port)
+     (serial/listen! port my-handler false))))
 
 (defn disconnect
   ([]
@@ -57,9 +53,8 @@
   ([port]
    (log/debug ::disconnect "bye...")
    (try
-     ;; TEMP
-     ;; (serial/unlisten! port)
-     ;; (serial/close! port)
+     (serial/unlisten! port)
+     (serial/close! port)
      (swap! config dissoc :port)
      (reset! open-handler? false)
      (catch Exception e
@@ -79,10 +74,7 @@
   ([port cmd v]
    (log/debug ::send-command {:cmd cmd
                               :v v})
-   (when-not @fake?
-     ;; TEMP
-     ;; (serial/write port (str->ba (str cmd " " v "\n")))
-       )))
+   (serial/write port (str->ba (str cmd " " v "\n")))))
 
 
 (comment
