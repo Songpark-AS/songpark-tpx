@@ -30,12 +30,12 @@
 (defn allowed? [mqtt-message]
   (let [{tp-id :teleporter/id
          user-id :auth.user/id} mqtt-message
-        allow? (and (uuid? @tp-id*)
-                    (number? @user-id*)
-                    (uuid? tp-id)
-                    (number? user-id)
-                    (= @tp-id* tp-id)
-                    (= @user-id* user-id)
+        allow? (and ;; (uuid? @tp-id*)
+                    ;; (number? @user-id*)
+                    ;; (uuid? tp-id)
+                    ;; (number? user-id)
+                    ;; (= @tp-id* tp-id)
+                    ;; (= @user-id* user-id)
                     (pairing/paired?))]
     (when (false? allow?)
       (log/info "Unauthorized access to the Teleporter"
