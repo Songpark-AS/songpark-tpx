@@ -1,5 +1,5 @@
 (ns tpx.pairing
-  (:require [tpx.gpio :as gpio]
+  (:require ;; [tpx.gpio :as gpio]
             [taoensso.timbre :as log]))
 
 (def possible-states #{:unpaired :paired :pairing})

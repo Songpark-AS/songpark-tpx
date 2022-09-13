@@ -1,7 +1,7 @@
 (ns tpx.gpio
   (:require [com.stuartsierra.component :as component]
             [clojure.set :as set]
-            [helins.linux.gpio :as gpio]
+            ;; [helins.linux.gpio :as gpio]
             [taoensso.timbre :as log]
             [tpx.config :refer [config]]
             [tpx.gpio.bitbang :as bitbang])
@@ -10,292 +10,306 @@
 
 (defn bitbang-write
   ([gpio cmd value]
-   (bitbang-write gpio cmd nil value))
+   ;; (bitbang-write gpio cmd nil value)
+   )
   ([{:keys [rw-lock rw-attempts] :as gpio} cmd sub-cmd value]
-   (let [handle (:handle-write gpio)
-         buffer (:buffer-write gpio)]
-     (when (and handle
-                buffer)
-       (loop [counter 0]
-         (if (>= counter rw-attempts)
-           ;; We have exhausted our attempts. Throw an exception
-           (throw (ex-info "Unable to write to GPIO as the line is busy" {}))
-           (let [locked? @rw-lock]
-             (if locked?
-               ;; if R/W is locked, we sleep for 10 milliseconds
-               (do (Thread/sleep 10)
-                   (recur (inc counter)))
-               ;; we use compare-and-set! in order to make sure we do
-               ;; not get into a situation where two threads try to
-               ;; read or write at the same time
-               (let [success? (compare-and-set! rw-lock locked? true)]
-                 (if-not success?
-                   ;; if we could not successfully lock the R/W we sleep
-                   ;; and then iterate the counter for another try
-                   (do (Thread/sleep 10)
-                       (recur (inc counter)))
-                   ;; we could successfully lock R/W. Continue as normal
-                   (try
-                     (let [value (bitbang/bit-write handle buffer cmd sub-cmd value)]
-                       ;; do not forget to reset the R/W lock to false, to allow
-                       ;; for other R/W attempts
-                       (reset! rw-lock false)
-                       value)
-                     (catch Exception e
-                       ;; catch any exceptions in order to reset the R/W lock to false
-                       (reset! rw-lock false)
-                       ;; re-throw the exception for upper layers
-                       (throw e)))))))))))))
+   ;; (let [handle (:handle-write gpio)
+   ;;       buffer (:buffer-write gpio)]
+   ;;   (when (and handle
+   ;;              buffer)
+   ;;     (loop [counter 0]
+   ;;       (if (>= counter rw-attempts)
+   ;;         ;; We have exhausted our attempts. Throw an exception
+   ;;         (throw (ex-info "Unable to write to GPIO as the line is busy" {}))
+   ;;         (let [locked? @rw-lock]
+   ;;           (if locked?
+   ;;             ;; if R/W is locked, we sleep for 10 milliseconds
+   ;;             (do (Thread/sleep 10)
+   ;;                 (recur (inc counter)))
+   ;;             ;; we use compare-and-set! in order to make sure we do
+   ;;             ;; not get into a situation where two threads try to
+   ;;             ;; read or write at the same time
+   ;;             (let [success? (compare-and-set! rw-lock locked? true)]
+   ;;               (if-not success?
+   ;;                 ;; if we could not successfully lock the R/W we sleep
+   ;;                 ;; and then iterate the counter for another try
+   ;;                 (do (Thread/sleep 10)
+   ;;                     (recur (inc counter)))
+   ;;                 ;; we could successfully lock R/W. Continue as normal
+   ;;                 (try
+   ;;                   (let [value (bitbang/bit-write handle buffer cmd sub-cmd value)]
+   ;;                     ;; do not forget to reset the R/W lock to false, to allow
+   ;;                     ;; for other R/W attempts
+   ;;                     (reset! rw-lock false)
+   ;;                     value)
+   ;;                   (catch Exception e
+   ;;                     ;; catch any exceptions in order to reset the R/W lock to false
+   ;;                     (reset! rw-lock false)
+   ;;                     ;; re-throw the exception for upper layers
+   ;;                     (throw e)))))))))))
+   ))
 
 (defn bitbang-read
   ([gpio cmd]
-   (bitbang-read gpio cmd true))
+   ;; (bitbang-read gpio cmd true)
+   )
   ([gpio cmd decimal?]
-   (let [{:keys [handle-write handle-read
-                 buffer-write buffer-read
-                 rw-lock rw-attempts]} gpio]
-     (when (and handle-write
-                handle-read
-                buffer-write
-                buffer-read)
-       (loop [counter 0]
-         (if (>= counter rw-attempts)
-           ;; We have exhausted our attempts. Throw an exception
-           (throw (ex-info "Unable to read from GPIO as the line is busy" {}))
-           (let [locked? @rw-lock]
-             (if locked?
-               ;; if R/W is locked, we sleep for 10 milliseconds
-               (do (Thread/sleep 10)
-                   (recur (inc counter)))
-               ;; we use compare-and-set! in order to make sure we do
-               ;; not get into a situation where two threads try to
-               ;; read or write at the same time
-               (let [success? (compare-and-set! rw-lock locked? true)]
-                 (if-not success?
-                   ;; if we could not successfully lock the R/W we sleep
-                   ;; and then iterate the counter for another try
-                   (do (Thread/sleep 10)
-                       (recur (inc counter)))
-                   ;; we could successfully lock R/W. Continue as normal
-                   (try
-                     (let [value (bitbang/bit-reader handle-write
-                                                     handle-read
-                                                     buffer-write
-                                                     buffer-read
-                                                     cmd)]
-                       ;; do not forget to reset the R/W lock to false, to allow
-                       ;; for other R/W attempts
-                       (reset! rw-lock false)
-                       (if decimal?
-                         (bitbang/convert-from-binary value)
-                         value))
-                     (catch Exception e
-                       ;; catch any exceptions in order to reset the R/W lock to false
-                       (reset! rw-lock false)
-                       ;; re-throw the exception for upper layers
-                       (throw e)))))))))))))
+   ;; (let [{:keys [handle-write handle-read
+   ;;               buffer-write buffer-read
+   ;;               rw-lock rw-attempts]} gpio]
+   ;;   (when (and handle-write
+   ;;              handle-read
+   ;;              buffer-write
+   ;;              buffer-read)
+   ;;     (loop [counter 0]
+   ;;       (if (>= counter rw-attempts)
+   ;;         ;; We have exhausted our attempts. Throw an exception
+   ;;         (throw (ex-info "Unable to read from GPIO as the line is busy" {}))
+   ;;         (let [locked? @rw-lock]
+   ;;           (if locked?
+   ;;             ;; if R/W is locked, we sleep for 10 milliseconds
+   ;;             (do (Thread/sleep 10)
+   ;;                 (recur (inc counter)))
+   ;;             ;; we use compare-and-set! in order to make sure we do
+   ;;             ;; not get into a situation where two threads try to
+   ;;             ;; read or write at the same time
+   ;;             (let [success? (compare-and-set! rw-lock locked? true)]
+   ;;               (if-not success?
+   ;;                 ;; if we could not successfully lock the R/W we sleep
+   ;;                 ;; and then iterate the counter for another try
+   ;;                 (do (Thread/sleep 10)
+   ;;                     (recur (inc counter)))
+   ;;                 ;; we could successfully lock R/W. Continue as normal
+   ;;                 (try
+   ;;                   (let [value (bitbang/bit-reader handle-write
+   ;;                                                   handle-read
+   ;;                                                   buffer-write
+   ;;                                                   buffer-read
+   ;;                                                   cmd)]
+   ;;                     ;; do not forget to reset the R/W lock to false, to allow
+   ;;                     ;; for other R/W attempts
+   ;;                     (reset! rw-lock false)
+   ;;                     (if decimal?
+   ;;                       (bitbang/convert-from-binary value)
+   ;;                       value))
+   ;;                   (catch Exception e
+   ;;                     ;; catch any exceptions in order to reset the R/W lock to false
+   ;;                     (reset! rw-lock false)
+   ;;                     ;; re-throw the exception for upper layers
+   ;;                     (throw e)))))))))))
+   ))
 
 (def ^:private on-off-map {:on false :off true})
 (defn set-led [{:keys [handle-write buffer-write leds] :as gpio} led on-off-value]
-  (assert (#{:on :off} on-off-value) "on-off-value has to be either :on or :off")
-  (if-not (contains? @leds led)
-    (log/warn (str "led has to be one of " (keys @leds)))
-    (do
-      (swap! leds assoc led on-off-value)
-      (let [leds* (->> @leds
-                       (map (fn [[k v]]
-                              [k (on-off-map v)]))
-                       (into {}))]
-        (when handle-write
-          (gpio/write handle-write
-                      (gpio/set-line+ buffer-write leds*))))))
+  ;; (assert (#{:on :off} on-off-value) "on-off-value has to be either :on or :off")
+  ;; (if-not (contains? @leds led)
+  ;;   (log/warn (str "led has to be one of " (keys @leds)))
+  ;;   (do
+  ;;     (swap! leds assoc led on-off-value)
+  ;;     (let [leds* (->> @leds
+  ;;                      (map (fn [[k v]]
+  ;;                             [k (on-off-map v)]))
+  ;;                      (into {}))]
+  ;;       (when handle-write
+  ;;         (gpio/write handle-write
+  ;;                     (gpio/set-line+ buffer-write leds*))))))
   gpio)
 
 (defn get-led [{:keys [leds]} led]
-  (get @leds led))
+  ;; (get @leds led)
+  )
 
 (defn set-leds [gpio leds]
-  (assert (map? leds)
-          "leds has to be a map with led keys and corrsesponding values of :on or :off")
-  (assert (every? #{:on :off} (vals leds))
-          "leds have to contain either :on or :off")
-  (assert (set/subset? (set (keys leds))
-                       (set (keys @(:leds gpio))))
-          (str "leds can only contain the keys " (keys @(:leds gpio))))
-  (swap! (:leds gpio) merge leds))
+  ;; (assert (map? leds)
+  ;;         "leds has to be a map with led keys and corrsesponding values of :on or :off")
+  ;; (assert (every? #{:on :off} (vals leds))
+  ;;         "leds have to contain either :on or :off")
+  ;; (assert (set/subset? (set (keys leds))
+  ;;                      (set (keys @(:leds gpio))))
+  ;;         (str "leds can only contain the keys " (keys @(:leds gpio))))
+  ;; (swap! (:leds gpio) merge leds)
+  )
 
 (defn start-blink [{:keys [blinks leds] :as gpio} led ms]
-  (when-not (contains? @blinks led)
-    (swap! blinks assoc led
-           (future
-             (while true
-               (if (= :on (get @leds led))
-                 (set-led gpio led :off)
-                 (set-led gpio led :on))
-               (Thread/sleep ms))))))
+  ;; (when-not (contains? @blinks led)
+  ;;   (swap! blinks assoc led
+  ;;          (future
+  ;;            (while true
+  ;;              (if (= :on (get @leds led))
+  ;;                (set-led gpio led :off)
+  ;;                (set-led gpio led :on))
+  ;;              (Thread/sleep ms)))))
+  )
 
 (defn stop-blink [{:keys [blinks] :as gpio} led]
-  (when-let [led-f (get @blinks led)]
-    (future-cancel led-f)
-    (set-led gpio led :off)
-    (swap! blinks dissoc led)))
+  ;; (when-let [led-f (get @blinks led)]
+  ;;   (future-cancel led-f)
+  ;;   (set-led gpio led :off)
+  ;;   (swap! blinks dissoc led))
+  )
 
 (defn close! [{:keys [running? device handle-write handle-read watchers] :as _gpio}]
-  (reset! running? false)
-  (when handle-write
-    (gpio/close handle-write))
-  (when handle-read
-    (gpio/close handle-read))
-  (when watchers
-    (gpio/close watchers))
-  (when device
-    (gpio/close device)))
+  ;; (reset! running? false)
+  ;; (when handle-write
+  ;;   (gpio/close handle-write))
+  ;; (when handle-read
+  ;;   (gpio/close handle-read))
+  ;; (when watchers
+  ;;   (gpio/close watchers))
+  ;; (when device
+  ;;   (gpio/close device))
+  )
 
 (defn- get-milliseconds
   ([nano-timestamp]
-   (long (/ nano-timestamp 1000000)))
+   ;; (long (/ nano-timestamp 1000000))
+   )
   ([nano-timestamp cast-to]
-   (case cast-to
-     :double (double (/ nano-timestamp 1000000))
-     (long (/ nano-timestamp 1000000)))))
+   ;; (case cast-to
+   ;;   :double (double (/ nano-timestamp 1000000))
+   ;;   (long (/ nano-timestamp 1000000)))
+   ))
 
 (defn- get-sleep-time [boundary end-time start-time]
-  (max 1 (- boundary (get-milliseconds (- end-time start-time)))))
+  ;; (max 1 (- boundary (get-milliseconds (- end-time start-time))))
+  )
 
 (defn- handle-buttons [{:keys [buttons watchers running? context] :as gpio}]
-  (future
-    (try
-      (let [bounce (atom {})
-            ;; epsilon of 10 ms for bouncing signals
-            epsilon 10.0]
-        (while @running?
-          ;; (log/debug :handle-buttons)
-          (let [event (gpio/event watchers 1000)]
-            (when event
-              (let [{:gpio/keys [tag nano-timestamp edge]} event
-                    rising (get-in @bounce [tag :rising])]
-                ;; (log/debug {:event event
-                ;;             :bounce @bounce})
-                (cond (and (nil? rising)
-                           (= edge :rising))
-                      (swap! bounce assoc-in [tag :rising] nano-timestamp)
+  ;; (future
+  ;;   (try
+  ;;     (let [bounce (atom {})
+  ;;           ;; epsilon of 10 ms for bouncing signals
+  ;;           epsilon 10.0]
+  ;;       (while @running?
+  ;;         ;; (log/debug :handle-buttons)
+  ;;         (let [event (gpio/event watchers 1000)]
+  ;;           (when event
+  ;;             (let [{:gpio/keys [tag nano-timestamp edge]} event
+  ;;                   rising (get-in @bounce [tag :rising])]
+  ;;               ;; (log/debug {:event event
+  ;;               ;;             :bounce @bounce})
+  ;;               (cond (and (nil? rising)
+  ;;                          (= edge :rising))
+  ;;                     (swap! bounce assoc-in [tag :rising] nano-timestamp)
 
-                      (and (some? rising)
-                           (= edge :falling))
-                      (let [ms (get-milliseconds (- nano-timestamp rising) :double)]
-                        (when (> ms epsilon)
-                          (if-let [f (get buttons tag)]
-                            (do (f (assoc context
-                                          :gpio gpio
-                                          :delay ms))
-                                (swap! bounce dissoc tag))
-                            (do (log/error "GPIO: Could not find a function for " tag)
-                                (swap! bounce dissoc tag)))))
+  ;;                     (and (some? rising)
+  ;;                          (= edge :falling))
+  ;;                     (let [ms (get-milliseconds (- nano-timestamp rising) :double)]
+  ;;                       (when (> ms epsilon)
+  ;;                         (if-let [f (get buttons tag)]
+  ;;                           (do (f (assoc context
+  ;;                                         :gpio gpio
+  ;;                                         :delay ms))
+  ;;                               (swap! bounce dissoc tag))
+  ;;                           (do (log/error "GPIO: Could not find a function for " tag)
+  ;;                               (swap! bounce dissoc tag)))))
 
-                      :else
-                      :do-nothing))))))
-      (catch Throwable t
-        (log/error :handle-buttons/error t)))))
+  ;;                     :else
+  ;;                     :do-nothing))))))
+  ;;     (catch Throwable t
+  ;;       (log/error :handle-buttons/error t))))
+  )
 
 (defn- init-gpio [component]
-  (let [;; for the LEDs false (ie, 0), is the LED turned on
-        ;; and true (ie, 1), is the LED turned off
-        ;; this is decided by the HW guys, and had to do with how much
-        ;; power was drawn from the power card
-        on-off-map {:on false :off true}]
-    (try
-      (let [device (gpio/device "/dev/gpiochip0")
-            leds (:leds component)
-            ;; see bitbang for what these mean
-            {:keys [chip-select
-                    clock
-                    mosi
-                    miso
-                    led-yellow
-                    led-green
-                    led-red
-                    button-push1
-                    rotary-clk
-                    rotary-dt
-                    led-prompt
-                    button-prompt
-                    button-rotary]
-             ;; :or
-             ;; {chip-select 10
-             ;;  clock 12
-             ;;  mosi 11
-             ;;  miso 13
-             ;;  led-yellow 15
-             ;;  led-green 14
-             ;;  led-red 9
-             ;;  button-push1 0}
-             } (:gpio/pins config)
-            write-map (merge
-                       (if led-prompt
-                         {led-prompt  {:gpio/state true
-                                       :gpio/tag :led/prompt}})
-                       (if led-yellow
-                         {led-yellow  {:gpio/state true
-                                       :gpio/tag :led/yellow}})
-                       (if led-green
-                         {led-green   {:gpio/state true
-                                       :gpio/tag :led/green}})
-                       (if led-red
-                         {led-red     {:gpio/state true
-                                       :gpio/tag :led/red}})
-                       (if chip-select
-                         {chip-select {:gpio/state true
-                                       :gpio/tag :chip-select}
-                          clock       {:gpio/state false
-                                       :gpio/tag :clock}
-                          mosi        {:gpio/state false
-                                       :gpio/tag :mosi}}))
-            handle-write (when write-map
-                           (gpio/handle device
-                                       write-map
-                                       {:gpio/direction :output}))
-            read-map (if miso
-                       {miso {:gpio/state false
-                              :gpio/tag :miso}})
-            handle-read (when read-map
-                          (gpio/handle device
-                                       read-map
-                                       {:gpio/direction :input}))
-            input-map (merge
-                       (if button-push1
-                         {button-push1 {:gpio/tag :button/push1
-                                        :gpio/direction :input}})
-                       (if button-prompt
-                         {button-prompt {:gpio/tag :button/prompt
-                                         :gpio/direction :input}}))
-            watchers (when input-map
-                       (gpio/watcher device
-                                    input-map))
-            component (assoc component
-                             :rw-lock (atom false)
-                             :device device
-                             :handle-write handle-write
-                             :handle-read handle-read
-                             :watchers watchers
-                             :buffer-write (when handle-write
-                                             (gpio/buffer handle-write))
-                             :buffer-read (when handle-read
-                                            (gpio/buffer handle-read)))]
-        (when watchers
-          (handle-buttons component))
-        (when led-red
-          (swap! leds assoc :led/red :off))
-        (when led-yellow
-          (swap! leds assoc :led/yellow :off))
-        (when led-green
-          (swap! leds assoc :led/green :off))
-        (when led-prompt
-          (swap! leds assoc :led/prompt :off))
-        component)
-      (catch Throwable t
-        (log/error :init-gpio/error {:throwable t
-                                     :message (ex-message t)
-                                     :data (ex-data t)})))))
+  ;; (let [;; for the LEDs false (ie, 0), is the LED turned on
+  ;;       ;; and true (ie, 1), is the LED turned off
+  ;;       ;; this is decided by the HW guys, and had to do with how much
+  ;;       ;; power was drawn from the power card
+  ;;       on-off-map {:on false :off true}]
+  ;;   (try
+  ;;     (let [device (gpio/device "/dev/gpiochip0")
+  ;;           leds (:leds component)
+  ;;           ;; see bitbang for what these mean
+  ;;           {:keys [chip-select
+  ;;                   clock
+  ;;                   mosi
+  ;;                   miso
+  ;;                   led-yellow
+  ;;                   led-green
+  ;;                   led-red
+  ;;                   button-push1
+  ;;                   rotary-clk
+  ;;                   rotary-dt
+  ;;                   led-prompt
+  ;;                   button-prompt
+  ;;                   button-rotary]
+  ;;            ;; :or
+  ;;            ;; {chip-select 10
+  ;;            ;;  clock 12
+  ;;            ;;  mosi 11
+  ;;            ;;  miso 13
+  ;;            ;;  led-yellow 15
+  ;;            ;;  led-green 14
+  ;;            ;;  led-red 9
+  ;;            ;;  button-push1 0}
+  ;;            } (:gpio/pins config)
+  ;;           write-map (merge
+  ;;                      (if led-prompt
+  ;;                        {led-prompt  {:gpio/state true
+  ;;                                      :gpio/tag :led/prompt}})
+  ;;                      (if led-yellow
+  ;;                        {led-yellow  {:gpio/state true
+  ;;                                      :gpio/tag :led/yellow}})
+  ;;                      (if led-green
+  ;;                        {led-green   {:gpio/state true
+  ;;                                      :gpio/tag :led/green}})
+  ;;                      (if led-red
+  ;;                        {led-red     {:gpio/state true
+  ;;                                      :gpio/tag :led/red}})
+  ;;                      (if chip-select
+  ;;                        {chip-select {:gpio/state true
+  ;;                                      :gpio/tag :chip-select}
+  ;;                         clock       {:gpio/state false
+  ;;                                      :gpio/tag :clock}
+  ;;                         mosi        {:gpio/state false
+  ;;                                      :gpio/tag :mosi}}))
+  ;;           handle-write (when write-map
+  ;;                          (gpio/handle device
+  ;;                                      write-map
+  ;;                                      {:gpio/direction :output}))
+  ;;           read-map (if miso
+  ;;                      {miso {:gpio/state false
+  ;;                             :gpio/tag :miso}})
+  ;;           handle-read (when read-map
+  ;;                         (gpio/handle device
+  ;;                                      read-map
+  ;;                                      {:gpio/direction :input}))
+  ;;           input-map (merge
+  ;;                      (if button-push1
+  ;;                        {button-push1 {:gpio/tag :button/push1
+  ;;                                       :gpio/direction :input}})
+  ;;                      (if button-prompt
+  ;;                        {button-prompt {:gpio/tag :button/prompt
+  ;;                                        :gpio/direction :input}}))
+  ;;           watchers (when input-map
+  ;;                      (gpio/watcher device
+  ;;                                   input-map))
+  ;;           component (assoc component
+  ;;                            :rw-lock (atom false)
+  ;;                            :device device
+  ;;                            :handle-write handle-write
+  ;;                            :handle-read handle-read
+  ;;                            :watchers watchers
+  ;;                            :buffer-write (when handle-write
+  ;;                                            (gpio/buffer handle-write))
+  ;;                            :buffer-read (when handle-read
+  ;;                                           (gpio/buffer handle-read)))]
+  ;;       (when watchers
+  ;;         (handle-buttons component))
+  ;;       (when led-red
+  ;;         (swap! leds assoc :led/red :off))
+  ;;       (when led-yellow
+  ;;         (swap! leds assoc :led/yellow :off))
+  ;;       (when led-green
+  ;;         (swap! leds assoc :led/green :off))
+  ;;       (when led-prompt
+  ;;         (swap! leds assoc :led/prompt :off))
+  ;;       component)
+  ;;     (catch Throwable t
+  ;;       (log/error :init-gpio/error {:throwable t
+  ;;                                    :message (ex-message t)
+  ;;                                    :data (ex-data t)}))))
+  )
 
 
 (defrecord GPIO [started? buttons leds context rw-lock rw-attempts

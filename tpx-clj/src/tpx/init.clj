@@ -19,7 +19,7 @@
             [tpx.mqtt.handler.pairing]
             [tpx.mqtt.handler.teleporter]
             [tpx.network :as network]
-            [tpx.scheduler :as scheduler]
+            ;; [tpx.scheduler :as scheduler]
             [tpx.utils :as util]))
 
 (defonce system (atom nil))

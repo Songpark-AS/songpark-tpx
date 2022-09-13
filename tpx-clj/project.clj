@@ -25,7 +25,7 @@
                  [songpark/common "0.2.0"]
 
                  ;; GPIO for Clojure
-                 [io.helins/linux.gpio "2.0.1"]
+                 ;; [io.helins/linux.gpio "2.0.1"]
 
                  ;; database
                  [codax "1.3.1"]
