@@ -20,6 +20,7 @@
             [tpx.mqtt.handler.teleporter]
             [tpx.network :as network]
             ;; [tpx.scheduler :as scheduler]
+            [tpx.versions :as versions]
             [tpx.utils :as util]))
 
 (defonce system (atom nil))
@@ -30,7 +31,8 @@
 (defn broadcast-presence [success-cb error-cb]
   (let [data (merge {:teleporter/serial (get-in config [:teleporter :serial])
                      :teleporter/apt-version (data/get-apt-version)}
-                    (get-hardware-values))
+                    (get-hardware-values)
+                    (versions/get-versions))
         platform-url (util/get-platform-url "/api/teleporter")]
     (log/debug "Broadcasting to URL" platform-url data)
     (PUT platform-url data success-cb error-cb)))
@@ -63,7 +65,8 @@
                                        :database db
                                        ;; :scheduler (component/using (scheduler/get-scheduler (:scheduler config))
                                        ;;                             [:mqtt-client :gpio])
-                                       :ipc (component/using (ipc/ipc-service {:config (:ipc config)})
+                                       :ipc (component/using (ipc/ipc-service {:config (:ipc config)
+                                                                               :broadcast-presence broadcast-presence})
                                                              [:mqtt-client :database])
                                        :jam (component/using (jam.tpx/get-jam (merge {:tp-id id}
                                                                                      (:jam config)))

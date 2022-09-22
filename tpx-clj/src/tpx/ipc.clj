@@ -13,6 +13,7 @@
             [tpx.ipc.command :as ipc.command]
             [tpx.ipc.handler :as ipc.handler]
             [tpx.ipc.serial :as ipc.serial]
+            [tpx.versions :as versions]
             [songpark.common.communication :refer [PUT]]))
 
 (defn- setup-serial-ports! [context]
@@ -37,7 +38,9 @@
                                :stream/streaming #'ipc.handler/handle-stream-streaming
                                :stream/stopped #'ipc.handler/handle-stream-stopped
 
-                               :jam/coredump #'ipc.handler/handle-coredump}))
+                               :jam/coredump #'ipc.handler/handle-coredump
+
+                               :versions #'ipc.handler/handle-versions}))
 
 (defn- command* [_ipc what data]
   (log/debug ::command* {:what what
@@ -91,19 +94,35 @@
       (log/warn "Missing HW value" {:what what
                                     :value value}))))
 
-(defrecord IpcService [started? config mqtt-client c]
+(defn set-versions!
+  "Set BP and FPGA versions. This involves a complex little loop in logic to
+  execute due to speed limitations in the integration between BP and TPX."
+  []
+  (ipc.command/gather-versions))
+
+(defrecord IpcService [started? config mqtt-client c broadcast-presence]
   component/Lifecycle
   (start [this]
     (if started?
       this
       (do (log/info "Starting IpcService")
+
+          ;; load versions first, in the hope that it has been executed before
+          ;; and we have the versions already
+          (versions/load-versions)
+
           (let [this* (assoc this
                              :started? true
                              :c (async/chan (async/sliding-buffer 10)))]
             (setup-serial-ports! {:ipc this*
                                   :mqtt-client mqtt-client
+                                  :versions/current-versions @versions/data
+                                  :versions/save-versions versions/save-versions
+                                  :broadcast-presence/fn broadcast-presence
                                   :start-coredump #'ipc.command/start-coredump})
             (init-hw-values!)
+            (set-versions!)
+
             this*))))
 
   (stop [this]

@@ -5,6 +5,9 @@
 
 (defonce allow-start-coredump (atom true))
 
+(defn gather-versions []
+  (send-command "pv" ""))
+
 (defn global-volume [value]
   (do (send-command "pc" "")
       (send-command "vol" value)))

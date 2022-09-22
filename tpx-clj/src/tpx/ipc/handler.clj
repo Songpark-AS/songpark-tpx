@@ -3,7 +3,8 @@
             [songpark.mqtt :as mqtt]
             [songpark.jam.tpx.ipc :as tpx.ipc]
             [taoensso.timbre :as log]
-            [tpx.data :as data]))
+            [tpx.data :as data]
+            [tpx.versions :as versions]))
 
 
 (defn handle-sip-register [data {:keys [ipc] :as _context}]
@@ -88,6 +89,21 @@
                          (str/replace #"=_=_" " ")
                          (str/replace #" ms" ""))}))
        (into {})))
+
+(defn handle-versions [data {:versions/keys [save-versions
+                                             current-versions
+                                             get-versions]
+                             broadcast-presence :broadcast-presence/fn
+                             :as _context}]
+  (log/debug :versions data)
+  (let [{:teleporter/keys [fpga-version bp-version]} current-versions]
+    (when (or (not= fpga-version (:fpga-version data))
+              (not= bp-version (:bp-version data)))
+      (save-versions data)
+      (broadcast-presence (fn [_]
+                            (log/info "Broadcasted change in FPGA/BP version"))
+                          (fn [_]
+                            (log/error "Failed to broadcast change in FPGA/BP version"))))))
 
 (comment
   (extract-coredump-data "Latency: 0.00 ms | LTC: 348043984 | RTC: 348043682 | StreamStatus: 1 | RX Packets-per-second: 0 | TX Packets-per-second: 0 | DDiffMS: 3.15 ms | DDiffCC: 302")

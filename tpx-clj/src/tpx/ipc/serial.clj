@@ -21,7 +21,17 @@
 ;; is created. This means to be fixed.
 (def ^:private open-handler? (atom true))
 
-(defn handler "Read input stream from serial"
+;; The handler is actually quite slow.
+;; The reading not so much, but rather that
+;; it becomes line based. That means any machinery
+;; that happens after the line is fed runs immediately.
+;; This has the side effect of spammy output from
+;; BP uses <x> ms in order to do nothing. Due to the
+;; sequential nature of some of the output, it cannot
+;; be handled in parallell either, leaving us with a
+;; somewhat slow implementation to handle the integration.
+(defn handler
+  "Read input stream from serial"
   [context fns]
   (reset! open-handler? true)
   (fn [io-stream]

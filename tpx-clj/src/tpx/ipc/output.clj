@@ -31,7 +31,10 @@
               :sync/sync-success #".*SYNC SUCCESS.*"
               :sync/sync-good #".*SYNC GOOD.*"
               :stream/streaming #".*STREAM STARTED.*"
-              :stream/stopped #".*stop_hw_streaming\(\):Stream tx stopped status was.*"))
+              :stream/stopped #".*stop_hw_streaming\(\):Stream tx stopped status was.*"
+
+              :bp-version #"INFO::The BP version is: (.*)"
+              :fpga-version #"INFO::The FPGA core version is: (.*)"))
 
 
 (def controller-steps ^{:doc "Last step in the regex steps above"}
@@ -56,7 +59,9 @@
 
     :stream/broken
     :stream/streaming
-    :stream/stopped})
+    :stream/stopped
+
+    :fpga-version})
 
 (defonce lines (atom []))
 
@@ -145,6 +150,9 @@
           (set/subset? #{:stream/broken} current-set)
           [:stream/broken (into {} lines)]
 
+          (set/subset? #{:bp-version :fpga-version} current-set)
+          [:versions (into {} lines)]
+
           :else
           nil)))
 
@@ -176,6 +184,12 @@
     :stream/streaming true
     :stream/stopped true
     :stream/broken true
+
+    ;; versions
+    :versions (let [[_ fpga-version] (:fpga-version data)
+                    [_ bp-version] (:bp-version data)]
+                {:fpga-version fpga-version
+                 :bp-version bp-version})
 
     nil))
 
