@@ -98,6 +98,7 @@
   "Set BP and FPGA versions. This involves a complex little loop in logic to
   execute due to speed limitations in the integration between BP and TPX."
   []
+  (log/info "Gathering versions from BP and FPGA")
   (ipc.command/gather-versions))
 
 (defrecord IpcService [started? config mqtt-client c broadcast-presence]
