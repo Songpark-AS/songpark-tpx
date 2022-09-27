@@ -61,7 +61,8 @@
     :stream/streaming
     :stream/stopped
 
-    :fpga-version})
+    :fpga-version
+    :bp-version})
 
 (defonce lines (atom []))
 
@@ -150,8 +151,11 @@
           (set/subset? #{:stream/broken} current-set)
           [:stream/broken (into {} lines)]
 
-          (set/subset? #{:bp-version :fpga-version} current-set)
-          [:versions (into {} lines)]
+          (set/subset? #{:fpga-version} current-set)
+          [:fpga-version (into {} lines)]
+
+          (set/subset? #{:bp-version} current-set)
+          [:bp-version (into {} lines)]
 
           :else
           nil)))
@@ -186,10 +190,11 @@
     :stream/broken true
 
     ;; versions
-    :versions (let [[_ fpga-version] (:fpga-version data)
-                    [_ bp-version] (:bp-version data)]
-                {:fpga-version fpga-version
-                 :bp-version bp-version})
+    :bp-version (let [[_ bp-version] (:bp-version data)]
+                {:bp-version bp-version})
+
+    :fpga-version (let [[_ fpga-version] (:fpga-version data)]
+                  {:fpga-version fpga-version})
 
     nil))
 

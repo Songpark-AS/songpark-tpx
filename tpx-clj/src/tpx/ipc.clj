@@ -40,7 +40,8 @@
 
                                :jam/coredump #'ipc.handler/handle-coredump
 
-                               :versions #'ipc.handler/handle-versions}))
+                               :fpga-version #'ipc.handler/handle-versions
+                               :bp-version #'ipc.handler/handle-versions}))
 
 (defn- command* [_ipc what data]
   (log/debug ::command* {:what what

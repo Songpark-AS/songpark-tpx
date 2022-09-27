@@ -90,20 +90,32 @@
                          (str/replace #" ms" ""))}))
        (into {})))
 
+(def ^:private reported-versions (atom {}))
+
 (defn handle-versions [data {:versions/keys [save-versions
                                              current-versions
                                              get-versions]
                              broadcast-presence :broadcast-presence/fn
                              :as _context}]
   (log/debug :versions data)
-  (let [{:teleporter/keys [fpga-version bp-version]} current-versions]
-    (when (or (not= fpga-version (:fpga-version data))
-              (not= bp-version (:bp-version data)))
-      (save-versions data)
-      (broadcast-presence (fn [_]
-                            (log/info "Broadcasted change in FPGA/BP version"))
-                          (fn [_]
-                            (log/error "Failed to broadcast change in FPGA/BP version"))))))
+
+  (when-let [fpga-version (:fpga-version data)]
+    (log/debug "swapping FPGA version")
+    (swap! reported-versions assoc :fpga-version fpga-version))
+  (when-let [bp-version (:bp-version data)]
+    (log/debug "swapping BP version")
+    (swap! reported-versions assoc :bp-version bp-version))
+
+  (when (and (contains? @reported-versions :fpga-version)
+             (contains? @reported-versions :bp-version))
+    (let [{:teleporter/keys [fpga-version bp-version]} current-versions]
+      (when (or (not= fpga-version (:fpga-version @reported-versions))
+                (not= bp-version (:bp-version @reported-versions)))
+        (save-versions @reported-versions)
+        (broadcast-presence (fn [_]
+                              (log/info "Broadcasted change in FPGA/BP version"))
+                            (fn [_]
+                              (log/error "Failed to broadcast change in FPGA/BP version")))))))
 
 (comment
   (extract-coredump-data "Latency: 0.00 ms | LTC: 348043984 | RTC: 348043682 | StreamStatus: 1 | RX Packets-per-second: 0 | TX Packets-per-second: 0 | DDiffMS: 3.15 ms | DDiffCC: 302")
