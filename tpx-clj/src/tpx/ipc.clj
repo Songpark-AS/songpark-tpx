@@ -76,15 +76,16 @@
   ;; let TPX Jam handle the rest
   (let [value {:event/type what
                :event/value data}]
-    (when (= what :stream/stopped)
-      (try
-        (log/info "Doing a path reset at the end of a stopped stream")
-        (ipc.command/path-reset)
-        (catch Throwable e
-          (log/error "Tried to do a path reset when the stream stopped"
-                     {:exception e
-                      :message (ex-message e)
-                      :data (ex-data e)}))))
+    ;; TEMP REMOVE
+    ;; (when (= what :stream/stopped)
+    ;;   (try
+    ;;     (log/info "Doing a path reset at the end of a stopped stream")
+    ;;     (ipc.command/path-reset)
+    ;;     (catch Throwable e
+    ;;       (log/error "Tried to do a path reset when the stream stopped"
+    ;;                  {:exception e
+    ;;                   :message (ex-message e)
+    ;;                   :data (ex-data e)}))))
     (log/debug value)
     (async/put! c value)))
 
