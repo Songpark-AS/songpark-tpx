@@ -14,6 +14,7 @@
     (log/debug "Setting to paired")
 
     (data/set-user-id! user-id)
+    (data/set-tp-id! id)
     (POST platform-url
           {:message/type :pairing/paired
            :teleporter/id (data/get-tp-id)
