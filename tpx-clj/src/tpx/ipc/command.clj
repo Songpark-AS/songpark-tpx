@@ -130,6 +130,19 @@
 
   (local-volume 75)
   (global-volume 25)
+
+  ;; 0001
+  (call-via-sip "sip:39d04c2c-7214-5e2c-a9ae-32ff15405b7f@voip1.songpark.com")
+  (hangup-via-sip "sip:39d04c2c-7214-5e2c-a9ae-32ff15405b7f@voip1.songpark.com")
+
+  ;; 0002
+  (call-via-sip "sip:77756ff0-bb05-5e6a-b7d9-28086f3a07fd@voip1.songpark.com")
+  (hangup-via-sip "sip:77756ff0-bb05-5e6a-b7d9-28086f3a07fd@voip1.songpark.com")
+
+  ;; 0003
+  (call-via-sip "sip:b5fb6c6c-6707-56a6-88ab-23e4ec416abf@voip1.songpark.com")
+  (hangup-via-sip "sip:b5fb6c6c-6707-56a6-88ab-23e4ec416abf@voip1.songpark.com")
+
   ;; Beatles
   (call-via-sip "sip:9100@voip1.songpark.com")
   (hangup-via-sip "sip:9100@voip1.songpark.com")
