@@ -9,10 +9,10 @@
 (def regexes (sorted-map
               :jam/coredump #"INFO::COREDUMP - (.*)"
               :sip/register #".*pjsua_acc.c  ....sip:[^:]+: registration success, status=200 \(OK\).*"
-              ;; sip menu. required before we make a call
-              :sip/menu-buddy-list #"Buddy list:"
-              :sip/menu-choices #"Choices:"
-              :sip/menu-enter #"  <Enter>    Empty input \(or 'q'\) to cancel"
+              ;; ;; sip menu. required before we make a call
+              ;; :sip/menu-buddy-list #"Buddy list:"
+              ;; :sip/menu-choices #"Choices:"
+              ;; :sip/menu-enter #"  <Enter>    Empty input \(or 'q'\) to cancel"
 
               :sip/making-call #".*pjsua_call\.c \!Making call with acc.*"
               :sip/calling #".*Call \d+ state changed to CALLING.*"
