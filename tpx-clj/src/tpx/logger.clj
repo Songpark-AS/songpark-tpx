@@ -4,10 +4,11 @@
             [taoensso.timbre :as log]
             [taoensso.timbre.appenders.3rd-party.rotor :refer [rotor-appender]]
             [taoensso.timbre.appenders.3rd-party.sentry :refer [sentry-appender]]
-            [tpx.config :refer [config]]))
+            [tpx.config :refer [config]]
+            [tpx.logger.appenders.bp :refer [bp-appender]]))
 
 
-(defrecord Logger [started? sentry-settings]
+(defrecord Logger [started? sentry-settings bp-settings]
   component/Lifecycle
   (start [this]
     (if started?
@@ -27,7 +28,9 @@
                                         {:rotor (rotor-appender {:path (str dir "/tpx.log")
                                                                  :backlog 100})}
                                         (if (:log? sentry-settings)
-                                          {:raven (sentry-appender (:dsn sentry-settings))}))})
+                                          {:raven (sentry-appender (:dsn sentry-settings))})
+                                        (if (:log? bp-settings)
+                                          {:bp (bp-appender)}))})
         (log/info "Starting Logger")
         (assoc this
                :started? true))))
