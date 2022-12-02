@@ -19,6 +19,7 @@
             [tpx.mqtt.handler.pairing]
             [tpx.mqtt.handler.teleporter]
             [tpx.network :as network]
+            [tpx.network.reporter :refer [get-local-ip]]
             ;; [tpx.scheduler :as scheduler]
             [tpx.versions :as versions]
             [tpx.utils :as util]))
@@ -30,6 +31,7 @@
 
 (defn broadcast-presence [success-cb error-cb]
   (let [data (merge {:teleporter/serial (get-in config [:teleporter :serial])
+                     :teleporter/local-ip (data/get-private-ip)
                      :teleporter/apt-version (data/get-apt-version)}
                     (get-hardware-values)
                     (versions/get-versions))
@@ -44,6 +46,9 @@
         core-config (component/start (tpx.config/config-manager {}))
         logger (component/start (logger/logger (:logger config)))
         db (component/start (database/database (:database config)))]
+    ;; set local ip
+    (data/set-private-ip! (get-local-ip))
+
     (broadcast-presence
      (fn [{:teleporter/keys [id ip] :as _result}]
        (log/info "Successfully reported Teleporter to Platform")
@@ -52,8 +57,8 @@
              mqtt-client (component/start (mqtt/mqtt-client (assoc-in (:mqtt config) [:config :id] id)))]
         ;; set teleporter-id for data
          (data/set-tp-id! id)
-         ;; set public teleporter ip address
-         (data/set-tp-ipv4! ip)
+         ;; set public ip addresses
+         (data/set-public-ip! ip)
 
          ;; 100ms sleep to help mqtt-client
          (Thread/sleep 100)
