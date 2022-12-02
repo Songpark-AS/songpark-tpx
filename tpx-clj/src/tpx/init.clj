@@ -45,13 +45,16 @@
         logger (component/start (logger/logger (:logger config)))
         db (component/start (database/database (:database config)))]
     (broadcast-presence
-     (fn [{:teleporter/keys [id] :as _result}]
+     (fn [{:teleporter/keys [id ip] :as _result}]
        (log/info "Successfully reported Teleporter to Platform")
        (let [;; start mqtt-client third before anything else, so that any messaged that might be needing sending
              ;; can be done so, as mqtt-client has finished connecting
              mqtt-client (component/start (mqtt/mqtt-client (assoc-in (:mqtt config) [:config :id] id)))]
         ;; set teleporter-id for data
          (data/set-tp-id! id)
+         ;; set public teleporter ip address
+         (data/set-tp-ipv4! ip)
+
          ;; 100ms sleep to help mqtt-client
          (Thread/sleep 100)
          ;; start the rest of system

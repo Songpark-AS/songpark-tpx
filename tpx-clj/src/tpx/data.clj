@@ -7,6 +7,7 @@
 (defonce ^:private jam-id* (atom nil))
 (defonce ^:private jam-session* (atom nil))
 (defonce ^:private tp-id* (atom nil))
+(defonce ^:private tp-ipv4* (atom nil))
 (defonce ^:private user-id* (atom nil))
 (defonce ^:private apt-version* (atom (get-apt-package-installed-version "teleporter-fw")))
 
@@ -19,6 +20,16 @@
 
 (defn get-tp-id []
   @tp-id*)
+
+;; TP IP (ipv4)
+(defn set-tp-ipv4! [ipv4]
+  (reset! tp-ipv4* ipv4))
+
+(defn clear-tp-ipv4! []
+  (reset! tp-ipv4* nil))
+
+(defn get-tp-ipv4 []
+  @tp-ipv4*)
 
 (defn get-apt-version []
   (str @apt-version*))

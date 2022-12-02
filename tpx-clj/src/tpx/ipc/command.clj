@@ -9,29 +9,21 @@
   (send-command "pv" ""))
 
 (defn global-volume [value]
-  (do (send-command "pc" "")
-      (send-command "vol" value)))
+  (send-command "vol" value))
 
 (defn local-volume [value]
-  (do (send-command "pc" "")
-      (send-command "vll" value)
-      (send-command "pc" "")
+  (do (send-command "vll" value)
       (send-command "vlr" value)))
 
 (defn input1-volume [value]
-  (do (send-command "pc" "")
-      (send-command "vll" value)))
+  (send-command "vll" value))
 
 (defn input2-volume [value]
-  (do (send-command "pc" "")
-      (send-command "vlr" value)))
+  (send-command "vrl" value))
 
 (defn network-volume [value]
-  (do (send-command "pc" "")
-      (send-command "netvoll" value)
-
-      (send-command "pc" "")
-      (send-command "netvolr" value)))
+  (send-command "vln" value)
+  (send-command "vrn" value))
 
 (defn network-mute [value]
   (println "I AM NOT IMPLEMENTED"))
@@ -41,6 +33,10 @@
   (send-command "pd" "")
   (Thread/sleep 200)
   (send-command "" value))
+
+
+(defn set-ipv4 [value]
+  (send-command "ipv4" value))
 
 
 (defn call-via-sip [sip]
@@ -216,4 +212,6 @@
 
   (do (send-command "pc" "")
       (send-command "bver" ""))
+
+  (send-command "pd" "20")
 )
