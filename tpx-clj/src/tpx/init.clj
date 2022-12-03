@@ -86,7 +86,7 @@
        (let [{:keys [mqtt-client ipc jam #_gpio]} @system]
          ;; injections of ipc and jam first
          (mqtt/add-injection mqtt-client :ipc ipc)
-         (mqtt/add-injection mqtt-client :jam jam)
+         (mqtt/add-injection mqtt-client :tpx jam)
          ;; (mqtt/add-injection mqtt-client :gpio (:gpio @system))
          ;; add topic of its own id
          (log/info "Subscribing to teleporter topic")

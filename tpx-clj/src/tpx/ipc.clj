@@ -18,38 +18,12 @@
 
 (defn- setup-serial-ports! [context]
   (log/info "Setting up serial ports")
-  (ipc.serial/connect-to-port context
-                              {:sip/making-call #'ipc.handler/handle-sip-making-call
-                               :sip/calling #'ipc.handler/handle-sip-calling
-                               :sip/incoming-call #'ipc.handler/handle-sip-incoming-call
-                               :sip/in-call #'ipc.handler/handle-sip-in-call
-                               :sip/hangup #'ipc.handler/handle-sip-hangup
-                               :sip/call-ended #'ipc.handler/handle-sip-call-ended
-                               :sip/register #'ipc.handler/handle-sip-register
-                               :sip/error-making-call #'ipc.handler/handle-sip-error-making-call
-                               :sip/error-dialog-mutex #'ipc.handler/handle-sip-error-dialog-mutex
-
-                               ;; sync
-                               :sync/synced #'ipc.handler/handle-sync-synced
-                               :sync/syncing #'ipc.handler/handle-sync-syncing
-                               :sync/sync-failed #'ipc.handler/handle-sync-sync-failed
-                               ;; stream
-                               :stream/broken #'ipc.handler/handle-stream-broken
-                               :stream/streaming #'ipc.handler/handle-stream-streaming
-                               :stream/stopped #'ipc.handler/handle-stream-stopped
-
-                               :jam/coredump #'ipc.handler/handle-coredump
-
-                               :fpga-version #'ipc.handler/handle-versions
-                               :bp-version #'ipc.handler/handle-versions}))
+  (ipc.serial/connect-to-port context))
 
 (defn- command* [_ipc what data]
   (log/debug ::command* {:what what
                          :data data})
   (case what
-    :sip/call (ipc.command/call-via-sip data)
-    :sip/hangup (ipc.command/hangup-all)
-    :sip/hangup-all (ipc.command/hangup-all)
     :volume/global-volume (do (codax/assoc-at! @db [what] data)
                               (ipc.command/global-volume data))
     :volume/network-volume (do (codax/assoc-at! @db [what] data)

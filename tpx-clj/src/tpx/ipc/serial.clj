@@ -32,7 +32,7 @@
 ;; somewhat slow implementation to handle the integration.
 (defn handler
   "Read input stream from serial"
-  [context fns]
+  [context]
   (reset! open-handler? true)
   (fn [io-stream]
     (log/debug "Ready to read stream from BP")
@@ -41,19 +41,19 @@
         (while @open-handler?
           (if-let [line (.readLine reader)]
             (try
-              (handle-output context fns line)
+              (handle-output context line)
               (catch Exception e
                 (log/warn {:msg (ex-message e)
                            :data (ex-data e)})))
             (log/debug ::unable-to-read-line)))))))
 
 (defn connect-to-port
-  ([context fns]
-   (connect-to-port context fns (:pts @config)))
-  ([context fns pts]
+  ([context]
+   (connect-to-port context (:pts @config)))
+  ([context pts]
    (log/debug ::connect-to-port "connecting...")
    (let [port (serial/open pts)
-         my-handler (handler context fns)        ]
+         my-handler (handler context)        ]
      (swap! config assoc :port port)
      (serial/listen! port my-handler false))))
 

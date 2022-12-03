@@ -216,5 +216,5 @@
   (do (send-command "pc" "")
       (send-command "bver" ""))
 
-  (send-command "pd" "20")
+  (send-command "delay" "20")
 )
