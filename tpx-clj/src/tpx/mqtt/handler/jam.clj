@@ -6,9 +6,11 @@
 
 
 (defmethod handle-message :jam.cmd/start [{:keys [jam] :as msg}]
-  (when (data/allowed? msg)
-    (jam.tpx/join jam msg)))
+  ;; (when (data/allowed? msg)
+  ;;   (jam.tpx/join jam msg))
+  )
 
 (defmethod handle-message :jam.cmd/stop [{:keys [jam] :as msg}]
-  (when (data/allowed? msg)
-    (jam.tpx/leave jam)))
+  ;; (when (data/allowed? msg)
+  ;;   (jam.tpx/leave jam))
+  )
