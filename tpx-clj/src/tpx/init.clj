@@ -31,7 +31,7 @@
 
 (defn broadcast-presence [success-cb error-cb]
   (let [data (merge {:teleporter/serial (get-in config [:teleporter :serial])
-                     :teleporter/local-ip (data/get-private-ip)
+                     :teleporter/local-ip (data/get-local-ip)
                      :teleporter/apt-version (data/get-apt-version)}
                     (get-hardware-values)
                     (versions/get-versions))
@@ -47,7 +47,7 @@
         logger (component/start (logger/logger (:logger config)))
         db (component/start (database/database (:database config)))]
     ;; set local ip
-    (data/set-private-ip! (get-local-ip))
+    (data/set-local-ip! (get-local-ip))
 
     (broadcast-presence
      (fn [{:teleporter/keys [id ip] :as _result}]

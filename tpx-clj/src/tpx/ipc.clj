@@ -104,9 +104,11 @@
       (log/warn "Missing HW value" {:what what
                                     :value value}))))
 
-(defn- set-ipv4! [ipv4]
-  (log/info "Setting ipv4 value for the FPGA" {:ipv4 ipv4})
-  (ipc.command/set-ipv4 ipv4))
+(defn- set-ips [local-ip public-ip]
+  (log/info "Setting local ip values for the FPGA" {:local-ip local-ip
+                                                    :public-ip public-ip})
+  (ipc.command/set-local-ip local-ip)
+  (ipc.command/set-public-ip public-ip))
 
 (defn set-versions!
   "Set BP and FPGA versions. This involves a complex little loop in logic to
@@ -135,7 +137,7 @@
                                   :versions/save-versions versions/save-versions
                                   :broadcast-presence/fn broadcast-presence
                                   :start-coredump #'ipc.command/start-coredump})
-            (set-ipv4! (data/get-tp-ipv4))
+            (set-ips (data/get-local-ip) (data/get-public-ip))
             (set-versions!)
             (init-hw-values!)
 

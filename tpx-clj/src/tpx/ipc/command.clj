@@ -35,8 +35,11 @@
   (send-command "" value))
 
 
-(defn set-ipv4 [value]
-  (send-command "ipv4" value))
+(defn set-local-ip [value]
+  (send-command "setlip" value))
+
+(defn set-public-ip [value]
+  (send-command "setpip" value))
 
 
 (defn call-via-sip [sip]
