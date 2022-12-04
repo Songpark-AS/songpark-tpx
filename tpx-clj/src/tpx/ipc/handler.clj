@@ -17,6 +17,33 @@
 (defmethod handler :bp/param [data context]
   (log/debug :bp/param (dissoc data :tpx/msg)))
 
+(defmethod handler :setrpip [data _context]
+  (log/info "Remote public ip has been set to" (:rpip data)))
+
+(defmethod handler :setrlip [data _context]
+  (log/info "Remote local ip has been set to" (:rlip data)))
+
+(defmethod handler :setpip [data _context]
+  (log/info "Public ip has been set to" (:pip data)))
+
+(defmethod handler :setlip [data _context]
+  (log/info "Local ip has been set to" (:lip data)))
+
+(defmethod handler :setport [data _context]
+  (log/info "Port has been set to" (:port data)))
+
+(defmethod handler :call/params [data _context]
+  (log/info :call/params (dissoc data :tpx/msg)))
+
+(defmethod handler :call/param [data _context]
+  (log/info :call/param (dissoc data :tpx/msg)))
+
+(defmethod handler :call/state [data _context]
+  (log/info :call/state (dissoc data :tpx/msg)))
+
+(defmethod handler :port_in_use [data _context]
+  nil)
+
 (defmethod handler :stream/broken [data {:keys [ipc] :as _context}]
   (tpx.ipc/handler ipc :stream/broken true))
 

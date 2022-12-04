@@ -39,6 +39,9 @@
                                 (codax/assoc-at! @db [:volume/input2-volume] data)
                                 (ipc.command/input1-volume data)
                                 (ipc.command/input2-volume data))
+    :call/receive (ipc.command/receive-call data)
+    :call/initiate (ipc.command/initiate-call data)
+    :call/stop (ipc.command/stop-call)
     :jam/path-reset (ipc.command/path-reset)
     :jam/playout-delay (do (codax/assoc-at! @db [what] data)
                            (ipc.command/set-playout-delay data))
@@ -53,7 +56,7 @@
     (when (= what :stream/stopped)
       (try
         (log/info "Doing a path reset at the end of a stopped stream")
-        (ipc.command/path-reset)
+        ;; (ipc.command/path-reset)
         (catch Throwable e
           (log/error "Tried to do a path reset when the stream stopped"
                      {:exception e

@@ -4,6 +4,7 @@
             ;; [tpx.gpio :as gpio]
             ;; [tpx.gpio.actions :as gpio.actions]
             [songpark.jam.tpx :as jam.tpx]
+            [songpark.jam.tpx.handler]
             [songpark.mqtt :as mqtt]
             [songpark.mqtt.util :refer [teleporter-topic]]
             [taoensso.timbre :as log]
