@@ -50,11 +50,9 @@
   (send-command "getlip" ""))
 
 (defn get-gateway-ip []
-  (send-command "pc" "")
   (send-command "getgip" ""))
 
 (defn get-netmask-ip []
-  (send-command "pc" "")
   (send-command "getmask" ""))
 
 (defn start-coredump []

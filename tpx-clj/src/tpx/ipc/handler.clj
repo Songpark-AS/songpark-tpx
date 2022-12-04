@@ -14,6 +14,9 @@
 (defmethod handler :bp/ready [data context]
   (log/debug :bp/ready))
 
+(defmethod handler :stream/volume [data context]
+  (log/info :stream/volume (dissoc data :tpx/msg)))
+
 (defmethod handler :bp/param [data context]
   (log/debug :bp/param (dissoc data :tpx/msg)))
 
@@ -38,6 +41,9 @@
 (defmethod handler :call/param [data _context]
   (log/info :call/param (dissoc data :tpx/msg)))
 
+(defmethod handler :call_param/reset [data _context]
+  (log/info :call_param/reset (dissoc data :tpx/msg)))
+
 (defmethod handler :call/state [data _context]
   (log/info :call/state (dissoc data :tpx/msg)))
 
@@ -56,36 +62,14 @@
 (defmethod handler :sync/syncing [{:keys [wait]} {:keys [ipc] :as _context}]
   (tpx.ipc/handler ipc :sync/syncing (or wait true)))
 
-(defmethod handler :sync/sync-failed [data {:keys [ipc] :as _context}]
-  (tpx.ipc/handler ipc :sync/sync-failed true))
+(defmethod handler :sync/failed [data {:keys [ipc] :as _context}]
+  (tpx.ipc/handler ipc :sync/failed true))
 
 (defmethod handler :sync/synced [data {:keys [ipc] :as _context}]
   (tpx.ipc/handler ipc :sync/synced true))
 
 (defmethod handler :sync/responded [data {:keys [ipc] :as _context}]
   (tpx.ipc/handler ipc :sync/responded true))
-
-
-(defn handle-sip-making-call [data {:keys [ipc start-coredump] :as _context}]
-  (log/debug :handle-sip-making-call data)
-  (tpx.ipc/handler ipc :sip/making-call true)
-  (start-coredump))
-
-
-(defn handle-sip-call-started [data {:keys [ipc start-coredump] :as _context}]
-  (log/debug :handle-sip-call-started data)
-  (tpx.ipc/handler ipc :sip/calling true)
-  (start-coredump))
-
-(defn- extract-coredump-data [data]
-  (->> (str/split data #" \| ")
-       (map (fn [token] (str/replace token #" " "=_=_")))
-       (map (fn [token] (str/split token #":=_=_")))
-       (map (fn [v] {(keyword (str/replace (first v) #"=_=_" "_"))
-                     (-> (last v)
-                         (str/replace #"=_=_" " ")
-                         (str/replace #" ms" ""))}))
-       (into {})))
 
 (def ^:private reported-versions (atom {}))
 
@@ -114,19 +98,25 @@
                             (fn [_]
                               (log/error "Failed to broadcast change in FPGA/BP version")))))))
 
+(defn- extract-coredump-data [data]
+  (->> data
+       (map (fn [[k v]]
+              (if (string? v)
+                [k (str/replace v #" ms" "")]
+                [k v])))
+       (into {})))
+
 (comment
-  (extract-coredump-data "Latency: 0.00 ms | LTC: 348043984 | RTC: 348043682 | StreamStatus: 1 | RX Packets-per-second: 0 | TX Packets-per-second: 0 | DDiffMS: 3.15 ms | DDiffCC: 302")
+  (extract-coredump-data {:LTC -1521595943,
+                          :TX-Packets-per-second 0,
+                          :RX-Packets-per-second 0,
+                          :Latency "1.90 ms",
+                          :StreamStatus 1,
+                          :DDiffMS "18.99 ms",
+                          :RTC -1521597766,
+                          :DDiffCC 1823})
   )
 
-(defn handle-coredump [data {:keys [ipc] :as _context}]
-  (log/debug :handle-coredump data)
-
-  ;; Split the string on " | "
-  ;; Replace " " with "=_=_" since we cannot have keywords with spaces
-  ;; Split on ":=_=_" to get the key and value pairs
-  ;; Keywordize the key with _ instead of spaces
-  ;; replace "=_=_" back to " " on the values
-  ;; reduce into a single map
+(defmethod handler :coredump [data {:keys [ipc]}]
   (let [coredump-data (extract-coredump-data data)]
-    ;; (log/debug :handle-coredump coredump-data)
     (tpx.ipc/handler ipc :jam/coredump coredump-data)))
