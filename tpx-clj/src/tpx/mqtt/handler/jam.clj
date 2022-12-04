@@ -8,10 +8,10 @@
   (jam.tpx/join tpx msg))
 
 (defmethod handle-message :jam.cmd/start [{:keys [tpx] :as msg}]
-  (jam.tpx/start-call tpx msg))
+  (jam.tpx/start-call tpx))
 
 (defmethod handle-message :jam.cmd/stop [{:keys [tpx] :as msg}]
-  (jam.tpx/stop-call jam))
+  (jam.tpx/stop-call tpx))
 
 (defmethod handle-message :jam.cmd/reset [{:keys [tpx] :as msg}]
   (jam.tpx/reset tpx))
