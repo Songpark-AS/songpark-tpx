@@ -71,6 +71,19 @@
 (defmethod handler :sync/responded [data {:keys [ipc] :as _context}]
   (tpx.ipc/handler ipc :sync/responded true))
 
+(defmethod handler :sync/timeout [data {:keys [ipc] :as _context}]
+  (tpx.ipc/handler ipc :sync/timeout true))
+
+(defmethod handler :sync/deinit [data {:keys [ipc] :as _context}]
+  )
+
+(defmethod handler :sync/stopped [data {:keys [ipc] :as _context}]
+  )
+
+(defmethod handler :call/params/reset [data {:keys [ipc] :as _context}]
+  )
+
+
 (def ^:private reported-versions (atom {}))
 
 (defn handle-versions [data {:versions/keys [save-versions

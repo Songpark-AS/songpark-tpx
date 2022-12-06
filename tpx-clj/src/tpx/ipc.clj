@@ -42,6 +42,7 @@
     :call/receive (ipc.command/receive-call data)
     :call/initiate (ipc.command/initiate-call data)
     :call/stop (ipc.command/stop-call)
+    :hangup/all (ipc.command/hangup-all)
     :jam/path-reset (ipc.command/path-reset)
     :jam/playout-delay (do (codax/assoc-at! @db [what] data)
                            (ipc.command/set-playout-delay data))
