@@ -82,7 +82,7 @@
   (send-command "setrpip" public-ip)
   (send-command "setrlip" local-ip)
   (send-command "icall" "")
-  (stop-coredump))
+  (start-coredump))
 
 (defn stop-call []
   (stop-coredump)
