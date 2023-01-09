@@ -22,8 +22,8 @@
   (send-command "vrl" value))
 
 (defn network-volume [value]
-  (send-command "vln" value)
-  (send-command "vrn" value))
+  (send-command "vnl" value)
+  (send-command "vnr" value))
 
 (defn network-mute [value]
   (println "I AM NOT IMPLEMENTED"))
@@ -93,7 +93,8 @@
 
   (start-coredump)
 
-  (local-volume 75)
+  (local-volume 30)
+  (network-volume 30)
   (global-volume 25)
 
   ;; 0001
@@ -175,6 +176,8 @@
 
       (send-command "pc" "")
       (send-command "netvolr" "10"))
+
+  (send-command "vnr" "10")
 
   (send-command "cver" "")
 
