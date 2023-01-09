@@ -30,7 +30,7 @@
 
 
 (defn set-playout-delay [value]
-  (send-command "playout" value))
+  (send-command "delay" value))
 
 
 (defn set-local-ip [value]
