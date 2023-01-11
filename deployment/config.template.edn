@@ -6,6 +6,7 @@
                             :dsn ""}
           ;; level of logging. anything below this will not be logged
           :level VAR__LOGGER_LEVEL}
+ :teleporter {:serial "VAR__TP_SERIAL"}
  :hardware/default-values {:volume/global-volume 5
                            :volume/network-volume 5
                            :volume/local-volume 5
@@ -18,7 +19,7 @@
  :network {;; configuration directory for network on the linux layer
            :config-dir "/etc/network/interfaces.d/"
            ;; what we use to check if we're online or offline
-           :check-network-status-curl-cmd "curl https://broadcast.songpark.com/health"
+           :check-network-status-curl-cmd "curl https://live.songpark.com/health"
            ;; sleep timer in milliseconds
            :sleep-timer 60000
            ;; which interface do we interact with
@@ -52,8 +53,6 @@
            :fake-reset? true}
  :defaults {;; in ms
             :playout-delay 20}
- ;; mac address. this is currently fake
- :mac "VAR__FAKE_MAC"
  ;; mqtt settings
  :mqtt {:config {;; which schema to use
                  :scheme "tcp"
@@ -74,7 +73,7 @@
                                    :password "VAR__MQTT_PASSWORD"}}}
  ;; settings for the component IPC
  :ipc {;; which address is the platform running on
-       :platform "https://broadcast.songpark.com"
+       :platform "https://live.songpark.com"
        :teleporter {;; what do we tell the platform we are called?
                     :nickname "VAR__TELEPORTER_NICKNAME"}}
  :heartbeat {:timer 60000}}

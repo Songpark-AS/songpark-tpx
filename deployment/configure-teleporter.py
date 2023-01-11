@@ -14,23 +14,16 @@ BASE_HW_MAC = "02:0b:2a:11:ff:"
 BASE_FAKE_MAC = "00:00:00:00:00:"
 BASE_WIREGUARD_IP_RANGE = "10.100.200.1{number}/32"
 TEMPLATE_TPX_CONFIG = "config.template.edn"
-TEMPLATE_SIP_CONFIG = "sip.template.cfg"
 TEMPLATE_WIREGUARD_CONFIG = "wireguard.template.conf"
 TEMPLATE_WIREGUARD_SERVER_CONFIG = "wireguard.server.template.conf"
 TEMPLATE_MOTD_TELEPORTER = "motd.template.teleporter"
-TEMPLATE_MOTD_RPI = "motd.template.rpi"
 TEMPLATE_HOSTNAME_TELEPORTER = "hostname.teleporter"
-TEMPLATE_HOSTNAME_RPI = "hostname.rpi"
 TEMPLATE_ETH1 = "eth1.template"
 HOSTNAME_TELEPORTER = "hostname.teleporter"
-HOSTNAME_RPI = "hostname.rpi"
 MOTD_TELEPORTER = "motd.teleporter"
-MOTD_RPI = "motd.rpi"
 TPX_CONFIG="config.edn"
-SIP_CONFIG="sip.cfg"
 ETH1_CONFIG="eth1.teleporter"
 WIREGUARD_TELEPORTER_CONFIG="wg0.teleporter.conf"
-WIREGUARD_RPI_CONFIG="wg0.rpi.conf"
 WIREGUARD_PRIVATE_KEY="wg.private_key.{who}"
 WIREGUARD_PUBLIC_KEY="wg.public_key.{who}"
 KAMAILIO_COMMANDS="kamailio.commands"
@@ -41,10 +34,10 @@ def get_random_string(length):
     return ''.join(random.choice(entries) for i in range(length))
 
 def get_number(num):
-    return str(num) if num >= 10 else "0" + str(num)
+    return("%02d" % (num,))
 
-def is_even(num):
-    return num % 2 == 0
+def get_tp_serial_number(num):
+    return ("%04d" % (num,))
 
 def get_private_key():
     x = subprocess.run(["wg", "genkey"], stdout=subprocess.PIPE)
@@ -59,13 +52,6 @@ def get_wireguard_ip(serial_number):
 
 def get_ip_teleporter(serial_number):
     return BASE_WIREGUARD_IP_RANGE.format(number=get_number(serial_number))
-
-def get_ip_rpi(serial_number):
-    return BASE_WIREGUARD_IP_RANGE.format(number=get_number(serial_number + 1))
-
-def get_sip_id(serial_number):
-    serial = get_number(serial_number)
-    return "91{id}".format(id=serial)
 
 def write_config(path, name, config):
     with open(os.path.join(path, name), 'w') as f:
@@ -85,32 +71,17 @@ def copy_file(source, dest):
     d = os.path.join(*dest) if list_p(dest) else dest
     os.system("cp {source} {dest}".format(source=s, dest=d))
 
-def write_sip_config(template_path, config_path, serial_number):
-    sip_user = get_sip_id(serial_number)
-    sip_password = get_random_string(32)
-
-    sip_config = read_config(template_path, TEMPLATE_SIP_CONFIG)
-
-    sip_config = sip_config.replace("VAR__SIP_USER", sip_user)
-    sip_config = sip_config.replace("VAR__SIP_PASSWORD", sip_password)
-
-    write_config(config_path, SIP_CONFIG, sip_config)
-
-    kamailio_commands = ""
-    kamailio_commands += "kamctl add {user} {password}\n".format(user=sip_user, password=sip_password)
-    write_config(config_path, KAMAILIO_COMMANDS, kamailio_commands)
-
 def write_tpx_config(template_path, config_path, name, serial_number, logger_level):
     serial = get_number(serial_number)
 
     tpx_config = read_config(template_path, TEMPLATE_TPX_CONFIG)
 
-    tpx_config = tpx_config.replace("VAR__TELEPORTER_NICKNAME", "{name} 91{serial}".format(name=name, serial=serial))
+    tpx_config = tpx_config.replace("VAR__TELEPORTER_NICKNAME", "{name}".format(name=name))
     tpx_config = tpx_config.replace("VAR__MQTT_USERNAME", "songpark")
     tpx_config = tpx_config.replace("VAR__MQTT_PASSWORD", "fNhWktaTlfDGlH4mbmaW6esOpgExs8wKIOBapDcq")
-    tpx_config = tpx_config.replace("VAR__FAKE_MAC", BASE_FAKE_MAC + get_number(serial_number/2))
     tpx_config = tpx_config.replace("VAR__HW_MAC", BASE_HW_MAC + get_number(serial_number))
     tpx_config = tpx_config.replace("VAR__LOGGER_LEVEL", ":" + logger_level)
+    tpx_config = tpx_config.replace("VAR__TP_SERIAL", get_tp_serial_number(serial_number))
 
     write_config(config_path, TPX_CONFIG, tpx_config)
 
@@ -119,61 +90,35 @@ def write_wireguard_config(template_path, config_path, name, serial_number):
     public_key_teleporter = get_public_key(private_key_teleporter)
     ip_teleporter = get_ip_teleporter(serial_number)
 
-    private_key_rpi = get_private_key()
-    public_key_rpi = get_public_key(private_key_rpi)
-    ip_rpi = get_ip_rpi(serial_number)
-
     wireguard_teleporter_config = read_config(template_path, TEMPLATE_WIREGUARD_CONFIG)
     wireguard_teleporter_config = wireguard_teleporter_config.replace("VAR__WIREGUARD_PRIVATE_KEY", private_key_teleporter)
     wireguard_teleporter_config = wireguard_teleporter_config.replace("VAR__WIREGUARD_IP", ip_teleporter)
 
-    wireguard_rpi_config = read_config(template_path, TEMPLATE_WIREGUARD_CONFIG)
-    wireguard_rpi_config = wireguard_rpi_config.replace("VAR__WIREGUARD_PRIVATE_KEY", private_key_rpi)
-    wireguard_rpi_config = wireguard_rpi_config.replace("VAR__WIREGUARD_IP", ip_rpi)
-
     wireguard_server_config = read_config(template_path, TEMPLATE_WIREGUARD_SERVER_CONFIG)
     wireguard_server_config = wireguard_server_config.replace("VAR__PUBLIC_KEY_TELEPORTER", public_key_teleporter)
     wireguard_server_config = wireguard_server_config.replace("VAR__IP_TELEPORTER", ip_teleporter)
-    wireguard_server_config = wireguard_server_config.replace("VAR__PUBLIC_KEY_RPI", public_key_rpi)
-    wireguard_server_config = wireguard_server_config.replace("VAR__IP_RPI", ip_rpi)
     wireguard_server_config = wireguard_server_config.replace("VAR__NAME", name)
 
     write_config(config_path, WIREGUARD_TELEPORTER_CONFIG, wireguard_teleporter_config)
-    write_config(config_path, WIREGUARD_RPI_CONFIG, wireguard_rpi_config)
     write_config(config_path, WIREGUARD_SERVER_CONFIG, wireguard_server_config)
 
     write_config(config_path, WIREGUARD_PRIVATE_KEY.format(who="teleporter"), private_key_teleporter)
-    write_config(config_path, WIREGUARD_PRIVATE_KEY.format(who="rpi"), private_key_rpi)
     write_config(config_path, WIREGUARD_PUBLIC_KEY.format(who="teleporter"), public_key_teleporter)
-    write_config(config_path, WIREGUARD_PUBLIC_KEY.format(who="rpi"), public_key_rpi)
     copy_file([template_path, AUTHORIZED_KEYS],
               [config_path, AUTHORIZED_KEYS])
 
 def write_motd(template_path, config_path, name, serial_number):
     motd_teleporter = read_config(template_path, TEMPLATE_MOTD_TELEPORTER)
-    motd_rpi = read_config(template_path, TEMPLATE_MOTD_RPI)
-
-    ip_rpi = get_ip_rpi(serial_number)
-    sip_id = get_sip_id(serial_number)
-
     motd_teleporter = motd_teleporter.replace("VAR__NAME", name)
-    motd_teleporter = motd_teleporter.replace("VAR__IP_RPI", ip_rpi)
-    motd_teleporter = motd_teleporter.replace("VAR__SIP_ID", sip_id)
-
-    motd_rpi = motd_rpi.replace("VAR__NAME", name)
 
     write_config(config_path, MOTD_TELEPORTER, motd_teleporter)
-    write_config(config_path, MOTD_RPI, motd_rpi)
 
 def write_hostname(template_path, config_path, name):
     hostname_teleporter = read_config(template_path, TEMPLATE_HOSTNAME_TELEPORTER)
-    hostname_rpi = read_config(template_path, TEMPLATE_HOSTNAME_RPI)
 
     hostname_teleporter = hostname_teleporter.replace("VAR__NAME", name)
-    hostname_rpi = hostname_rpi.replace("VAR__NAME", name)
 
     write_config(config_path, HOSTNAME_TELEPORTER, hostname_teleporter)
-    write_config(config_path, HOSTNAME_RPI, hostname_rpi)
 
 def write_eth1_config(template_path, config_path, serial_number):
     hw_mac = BASE_HW_MAC + get_number(serial_number)
@@ -186,11 +131,6 @@ def write_eth1_config(template_path, config_path, serial_number):
 def generate_configs(template_path, config_path, logger_level, name, serial_number):
     os.system("mkdir -p " + config_path)
 
-    if not is_even(serial_number):
-        print("Serial number is not even. Use even numbers")
-        exit(0)
-
-    write_sip_config(template_path, config_path, serial_number)
     write_tpx_config(template_path, config_path, name, serial_number, logger_level)
     write_eth1_config(template_path, config_path, serial_number)
     write_wireguard_config(template_path, config_path, name, serial_number)
@@ -208,8 +148,6 @@ def copy_configs_to_teleporter(config_path, songpark_path, root_path):
               [root_path, "etc/wireguard/keys", "privatekey"])
     copy_file([config_path, TPX_CONFIG],
               [songpark_path, "usr/local/etc", TPX_CONFIG])
-    copy_file([config_path, SIP_CONFIG],
-              [songpark_path, "usr/local/etc", SIP_CONFIG])
     copy_file([config_path, MOTD_TELEPORTER],
               [root_path, "etc", "motd.txt"])
     copy_file([config_path, HOSTNAME_TELEPORTER],
@@ -217,27 +155,12 @@ def copy_configs_to_teleporter(config_path, songpark_path, root_path):
     copy_file([config_path, ETH1_CONFIG],
               [root_path, "etc/network/interfaces.d", "eth1"])
 
-def copy_configs_to_rpi(config_path, rpi_path):
-    copy_file([config_path, AUTHORIZED_KEYS],
-              [rpi_path, "home/pi/.ssh", AUTHORIZED_KEYS])
-    copy_file([config_path, WIREGUARD_RPI_CONFIG],
-              [rpi_path, "etc/wireguard", "wg0.conf"])
-    copy_file([config_path, WIREGUARD_PUBLIC_KEY.format(who="rpi")],
-              [rpi_path, "etc/wireguard/keys", "publickey"])
-    copy_file([config_path, WIREGUARD_PRIVATE_KEY.format(who="rpi")],
-              [rpi_path, "etc/wireguard/keys", "privatekey"])
-    copy_file([config_path, MOTD_RPI],
-              [rpi_path, "/etc", "motd.txt"])
-    copy_file([config_path, HOSTNAME_RPI],
-              [root_path, "/etc", "hostname"])
-
 def cleanup_configs(config_path, songpark_path, root_path, rpi_path):
     os.system("rm -rf " + config_path)
     os.system("rm -rf " + songpark_path)
     os.system("rm -rf " + root_path)
-    os.system("rm -rf " + rpi_path)
 
-def create_paths(config_path, songpark_path, root_path, rpi_path):
+def create_paths(config_path, songpark_path, root_path):
     if config_path:
         os.system("mkdir -p {path}".format(path=config_path))
     if songpark_path:
@@ -246,9 +169,6 @@ def create_paths(config_path, songpark_path, root_path, rpi_path):
         os.system("mkdir -p {path}/root/.ssh".format(path=root_path))
         os.system("mkdir -p {path}/etc/wireguard/keys".format(path=root_path))
         os.system("mkdir -p {path}/etc/network/interfaces.d".format(path=root_path))
-    if rpi_path:
-        os.system("mkdir -p {path}/home/pi/.ssh".format(path=rpi_path))
-        os.system("mkdir -p {path}/etc/wireguard/keys".format(path=rpi_path))
 
 def run_main():
     try:
@@ -260,12 +180,10 @@ def run_main():
         parser.add_argument("--logger-level", help="Logger level for logging in TPX", default="info")
         parser.add_argument("--songpark-path", help="Path to the songpark partition of the Teleporter SD card image")
         parser.add_argument("--root-path", help="Path to the root partition of the Teleporter SD card image")
-        parser.add_argument("--rpi-path", help="Path to the RPi SD card image")
         parser.add_argument("--action",
                             help="Which action to perform",
                             choices=["generate-configs",
                                      "copy-configs-to-teleporter",
-                                     "copy-configs-to-rpi",
                                      "clear-configs",
                                      "create-paths"])
         args = parser.parse_args()
@@ -282,20 +200,14 @@ def run_main():
             assert (args.root_path is not None), "--root-path must be provided"
 
             copy_configs_to_teleporter(args.config_path, args.songpark_path, args.root_path)
-        elif args.action == "copy-configs-to-rpi":
-            assert (args.config_path is not None), "--config-path must be provided"
-            assert (args.rpi_path is not None), "--rpi-path must be provided"
-
-            copy_configs_to_rpi(args.config_path, args.rpi_path)
         elif args.action == "clear-configs":
             assert (args.config_path is not None), "--config-path must be provided"
-            cleanup_configs(args.config_path, args.songpark_path, args.root_path, args.rpi_path)
+            cleanup_configs(args.config_path, args.songpark_path, args.root_path)
         elif args.action == "create-paths":
             assert (args.config_path is not None), "--config-path must be provided"
             assert (args.songpark_path is not None), "--songpark-path must be provided"
             assert (args.root_path is not None), "--root-path must be provided"
-            assert (args.rpi_path is not None), "--rpi-path must be provided"
-            create_paths(args.config_path, args.songpark_path, args.root_path, args.rpi_path)
+            create_paths(args.config_path, args.songpark_path, args.root_path)
         else:
             print("--action missing")
             print("You supplied the following args")
