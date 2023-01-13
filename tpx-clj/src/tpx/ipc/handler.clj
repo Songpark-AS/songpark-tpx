@@ -71,8 +71,10 @@
 (defmethod handler :sync/responded [data {:keys [ipc] :as _context}]
   (tpx.ipc/handler ipc :sync/responded true))
 
-(defmethod handler :sync/timeout [data {:keys [ipc] :as _context}]
-  (tpx.ipc/handler ipc :sync/timeout true))
+(defmethod handler :sync/end [data {:keys [ipc] :as _context}]
+  (tpx.ipc/handler ipc :sync/end (if (empty? data)
+                                   true
+                                   data)))
 
 (defmethod handler :sync/deinit [data {:keys [ipc] :as _context}]
   )
