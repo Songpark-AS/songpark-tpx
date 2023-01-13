@@ -1,6 +1,6 @@
 (defproject tpx "0.2.1"
-  :description "Songpark's Teleporter's communications' logic"
-  :url "http://example.com/FIXME"
+  :description "Teleporter software that is the glue between the FPGA world and the wider system"
+  :url ""
   :license {:name ""
             :url ""}
   :dependencies [[org.clojure/clojure "1.10.1"]
@@ -14,29 +14,27 @@
                  ;; http server
                  [http-kit "2.3.0"]
                  [ring/ring-core "1.9.4"]
-                 ;; html rendering
-                 [hiccup "1.0.5"]
                  ;; structure
                  [com.stuartsierra/component "1.0.0"]
                  ;; serial comms
                  [clj-serial "2.0.5"]
-                 ;; mqtt implementation
-                 [clojurewerkz/machine_head "1.0.0"]
-                 [com.cognitect/transit-clj "1.0.324"]
 
-                 ;; jam
-                 [songpark/jam "1.0.1"]
-                 [songpark/mqtt "1.0.1"]
+                 ;; songpark specific libraries
+                 [songpark/jam "2.0.0-SNAPSHOT"]
+                 [songpark/mqtt "1.0.4"]
+                 [songpark/common "0.2.0"]
+
+                 ;; GPIO for Clojure
+                 ;; [io.helins/linux.gpio "2.0.1"]
 
                  ;; database
                  [codax "1.3.1"]
-                 
+
                  ;; json
                  [cheshire "5.10.0"]
                  ;; scheduler
                  [jarohen/chime "0.3.3"]
-                 ;; songpark's common (will also contain an mqtt implementation later)
-                 [songpark/common "0.2.0"]
+
                  [clojure-interop/java.net "1.0.5"]]
   :main tpx.core
   :target-path "target/%s"
@@ -50,12 +48,21 @@
                    :resource-paths ["dev-resources" "resources"]
                    :dependencies [[midje "1.9.9"]
                                   [ring/ring-mock "0.4.0"]
-                                  
+
                                   [hashp "0.2.0"]
                                   [clj-commons/spyscope "0.1.48"]]
                    :injections [(require 'spyscope.core)]
                    :plugins [[lein-midje "3.1.3"]
                              [lein-plantuml "0.1.22"]]}
+             :profiling {:source-paths ["src" "dev"]
+                         :resource-paths ["dev-resources" "resources"]
+                         :dependencies [[clj-commons/spyscope "0.1.48"]]
+                         :injections [(require 'spyscope.core)]
+                         :jvm-opts ["-Dcom.sun.management.jmxremote"
+                                    "-Dcom.sun.management.jmxremote.port=1089"
+                                    "-Dcom.sun.management.jmxremote.ssl=false"
+                                    "-Dcom.sun.management.jmxremote.authenticate=false"
+                                    "-Djava.rmi.server.hostname=10.100.200.110"]}
              :uberjar {:aot :all
                        :uberjar-name "tpx.jar"
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})

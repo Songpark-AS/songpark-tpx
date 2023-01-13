@@ -21,8 +21,18 @@
 ;; is created. This means to be fixed.
 (def ^:private open-handler? (atom true))
 
-(defn handler "Read input stream from serial"
-  [context fns]
+;; The handler is actually quite slow.
+;; The reading not so much, but rather that
+;; it becomes line based. That means any machinery
+;; that happens after the line is fed runs immediately.
+;; This has the side effect of spammy output from
+;; BP uses <x> ms in order to do nothing. Due to the
+;; sequential nature of some of the output, it cannot
+;; be handled in parallell either, leaving us with a
+;; somewhat slow implementation to handle the integration.
+(defn handler
+  "Read input stream from serial"
+  [context]
   (reset! open-handler? true)
   (fn [io-stream]
     (log/debug "Ready to read stream from BP")
@@ -31,19 +41,19 @@
         (while @open-handler?
           (if-let [line (.readLine reader)]
             (try
-              (handle-output context fns line)
+              (handle-output context line)
               (catch Exception e
                 (log/warn {:msg (ex-message e)
                            :data (ex-data e)})))
             (log/debug ::unable-to-read-line)))))))
 
 (defn connect-to-port
-  ([context fns]
-   (connect-to-port context fns (:pts @config)))
-  ([context fns pts]
+  ([context]
+   (connect-to-port context (:pts @config)))
+  ([context pts]
    (log/debug ::connect-to-port "connecting...")
    (let [port (serial/open pts)
-         my-handler (handler context fns)        ]
+         my-handler (handler context)        ]
      (swap! config assoc :port port)
      (serial/listen! port my-handler false))))
 
@@ -80,7 +90,7 @@
 (comment
 
   (log/debug @config)
-  
+
   (connect-to-port {:mycontext true} {:sip-call-started #'ipc.handler/handle-sip-call-started
                                       :sip-call-stopped #'ipc.handler/handle-sip-call-stopped
                                       :sip-registered #'ipc.handler/handle-sip-registered
@@ -88,21 +98,22 @@
                                       :gain-input-global-gain #'ipc.handler/handle-gain-input-global-gain
                                       :gain-input-left-gain #'ipc.handler/handle-gain-input-left-gain
                                       :gain-input-right-gain #'ipc.handler/handle-gain-input-right-gain} (:pts @config))
-  
+
 
   (send-command (:port @config) "vol" 100)
   (send-command (:port @config) "m" "")
   (send-command (:port @config) "\n" "")
-  
+
   (send-command (:port @config) "sip:9115@voip1.inonit.no" "")
   (send-command (:port @config) "h" "")
   (send-command (:port @config) "h" "sip:9115@voip1.inonit.no")
 
   (send-command (:port @config) "rr" "")
 
+  (serial/open (:pts @config))
+
   (disconnect (:port @config))
 
   (swap! config assoc :pts "/dev/ttys013")
 
   )
-

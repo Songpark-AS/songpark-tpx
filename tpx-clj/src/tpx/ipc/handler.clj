@@ -3,105 +3,135 @@
             [songpark.mqtt :as mqtt]
             [songpark.jam.tpx.ipc :as tpx.ipc]
             [taoensso.timbre :as log]
-            [tpx.data :as data]))
+            [tpx.data :as data]
+            [tpx.versions :as versions]))
 
+(defmulti handler (fn [data context] (:tpx/msg data)))
 
-(defn handle-sip-register [data {:keys [ipc] :as _context}]
-  (log/debug :handle-sip-register data)
-  (tpx.ipc/handler ipc :sip/register true))
+(defmethod handler :default [data context]
+  (log/warn (:tpx/msg data) "is not handled" (dissoc data :tpx/msg)))
 
-(defn handle-sip-making-call [data {:keys [ipc start-coredump] :as _context}]
-  (log/debug :handle-sip-making-call data)
-  (tpx.ipc/handler ipc :sip/making-call true)
-  (start-coredump))
+(defmethod handler :bp/ready [data context]
+  (log/debug :bp/ready))
 
-(defn handle-sip-calling [data {:keys [ipc] :as _context}]
-  (log/debug :handle-sip-calling data)
-  (tpx.ipc/handler ipc :sip/calling true))
+(defmethod handler :stream/volume [data context]
+  (log/info :stream/volume (dissoc data :tpx/msg)))
 
-(defn handle-sip-error-making-call [data {:keys [ipc] :as _context}]
-  (log/debug :handle-sip-error-making-call data)
-  (tpx.ipc/handler ipc :sip/error data))
+(defmethod handler :bp/param [data context]
+  (log/debug :bp/param (dissoc data :tpx/msg)))
 
-(defn handle-sip-error-dialog-mutex [data {:keys [ipc] :as _context}]
-  (log/debug :handle-sip-error-dialog-mutex data)
-  (tpx.ipc/handler ipc :sip/error data))
+(defmethod handler :setrpip [data _context]
+  (log/info "Remote public ip has been set to" (:rpip data)))
 
-(defn handle-sip-incoming-call [data {:keys [ipc start-coredump] :as _context}]
-  (log/debug :handle-sip-incoming-call data)
-  (tpx.ipc/handler ipc :sip/incoming-call true)
-  (start-coredump))
+(defmethod handler :setrlip [data _context]
+  (log/info "Remote local ip has been set to" (:rlip data)))
 
-(defn handle-sip-in-call [data {:keys [ipc] :as _context}]
-  (log/debug :handle-sip-inc-call data)
-  (tpx.ipc/handler ipc :sip/inc-call true))
+(defmethod handler :setpip [data _context]
+  (log/info "Public ip has been set to" (:pip data)))
 
-(defn handle-sip-hangup [data {:keys [ipc] :as _context}]
-  (log/debug :handle-sip-hangup data)
-  (tpx.ipc/handler ipc :sip/hangup true))
+(defmethod handler :setlip [data _context]
+  (log/info "Local ip has been set to" (:lip data)))
 
-(defn handle-sip-call-ended [data {:keys [ipc] :as _context}]
-  (log/debug :handle-sip-call-ended data)
-  (tpx.ipc/handler ipc :sip/call-ended true))
+(defmethod handler :setport [data _context]
+  (log/info "Port has been set to" (:port data)))
 
-(defn handle-stream-broken [data {:keys [ipc] :as _context}]
-  (log/debug :handle-stream-broken data)
+(defmethod handler :call/params [data _context]
+  (log/info :call/params (dissoc data :tpx/msg)))
+
+(defmethod handler :call/param [data _context]
+  (log/info :call/param (dissoc data :tpx/msg)))
+
+(defmethod handler :call_param/reset [data _context]
+  (log/info :call_param/reset (dissoc data :tpx/msg)))
+
+(defmethod handler :call/state [data _context]
+  (log/info :call/state (dissoc data :tpx/msg)))
+
+(defmethod handler :port_in_use [data _context]
+  nil)
+
+(defmethod handler :stream/broken [data {:keys [ipc] :as _context}]
   (tpx.ipc/handler ipc :stream/broken true))
 
-(defn handle-sync-syncing [data {:keys [ipc] :as _context}]
-  (log/debug :handle-sync-syncing data)
-  (tpx.ipc/handler ipc :sync/syncing true))
-
-(defn handle-sync-sync-failed [data {:keys [ipc] :as _context}]
-  (log/debug :handle-sync-sync-failed data)
-  (tpx.ipc/handler ipc :sync/sync-failed true))
-
-(defn handle-sync-synced [data {:keys [ipc] :as _context}]
-  (log/debug :handle-sync-synced data)
-  (tpx.ipc/handler ipc :sync/synced true))
-
-
-(defn handle-stream-streaming [data {:keys [ipc] :as _context}]
-  (log/debug :handle-stream-streaming data)
+(defmethod handler :stream/streaming [data {:keys [ipc] :as _context}]
   (tpx.ipc/handler ipc :stream/streaming true))
 
-(defn handle-stream-stopped [data {:keys [ipc] :as _context}]
-  (log/debug :handle-stream-stopped data)
+(defmethod handler :stream/stopped [data {:keys [ipc] :as _context}]
   (tpx.ipc/handler ipc :stream/stopped true))
 
+(defmethod handler :sync/syncing [{:keys [wait]} {:keys [ipc] :as _context}]
+  (tpx.ipc/handler ipc :sync/syncing (or wait true)))
 
-(defn handle-sip-call-started [data {:keys [ipc start-coredump] :as _context}]
-  (log/debug :handle-sip-call-started data)
-  (tpx.ipc/handler ipc :sip/calling true)
-  (start-coredump))
+(defmethod handler :sync/failed [data {:keys [ipc] :as _context}]
+  (tpx.ipc/handler ipc :sync/failed true))
 
-(defn handle-sip-call-stopped [data {:keys [ipc] :as _context}]
-  (log/debug :handle-sip-call-stopped data)
-  (tpx.ipc/handler ipc :sip/stop true))
+(defmethod handler :sync/synced [data {:keys [ipc] :as _context}]
+  (tpx.ipc/handler ipc :sync/synced true))
+
+(defmethod handler :sync/responded [data {:keys [ipc] :as _context}]
+  (tpx.ipc/handler ipc :sync/responded true))
+
+(defmethod handler :sync/end [data {:keys [ipc] :as _context}]
+  (tpx.ipc/handler ipc :sync/end (if (empty? data)
+                                   true
+                                   data)))
+
+(defmethod handler :sync/deinit [data {:keys [ipc] :as _context}]
+  )
+
+(defmethod handler :sync/stopped [data {:keys [ipc] :as _context}]
+  )
+
+(defmethod handler :call/params/reset [data {:keys [ipc] :as _context}]
+  )
+
+
+(def ^:private reported-versions (atom {}))
+
+(defn handle-versions [data {:versions/keys [save-versions
+                                             current-versions
+                                             get-versions]
+                             broadcast-presence :broadcast-presence/fn
+                             :as _context}]
+  (log/debug :versions data)
+
+  (when-let [fpga-version (:fpga-version data)]
+    (log/debug "swapping FPGA version")
+    (swap! reported-versions assoc :fpga-version fpga-version))
+  (when-let [bp-version (:bp-version data)]
+    (log/debug "swapping BP version")
+    (swap! reported-versions assoc :bp-version bp-version))
+
+  (when (and (contains? @reported-versions :fpga-version)
+             (contains? @reported-versions :bp-version))
+    (let [{:teleporter/keys [fpga-version bp-version]} current-versions]
+      (when (or (not= fpga-version (:fpga-version @reported-versions))
+                (not= bp-version (:bp-version @reported-versions)))
+        (save-versions @reported-versions)
+        (broadcast-presence (fn [_]
+                              (log/info "Broadcasted change in FPGA/BP version"))
+                            (fn [_]
+                              (log/error "Failed to broadcast change in FPGA/BP version")))))))
 
 (defn- extract-coredump-data [data]
-  (->> (str/split data #" \| ")
-       (map (fn [token] (str/replace token #" " "=_=_")))
-       (map (fn [token] (str/split token #":=_=_")))
-       (map (fn [v] {(keyword (str/replace (first v) #"=_=_" "_"))
-                     (-> (last v)
-                         (str/replace #"=_=_" " ")
-                         (str/replace #" ms" ""))}))
+  (->> data
+       (map (fn [[k v]]
+              (if (string? v)
+                [k (str/replace v #" ms" "")]
+                [k v])))
        (into {})))
 
 (comment
-  (extract-coredump-data "Latency: 0.00 ms | LTC: 348043984 | RTC: 348043682 | StreamStatus: 1 | RX Packets-per-second: 0 | TX Packets-per-second: 0 | DDiffMS: 3.15 ms | DDiffCC: 302")
+  (extract-coredump-data {:LTC -1521595943,
+                          :TX-Packets-per-second 0,
+                          :RX-Packets-per-second 0,
+                          :Latency "1.90 ms",
+                          :StreamStatus 1,
+                          :DDiffMS "18.99 ms",
+                          :RTC -1521597766,
+                          :DDiffCC 1823})
   )
 
-(defn handle-coredump [data {:keys [ipc] :as _context}]
-  (log/debug :handle-coredump data)
-
-  ;; Split the string on " | "
-  ;; Replace " " with "=_=_" since we cannot have keywords with spaces
-  ;; Split on ":=_=_" to get the key and value pairs
-  ;; Keywordize the key with _ instead of spaces
-  ;; replace "=_=_" back to " " on the values
-  ;; reduce into a single map
+(defmethod handler :coredump [data {:keys [ipc]}]
   (let [coredump-data (extract-coredump-data data)]
-    ;; (log/debug :handle-coredump coredump-data)
     (tpx.ipc/handler ipc :jam/coredump coredump-data)))

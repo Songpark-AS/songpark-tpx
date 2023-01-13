@@ -4,8 +4,14 @@
             [taoensso.timbre :as log]))
 
 
-(defmethod handle-message :jam.cmd/start [{:keys [jam] :as msg}]
-  (jam.tpx/join jam msg))
+(defmethod handle-message :jam.cmd/join [{:keys [tpx] :as msg}]
+  (jam.tpx/join tpx msg))
 
-(defmethod handle-message :jam.cmd/stop [{:keys [jam]}]
-  (jam.tpx/leave jam))
+(defmethod handle-message :jam.cmd/start [{:keys [tpx] :as msg}]
+  (jam.tpx/start-call tpx))
+
+(defmethod handle-message :jam.cmd/stop [{:keys [tpx] :as msg}]
+  (jam.tpx/stop-call tpx))
+
+(defmethod handle-message :jam.cmd/reset [{:keys [tpx] :as msg}]
+  (jam.tpx/reset tpx))

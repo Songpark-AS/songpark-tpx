@@ -8,18 +8,6 @@
 
 (defonce config nil)
 
-(defn- get-tpx-version []
-  (try
-    (slurp (io/resource "VERSION.git"))
-    (catch Exception _
-      "DEV")))
-
-(defn- get-bp-version []
-  "DEV")
-
-(defn- get-fpga-version []
-  "DEV")
-
 (defrecord ConfigManager [started? config-path]
   component/Lifecycle
   (start [this]
@@ -33,10 +21,7 @@
                                         :resource path
                                         :file (if (fs/exists? path)
                                                 path)
-                                        :merge [(from-env)
-                                                {:tpx/version (get-tpx-version)
-                                                 :bp/version (get-bp-version)
-                                                 :fpga/version (get-fpga-version)}]))))
+                                        :merge [(from-env)]))))
           (assoc this
                  :started? true))))
   (stop [this]

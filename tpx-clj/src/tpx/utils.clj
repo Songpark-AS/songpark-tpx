@@ -1,9 +1,15 @@
 (ns tpx.utils
   (:require [clojure.string :as str]
+            [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]]
             [taoensso.timbre :as log]
-            [tpx.config :refer [config]]
-            [clojure.java.io :as io]))
+            [tpx.config :refer [config]]))
+
+(defn get-input-path [input k]
+  (let [ns* (namespace k)
+        n* (name k)]
+    (keyword (str/join "." (flatten (remove str/blank? ["fx" input ns*])))
+             n*)))
 
 (defn scale-value
   "Linearly transforms x from range input-range to output-range where:
@@ -57,4 +63,8 @@
 
 
 (defn reboot []
+  (log/info "Rebooting machine")
   (sh "reboot"))
+
+(defn get-platform-url [path]
+  (str (get-in config [:ipc :platform]) path))

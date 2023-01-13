@@ -1,7 +1,10 @@
 (ns tpx.init
   (:require [com.stuartsierra.component :as component]
             [songpark.common.communication :refer [PUT]]
+            ;; [tpx.gpio :as gpio]
+            ;; [tpx.gpio.actions :as gpio.actions]
             [songpark.jam.tpx :as jam.tpx]
+            [songpark.jam.tpx.handler]
             [songpark.mqtt :as mqtt]
             [songpark.mqtt.util :refer [teleporter-topic]]
             [taoensso.timbre :as log]
@@ -11,9 +14,16 @@
             [tpx.heartbeat :as heartbeat]
             [tpx.ipc :as ipc]
             [tpx.logger :as logger]
+            [tpx.mqtt.handler.analog]
+            [tpx.mqtt.handler.fx]
             [tpx.mqtt.handler.jam]
+            [tpx.mqtt.handler.pairing]
             [tpx.mqtt.handler.teleporter]
-            [tpx.network :as network]))
+            [tpx.network :as network]
+            [tpx.network.reporter :refer [get-local-ip]]
+            ;; [tpx.scheduler :as scheduler]
+            [tpx.versions :as versions]
+            [tpx.utils :as util]))
 
 (defonce system (atom nil))
 
@@ -21,11 +31,12 @@
   (:mac config))
 
 (defn broadcast-presence [success-cb error-cb]
-  (let [data (merge {:teleporter/nickname (get-in config [:ipc :teleporter :nickname])
-                     :teleporter/mac (get-device-mac)
+  (let [data (merge {:teleporter/serial (get-in config [:teleporter :serial])
+                     :teleporter/local-ip (data/get-local-ip)
                      :teleporter/apt-version (data/get-apt-version)}
-                    (get-hardware-values))
-        platform-url (str (get-in config [:ipc :platform]) "/api/teleporter")]
+                    (get-hardware-values)
+                    (versions/get-versions))
+        platform-url (util/get-platform-url "/api/teleporter")]
     (log/debug "Broadcasting to URL" platform-url data)
     (PUT platform-url data success-cb error-cb)))
 
@@ -36,14 +47,20 @@
         core-config (component/start (tpx.config/config-manager {}))
         logger (component/start (logger/logger (:logger config)))
         db (component/start (database/database (:database config)))]
+    ;; set local ip
+    (data/set-local-ip! (get-local-ip))
+
     (broadcast-presence
-     (fn [{:teleporter/keys [id] :as _result}]
+     (fn [{:teleporter/keys [id ip] :as _result}]
        (log/info "Successfully reported Teleporter to Platform")
        (let [;; start mqtt-client third before anything else, so that any messaged that might be needing sending
              ;; can be done so, as mqtt-client has finished connecting
              mqtt-client (component/start (mqtt/mqtt-client (assoc-in (:mqtt config) [:config :id] id)))]
         ;; set teleporter-id for data
          (data/set-tp-id! id)
+         ;; set public ip addresses
+         (data/set-public-ip! ip)
+
          ;; 100ms sleep to help mqtt-client
          (Thread/sleep 100)
          ;; start the rest of system
@@ -53,25 +70,30 @@
                                 (into [:logger logger
                                        :mqtt-client mqtt-client
                                        :config core-config
-                                       :network (network/network (:network config))
+                                       ;; :gpio (gpio/get-gpio (gpio.actions/get-settings))
                                        :database db
-                                       :ipc (component/using (ipc/ipc-service {:config (:ipc config)})
+                                       ;; :scheduler (component/using (scheduler/get-scheduler (:scheduler config))
+                                       ;;                             [:mqtt-client :gpio])
+                                       :ipc (component/using (ipc/ipc-service {:config (:ipc config)
+                                                                               :broadcast-presence broadcast-presence})
                                                              [:mqtt-client :database])
                                        :jam (component/using (jam.tpx/get-jam (merge {:tp-id id}
                                                                                      (:jam config)))
                                                              [:ipc :mqtt-client])
                                        :heartbeat (component/using (heartbeat/heartbeat-service {:config (:heartbeat config)})
                                                                    [:mqtt-client])]
-                                      extra-components))))
-         (log/info "System startup done"))
+                                      extra-components)))))
        ;; setup mqtt client further with injections and topics
-       (let [{:keys [mqtt-client ipc jam]} @system]
+       (let [{:keys [mqtt-client ipc jam #_gpio]} @system]
          ;; injections of ipc and jam first
          (mqtt/add-injection mqtt-client :ipc ipc)
-         (mqtt/add-injection mqtt-client :jam jam)
+         (mqtt/add-injection mqtt-client :tpx jam)
+         ;; (mqtt/add-injection mqtt-client :gpio (:gpio @system))
          ;; add topic of its own id
          (log/info "Subscribing to teleporter topic")
-         (mqtt/subscribe mqtt-client {(teleporter-topic id) 0})))
+         (mqtt/subscribe mqtt-client {(teleporter-topic id) 2})
+         ;; (gpio/set-led gpio :led/prompt :on)
+         (log/info "System startup done")))
      (fn [error]
        ;; add flashing leds to indicate a restart is required
        (log/error error)))))
@@ -109,8 +131,8 @@
            (stop)))))))
 
 
-(comment 
-  
+(comment
+
   (stop)
   (init)
 

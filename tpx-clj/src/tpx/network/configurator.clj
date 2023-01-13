@@ -61,7 +61,7 @@
     (spit (str config-dir "/static-default")
           (gen-iface-config :default-static {:ip "192.168.0.168"
                                              :netmask "255.255.255.0"})))
-  
+
   (let [config-dir "/tmp"]
     (spit (str config-dir "/static-default")
           (gen-iface-config :static {:ip "192.168.11.222"
@@ -71,8 +71,6 @@
   (let [config-dir "/tmp"]
     (spit (str config-dir "/static-default")
           (gen-iface-config :dhcp {:iface "eth1"
-                                   :hwaddr "00:11:AE:66:32:A5"}))) 
-  
+                                   :hwaddr "00:11:AE:66:32:A5"})))
+
   )
-
-

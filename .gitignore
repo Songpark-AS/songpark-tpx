@@ -22,10 +22,10 @@ pom.xml.asc
 **/.clj-kondo/cache/
 **/.clj-kondo/.cache/
 
-VERSION.git
-VERSION
+/VERSION.git
 tpx-clj/resources
-config.edn
-config.*.edn
+/config.edn
+/config.*.edn
+tpx-clj/config.edn
 connect
 *.service

@@ -1,0 +1,5 @@
+auto eth1
+
+iface eth1 inet dhcp
+      hwaddress ether VAR__HW_MAC
+      post-up /sbin/ethtool -s eth1 speed 100 duplex full autoneg off
