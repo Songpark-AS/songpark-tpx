@@ -19,7 +19,7 @@
   (send-command "vll" value))
 
 (defn input2-volume [value]
-  (send-command "vrl" value))
+  (send-command "vlr" value))
 
 (defn network-volume [value]
   (send-command "vnl" value)
