@@ -91,7 +91,9 @@
           (reduce (fn [out k]
                     (let [v (codax/get-at tx [k])]
                       (assoc out k (if (some? v)
-                                     v
+                                     (if (= k :jam/playout-delay)
+                                       (max v 10)
+                                       v)
                                      (get-in config [:hardware/default-values k])))))
                   {} ks)
           relay0 (bit-to-boolean (nth relays 7))
