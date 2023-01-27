@@ -10,6 +10,7 @@
 (defonce ^:private public-ip* (atom nil))
 (defonce ^:private local-ip* (atom nil))
 (defonce ^:private user-id* (atom nil))
+(defonce ^:private shadow-user-id* (atom nil))
 (defonce ^:private apt-version* (atom (get-apt-package-installed-version "teleporter-fw")))
 
 ;; TP ID (UUID)
@@ -51,12 +52,12 @@
 (defn allowed? [mqtt-message]
   (let [{tp-id :teleporter/id
          user-id :auth.user/id} mqtt-message
-        allow? (and ;; (uuid? @tp-id*)
-                    ;; (number? @user-id*)
-                    ;; (uuid? tp-id)
-                    ;; (number? user-id)
-                    ;; (= @tp-id* tp-id)
-                    ;; (= @user-id* user-id)
+        allow? (and (uuid? @tp-id*)
+                    (number? @user-id*)
+                    (uuid? tp-id)
+                    (number? user-id)
+                    (= @tp-id* tp-id)
+                    (= @user-id* user-id)
                     (pairing/paired?))]
     (when (false? allow?)
       (log/info "Unauthorized access to the Teleporter"
@@ -77,3 +78,12 @@
 
 (defn get-user-id []
   @user-id*)
+
+(defn set-shadow-user-id! [shadow-user-id]
+  (reset! shadow-user-id* shadow-user-id))
+
+(defn clear-shadow-user-id! []
+  (reset! shadow-user-id* nil))
+
+(defn get-shadow-user-id []
+  @shadow-user-id*)

@@ -218,26 +218,23 @@
                     led-yellow
                     led-green
                     led-red
-                    button-push1
-                    rotary-clk
-                    rotary-dt
-                    led-prompt
-                    button-prompt
-                    button-rotary]
+                    led-link
+                    button-link]
              :or
              {;; chip-select 10
               ;; clock 12
               ;; mosi 11
               ;; miso 13
               ;; led-yellow 15
-              led-green 13
+              ;; led-green 14
+              led-link 13
               ;; led-red 9
-              button-push1 10}
+              button-link 10}
              } (:gpio/pins config)
             write-map (merge
-                       (if led-prompt
-                         {led-prompt  {:gpio/state true
-                                       :gpio/tag :led/prompt}})
+                       (if led-link
+                         {led-link  {:gpio/state true
+                                     :gpio/tag :led/link}})
                        (if led-yellow
                          {led-yellow  {:gpio/state true
                                        :gpio/tag :led/yellow}})
@@ -266,12 +263,9 @@
                                        read-map
                                        {:gpio/direction :input}))
             input-map (merge
-                       (if button-push1
-                         {button-push1 {:gpio/tag :button/push1
-                                        :gpio/direction :input}})
-                       (if button-prompt
-                         {button-prompt {:gpio/tag :button/prompt
-                                         :gpio/direction :input}}))
+                       (if button-link
+                         {button-link {:gpio/tag :button/link
+                                       :gpio/direction :input}}))
             watchers (when input-map
                        (gpio/watcher device
                                     input-map))
@@ -293,8 +287,8 @@
           (swap! leds assoc :led/yellow :off))
         (when led-green
           (swap! leds assoc :led/green :off))
-        (when led-prompt
-          (swap! leds assoc :led/prompt :off))
+        (when led-link
+          (swap! leds assoc :led/link :off))
         component)
       (catch Throwable t
         (log/error :init-gpio/error {:throwable t
@@ -324,7 +318,7 @@
                  :started? false)))))
 
 (defn get-gpio [settings]
-  (map->GPIO (merge {:buttons {:button/push1 nil}
+  (map->GPIO (merge {:buttons {:button/link nil}
                      :leds (atom {})
                      :blinks (atom {})
                      :device nil

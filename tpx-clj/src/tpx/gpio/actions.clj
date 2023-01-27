@@ -10,7 +10,7 @@
 
 (defn get-settings []
   {:context {:set-network! set-network!}
-   :buttons {:button/prompt
+   :buttons {:button/link
              (fn [{:keys [delay set-network! gpio]}]
                (log/debug "Pressed :button/push1" {:delay delay})
                ;; when the delay is larger than 5 seconds or otherwise
@@ -33,6 +33,10 @@
                  (pairing/pairing?)
                  (let [platform-url (util/get-platform-url "/api/teleporter/pair")]
                    (log/debug "Setting to paired")
+
+                   (let [shadow-user-id (data/get-shadow-user-id)]
+                     (log/debug "Setting new user id" shadow-user-id)
+                     (data/set-user-id! shadow-user-id))
 
                    (POST platform-url
                          {:message/type :pairing/paired
