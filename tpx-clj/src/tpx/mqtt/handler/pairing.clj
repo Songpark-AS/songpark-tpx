@@ -10,21 +10,11 @@
                                           user-id :auth.user/id
                                           gpio :gpio}]
   (log/debug ::pairing-pair {:teleporter/id id
-                             :auth.user/id user-id})
-  (pairing/set-status gpio :pairing)
-  (data/set-shadow-user-id! user-id)
-  ;; (let [platform-url (util/get-platform-url "/api/teleporter/pair")]
-  ;;   (log/debug "Setting to paired")
-
-  ;;   (data/set-user-id! user-id)
-  ;;   (data/set-tp-id! id)
-  ;;   (POST platform-url
-  ;;         {:message/type :pairing/paired
-  ;;          :teleporter/id (data/get-tp-id)
-  ;;          :auth.user/id (data/get-user-id)}
-  ;;         (fn [_]
-  ;;           (pairing/set-status gpio :paired))))
-  )
+                             :auth.user/id user-id
+                             :pairing/paired? (pairing/paired?)})
+  (when-not (pairing/paired?)
+    (pairing/set-status gpio :pairing)
+    (data/set-shadow-user-id! user-id)))
 
 
 (defmethod handle-message :pairing/unpair [{id :teleporter/id
