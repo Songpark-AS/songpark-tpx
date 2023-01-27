@@ -29,3 +29,5 @@ tpx-clj/resources
 tpx-clj/config.edn
 connect
 *.service
+deployment/config*
+deployment/tp*
