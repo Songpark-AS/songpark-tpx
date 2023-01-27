@@ -21,8 +21,10 @@
   (log/debug ::set-status status)
   (reset! pair-status status)
   (case status
-    :pairing (gpio/start-blink gpio :led/link 500)
+    :pairing (do (gpio/stop-blink gpio :led/link)
+                 (gpio/start-blink gpio :led/link 500))
     :paired (do (gpio/stop-blink gpio :led/link)
                 (gpio/set-led gpio :led/link :on))
-    :unpaired (gpio/start-blink gpio :led/link 3000)
+    :unpaired (do (gpio/stop-blink gpio :led/link)
+                  (gpio/start-blink gpio :led/link 3000))
     nil))
