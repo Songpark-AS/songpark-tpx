@@ -12,7 +12,7 @@
   {:context {:set-network! set-network!}
    :buttons {:button/link
              (fn [{:keys [delay set-network! gpio]}]
-               (log/debug "Pressed :button/push1" {:delay delay})
+               (log/debug "Pressed :button/link" {:delay delay})
                ;; when the delay is larger than 5 seconds or otherwise
                ;; we set the network to use DHCP again
                (cond

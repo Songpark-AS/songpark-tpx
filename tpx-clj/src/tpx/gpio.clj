@@ -1,5 +1,6 @@
 (ns tpx.gpio
   (:require [com.stuartsierra.component :as component]
+            [clojure.core.match :refer [match]]
             [clojure.set :as set]
             [helins.linux.gpio :as gpio]
             [taoensso.timbre :as log]
@@ -177,27 +178,38 @@
           (let [event (gpio/event watchers 1000)]
             (when event
               (let [{:gpio/keys [tag nano-timestamp edge]} event
-                    rising (get-in @bounce [tag :rising])]
+                    {:keys [falling rising]} (get @bounce tag)]
                 ;; (log/debug {:event event
                 ;;             :bounce @bounce})
-                (cond (and (nil? rising)
-                           (= edge :rising))
-                      (swap! bounce assoc-in [tag :rising] nano-timestamp)
+                (match [(number? falling) (number? rising) edge]
 
-                      (and (some? rising)
-                           (= edge :falling))
-                      (let [ms (get-milliseconds (- nano-timestamp rising) :double)]
-                        (when (> ms epsilon)
-                          (if-let [f (get buttons tag)]
-                            (do (f (assoc context
-                                          :gpio gpio
-                                          :delay ms))
-                                (swap! bounce dissoc tag))
-                            (do (log/error "GPIO: Could not find a function for " tag)
-                                (swap! bounce dissoc tag)))))
+                       [false false :falling]
+                       (do (log/debug tag :falling/start-of-cycle nano-timestamp)
+                           (swap! bounce assoc tag {:falling nano-timestamp
+                                                    :rising nil}))
 
-                      :else
-                      :do-nothing))))))
+                       [true true :falling]
+                       (let [ms (get-milliseconds (- nano-timestamp
+                                                     rising) :double)]
+                         (log/debug tag :falling/end-of-cycle nano-timestamp)
+                         (when (> ms epsilon)
+                           (swap! bounce assoc tag {:falling nano-timestamp
+                                                    :rising nil})))
+
+                       [true false :rising]
+                       (let [ms (get-milliseconds (- nano-timestamp
+                                                     falling) :double)]
+                         (log/debug tag :rising nano-timestamp ms)
+                         (when (> ms epsilon)
+                           (swap! bounce assoc-in [tag :rising] nano-timestamp)
+                           (if-let [f (get buttons tag)]
+                             (f (assoc context
+                                       :gpio gpio
+                                       :delay ms))
+                             (log/error "GPIO: Could not find a function for " tag))))
+                       [_ _ _]
+                       :do-nothing)))))
+        (log/info "Exiting handle-buttons in GPIO"))
       (catch Throwable t
         (log/error :handle-buttons/error t)))))
 
@@ -253,8 +265,8 @@
                                        :gpio/tag :mosi}}))
             handle-write (when write-map
                            (gpio/handle device
-                                       write-map
-                                       {:gpio/direction :output}))
+                                        write-map
+                                        {:gpio/direction :output}))
             read-map (if miso
                        {miso {:gpio/state false
                               :gpio/tag :miso}})
@@ -268,7 +280,7 @@
                                        :gpio/direction :input}}))
             watchers (when input-map
                        (gpio/watcher device
-                                    input-map))
+                                     input-map))
             component (assoc component
                              :rw-lock (atom false)
                              :device device

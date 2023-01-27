@@ -1,5 +1,5 @@
 (ns tpx.pairing
-  (:require ;; [tpx.gpio :as gpio]
+  (:require [tpx.gpio :as gpio]
             [taoensso.timbre :as log]))
 
 (def possible-states #{:unpaired :paired :pairing})
@@ -20,10 +20,9 @@
   (assert (possible-states status) (str "status needs to be one of " possible-states))
   (log/debug ::set-status status)
   (reset! pair-status status)
-  ;; (when (= status :pairing)
-  ;;   (gpio/start-blink gpio :led/prompt 1000))
-  ;; (when (or (= status :not-paired)
-  ;;           (= status :paired))
-  ;;   (gpio/stop-blink gpio :led/prompt)
-  ;;   (gpio/set-led gpio :led/prompt :on))
-  )
+  (case status
+    :pairing (gpio/start-blink gpio :led/link 500)
+    :paired (do (gpio/stop-blink gpio :led/link)
+                (gpio/set-led gpio :led/link :on))
+    :unpaired (gpio/start-blink gpio :led/link 3000)
+    nil))

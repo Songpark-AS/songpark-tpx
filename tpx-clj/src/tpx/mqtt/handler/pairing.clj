@@ -9,6 +9,8 @@
 (defmethod handle-message :pairing/pair [{id :teleporter/id
                                           user-id :auth.user/id
                                           gpio :gpio}]
+  (log/debug ::pairing-pair {:teleporter/id id
+                             :auth.user/id user-id})
   (pairing/set-status gpio :pairing)
   (data/set-shadow-user-id! user-id)
   ;; (let [platform-url (util/get-platform-url "/api/teleporter/pair")]
@@ -29,6 +31,8 @@
                                             user-id :auth.user/id
                                             gpio :gpio
                                             :as msg}]
+  (log/debug ::pairing-unpair {:teleporter/id id
+                               :auth.user/id user-id})
   (when (data/allowed? msg)
     (pairing/set-status gpio :unpaired)
     (data/set-user-id! nil)))

@@ -92,7 +92,7 @@
          ;; add topic of its own id
          (log/info "Subscribing to teleporter topic")
          (mqtt/subscribe mqtt-client {(teleporter-topic id) 2})
-         ;; (gpio/set-led gpio :led/prompt :on)
+         (gpio/start-blink gpio :led/link 3000)
          (log/info "System startup done")))
      (fn [error]
        ;; add flashing leds to indicate a restart is required
