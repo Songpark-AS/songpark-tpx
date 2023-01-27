@@ -1,8 +1,8 @@
 (ns tpx.init
   (:require [com.stuartsierra.component :as component]
             [songpark.common.communication :refer [PUT]]
-            ;; [tpx.gpio :as gpio]
-            ;; [tpx.gpio.actions :as gpio.actions]
+            [tpx.gpio :as gpio]
+            [tpx.gpio.actions :as gpio.actions]
             [songpark.jam.tpx :as jam.tpx]
             [songpark.jam.tpx.handler]
             [songpark.mqtt :as mqtt]
@@ -70,7 +70,7 @@
                                 (into [:logger logger
                                        :mqtt-client mqtt-client
                                        :config core-config
-                                       ;; :gpio (gpio/get-gpio (gpio.actions/get-settings))
+                                       :gpio (gpio/get-gpio (gpio.actions/get-settings))
                                        :database db
                                        ;; :scheduler (component/using (scheduler/get-scheduler (:scheduler config))
                                        ;;                             [:mqtt-client :gpio])
@@ -84,11 +84,11 @@
                                                                    [:mqtt-client])]
                                       extra-components)))))
        ;; setup mqtt client further with injections and topics
-       (let [{:keys [mqtt-client ipc jam #_gpio]} @system]
+       (let [{:keys [mqtt-client ipc jam gpio]} @system]
          ;; injections of ipc and jam first
          (mqtt/add-injection mqtt-client :ipc ipc)
          (mqtt/add-injection mqtt-client :tpx jam)
-         ;; (mqtt/add-injection mqtt-client :gpio (:gpio @system))
+         (mqtt/add-injection mqtt-client :gpio gpio)
          ;; add topic of its own id
          (log/info "Subscribing to teleporter topic")
          (mqtt/subscribe mqtt-client {(teleporter-topic id) 2})
