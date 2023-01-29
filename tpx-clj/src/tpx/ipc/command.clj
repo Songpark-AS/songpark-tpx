@@ -6,7 +6,8 @@
 (defonce allow-start-coredump (atom true))
 
 (defn gather-versions []
-  (send-command "pv" ""))
+  (send-command "bver" "")
+  (send-command "cver" ""))
 
 (defn global-volume [value]
   (send-command "vol" value))
@@ -184,4 +185,5 @@
   (send-command "bver" "")
 
   (send-command "delay" "20")
+  (gather-versions)
 )

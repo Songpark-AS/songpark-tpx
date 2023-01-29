@@ -85,25 +85,11 @@
 (defmethod handler :call/params/reset [data {:keys [ipc] :as _context}]
   )
 
-
 (def ^:private reported-versions (atom {}))
 
-(defn handle-versions [data {:versions/keys [save-versions
-                                             current-versions
-                                             get-versions]
-                             broadcast-presence :broadcast-presence/fn
-                             :as _context}]
-  (log/debug :versions data)
-
-  (when-let [fpga-version (:fpga-version data)]
-    (log/debug "swapping FPGA version")
-    (swap! reported-versions assoc :fpga-version fpga-version))
-  (when-let [bp-version (:bp-version data)]
-    (log/debug "swapping BP version")
-    (swap! reported-versions assoc :bp-version bp-version))
-
-  (when (and (contains? @reported-versions :fpga-version)
-             (contains? @reported-versions :bp-version))
+(defn handle-versions! [current-versions save-versions broadcast-presence]
+  (when (and (some? (@reported-versions :fpga-version))
+             (some? (@reported-versions :bp-version)))
     (let [{:teleporter/keys [fpga-version bp-version]} current-versions]
       (when (or (not= fpga-version (:fpga-version @reported-versions))
                 (not= bp-version (:bp-version @reported-versions)))
@@ -112,6 +98,27 @@
                               (log/info "Broadcasted change in FPGA/BP version"))
                             (fn [_]
                               (log/error "Failed to broadcast change in FPGA/BP version")))))))
+
+(defmethod handler :bp/version [{:keys [version] :as _data}
+                                {:versions/keys [save-versions
+                                                 current-versions
+                                                 get-versions]
+                                 broadcast-presence :broadcast-presence/fn
+                                 :as _context}]
+  (log/debug :bp/version version)
+  (swap! reported-versions assoc :bp-version version)
+  (handle-versions! current-versions save-versions broadcast-presence))
+
+(defmethod handler :core/version [{:keys [version] :as _data}
+                                  {:versions/keys [save-versions
+                                                   current-versions
+                                                   get-versions]
+                                   broadcast-presence :broadcast-presence/fn
+                                   :as _context}]
+  (log/debug :core/version version)
+  (swap! reported-versions assoc :fpga-version version)
+  (handle-versions! current-versions save-versions broadcast-presence))
+
 
 (defn- extract-coredump-data [data]
   (->> data
