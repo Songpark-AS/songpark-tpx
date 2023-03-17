@@ -43,7 +43,9 @@
                           :teleporter/id (data/get-tp-id)
                           :auth.user/id (data/get-user-id)}
                          (fn [_]
-                           (pairing/set-status gpio :paired))))
+                           (pairing/set-status gpio :paired))
+                         (fn [data]
+                           (log/error :failed-pairing data))))
 
                  ;; do nothing
                  :else
