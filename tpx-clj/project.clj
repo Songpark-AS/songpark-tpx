@@ -1,4 +1,4 @@
-(defproject tpx "0.2.1"
+(defproject tpx "0.2.2-SNAPSHOT"
   :description "Teleporter software that is the glue between the FPGA world and the wider system"
   :url ""
   :license {:name ""
@@ -20,7 +20,7 @@
                  [clj-serial "2.0.5"]
 
                  ;; songpark specific libraries
-                 [songpark/jam "2.0.0-SNAPSHOT"]
+                 [songpark/jam "2.1.0-SNAPSHOT"]
                  [songpark/mqtt "1.0.4"]
                  [songpark/common "0.2.0"]
 
