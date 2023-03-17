@@ -63,6 +63,9 @@
                      {:exception e
                       :message (ex-message e)
                       :data (ex-data e)}))))
+    (when (#{:sync/end :sync/timeout} what)
+      (log/info "sync failed. Forcing a hangup-all")
+      (ipc.command/hangup-all))
     (log/debug value)
     (async/put! c value)))
 

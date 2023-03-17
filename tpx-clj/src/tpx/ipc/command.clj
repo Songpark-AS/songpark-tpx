@@ -5,6 +5,9 @@
 
 (defonce allow-start-coredump (atom true))
 
+(defn sync-reset []
+  (send-command "syncrst" ""))
+
 (defn gather-versions []
   (send-command "bver" "")
   (send-command "cver" ""))
@@ -92,72 +95,26 @@
 
 (comment
 
+  (set-public-ip "217.118.62.14")
+  (hangup-all)
+  (receive-call #:teleporter{:local-ip "192.168.86.35"
+                             :public-ip "217.118.62.14"
+                             :port 8421})
+
+  (initiate-call #:teleporter{:local-ip "192.168.86.34"
+                              :public-ip "217.118.62.14"
+                              :port 8421})
+
   (start-coredump)
 
   (local-volume 30)
   (network-volume 30)
   (global-volume 25)
 
-  ;; 0001
-  (call-via-sip "sip:39d04c2c-7214-5e2c-a9ae-32ff15405b7f@voip1.songpark.com")
-  (hangup-via-sip "sip:39d04c2c-7214-5e2c-a9ae-32ff15405b7f@voip1.songpark.com")
 
-  ;; 0002
-  (do (call-via-sip "sip:77756ff0-bb05-5e6a-b7d9-28086f3a07fd@voip1.songpark.com")
-      (start-coredump))
-  (do (hangup-via-sip "sip:77756ff0-bb05-5e6a-b7d9-28086f3a07fd@voip1.songpark.com")
-      (stop-coredump))
-
-  ;; 0003
-  (call-via-sip "sip:b5fb6c6c-6707-56a6-88ab-23e4ec416abf@voip1.songpark.com")
-  (hangup-via-sip "sip:b5fb6c6c-6707-56a6-88ab-23e4ec416abf@voip1.songpark.com")
-
-  ;; Beatles
-  (call-via-sip "sip:9100@voip1.songpark.com")
-  (hangup-via-sip "sip:9100@voip1.songpark.com")
-
-  ;; Elvis Presely
-  (call-via-sip "sip:9102@voip1.songpark.com")
-  (hangup-via-sip "sip:9102@voip1.songpark.com")
-
-  ;; Jimi Hendrix
-  (call-via-sip "sip:9104@voip1.songpark.com")
-  (hangup-via-sip "sip:9104@voip1.songpark.com")
-
-  ;; Adele
-  (call-via-sip "sip:9106@voip1.songpark.com")
-  (hangup-via-sip "sip:9106@voip1.songpark.com")
-
-  ;; Madonna
-  (call-via-sip "sip:9108@voip1.songpark.com")
-  (hangup-via-sip "sip:9108@voip1.songpark.com")
-
-  ;; Bach
-  (call-via-sip "sip:9110@voip1.songpark.com")
-  (hangup-via-sip "sip:9110@voip1.songpark.com")
-
-  ;; ABBA
-  (call-via-sip "sip:9120@voip1.songpark.com")
-  (hangup-via-sip "sip:9120@voip1.songpark.com")
-
-  (send-command "" "")
-  (send-command "ha" "")
   (set-playout-delay 30)
 
   ;; check active calls
-  (do (send-command "m" "")
-      (Thread/sleep 200)
-      (send-command "q" ""))
-
-  (do (send-command "pd" "")
-      (Thread/sleep 500)
-      (send-command "12" "")
-      (Thread/sleep 200)
-      (send-command "pd" "")
-      )
-
-  (set-playout-delay 20)
-
   (do (send-command "pc" "")
       (send-command "vll" "10")
       (send-command "pc" "")
