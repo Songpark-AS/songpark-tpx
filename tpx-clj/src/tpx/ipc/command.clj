@@ -20,10 +20,10 @@
       (send-command "vlr" value)))
 
 (defn input1-volume [value]
-  (send-command "vll" value))
+  (send-command "vlr" value))
 
 (defn input2-volume [value]
-  (send-command "vlr" value))
+  (send-command "vll" value))
 
 (defn network-volume [value]
   (send-command "vnl" value)
