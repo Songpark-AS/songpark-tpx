@@ -107,28 +107,35 @@
     (log/info "Songpark Teleporter is now shut down")
     (reset! system nil)))
 
-(defn init [& extra-components]
+(defn start []
+  (do
+    (log/info "Starting Songpark Teleporter")
+    ;; start the system
+    (system-map [])
+
+    ;; log uncaught exceptions in threads
+    (Thread/setDefaultUncaughtExceptionHandler
+     (reify Thread$UncaughtExceptionHandler
+       (uncaughtException [_ thread ex]
+         (log/error {:what      :uncaught-exception
+                     :exception ex
+                     :where     (str "Uncaught exception on" (.getName thread))}))))
+
+    ;; add shutdown hook
+    (.addShutdownHook
+     (Runtime/getRuntime)
+     (proxy [Thread] []
+       (run []
+         (stop))))))
+
+(defn restart []
+  (stop)
+  (start))
+
+(defn init []
   (if @system
     (log/info "Songpark Teleporter already running")
-    (do
-      (log/info "Starting Songpark Teleporter")
-      ;; start the system
-      (system-map extra-components)
-
-      ;; log uncaught exceptions in threads
-      (Thread/setDefaultUncaughtExceptionHandler
-       (reify Thread$UncaughtExceptionHandler
-         (uncaughtException [_ thread ex]
-           (log/error {:what      :uncaught-exception
-                       :exception ex
-                       :where     (str "Uncaught exception on" (.getName thread))}))))
-
-      ;; add shutdown hook
-      (.addShutdownHook
-       (Runtime/getRuntime)
-       (proxy [Thread] []
-         (run []
-           (stop)))))))
+    (start)))
 
 
 (comment

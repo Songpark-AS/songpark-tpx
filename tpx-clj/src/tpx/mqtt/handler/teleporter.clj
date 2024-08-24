@@ -1,8 +1,9 @@
 (ns tpx.mqtt.handler.teleporter
-  (:require [codax.core :as codax]
+  (:require [clojure.set :refer [rename-keys]]
             [songpark.mqtt :as mqtt :refer [handle-message]]
             [songpark.mqtt.util :refer [broadcast-topic]]
             [songpark.jam.tpx.ipc :as tpx.ipc]
+            [tpx.init :refer [system]]
             [taoensso.timbre :as log]
             [tpx.data :as data]
             [tpx.database :refer [get-hardware-values]]
@@ -150,11 +151,28 @@
   (if (data/allowed? msg)
     (do
       (log/debug "Got new IPv4 config" network-values)
-      (set-network! (clojure.set/rename-keys network-values {:ip/address :ip
-                                                             :ip/gateway :gateway
-                                                             :ip/subnet :netmask
-                                                             :ip/dhcp? :dhcp?}))
-      (reporter/fetch-and-send-current-network-config mqtt-client))
+      (set-network! (rename-keys network-values {:ip/address :ip
+                                                 :ip/gateway :gateway
+                                                 :ip/subnet :netmask
+                                                 :ip/dhcp? :dhcp?}))
+      (future
+        (let [client (:mqtt-client @system)]
+          (mqtt/disconnect client)
+          (Thread/sleep 100)
+          (mqtt/connect client)
+          (loop [attempt 4]
+            (log/info (format "Attempt %d. MQTT is connected? %s" (- 5 attempt) (str (mqtt/connected? client))))
+            (cond
+              (zero? attempt)
+              (log/error "Attempted to report new IP. Failed after 5 attempts")
+
+              (and client
+                   (mqtt/connected? client))
+              (reporter/fetch-and-send-current-network-config mqtt-client)
+
+              :else
+              (do (log/info "Still not connected. Trying again in one second")
+                  (recur (dec attempt))))))))
     (log/debug ::set-ipv4-wrong-teleporter {:id id})))
 
 (defmethod handle-message :teleporter.cmd/upgrade [{:teleporter/keys [id]
