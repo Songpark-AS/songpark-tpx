@@ -1,8 +1,6 @@
 (ns tpx.init
   (:require [com.stuartsierra.component :as component]
             [songpark.common.communication :refer [PUT]]
-            [tpx.gpio :as gpio]
-            [tpx.gpio.actions :as gpio.actions]
             [songpark.jam.tpx :as jam.tpx]
             [songpark.jam.tpx.handler]
             [songpark.mqtt :as mqtt]
@@ -11,6 +9,8 @@
             [tpx.config :refer [config]]
             [tpx.data :as data]
             [tpx.database :as database :refer [get-hardware-values]]
+            [tpx.gpio :as gpio]
+            [tpx.gpio.actions :as gpio.actions]
             [tpx.heartbeat :as heartbeat]
             [tpx.ipc :as ipc]
             [tpx.logger :as logger]
@@ -19,13 +19,10 @@
             [tpx.mqtt.handler.jam]
             [tpx.mqtt.handler.pairing]
             [tpx.mqtt.handler.teleporter]
-            [tpx.network :as network]
             [tpx.network.reporter :refer [get-local-ip]]
-            ;; [tpx.scheduler :as scheduler]
+            [tpx.system :refer [system]]
             [tpx.versions :as versions]
             [tpx.utils :as util]))
-
-(defonce system (atom nil))
 
 (defn- get-device-mac []
   (:mac config))

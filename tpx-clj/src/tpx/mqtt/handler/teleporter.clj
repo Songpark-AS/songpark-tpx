@@ -3,7 +3,7 @@
             [songpark.mqtt :as mqtt :refer [handle-message]]
             [songpark.mqtt.util :refer [broadcast-topic]]
             [songpark.jam.tpx.ipc :as tpx.ipc]
-            [tpx.init :refer [system]]
+            [tpx.system :refer [system]]
             [taoensso.timbre :as log]
             [tpx.data :as data]
             [tpx.database :refer [get-hardware-values]]
