@@ -21,7 +21,7 @@
 
                  ;; songpark specific libraries
                  [songpark/jam "2.1.0-SNAPSHOT"]
-                 [songpark/mqtt "1.0.4"]
+                 [songpark/mqtt "1.0.5"]
                  [songpark/common "0.2.0"]
 
                  ;; GPIO for Clojure
